@@ -44,7 +44,9 @@ def generate_trace():
 
         validated_request = TraceRequest(**data)
         
-        intervals = [Interval(**i.dict()) for i in validated_request.intervals]
+        # --- MODIFIED: Use model_dump() instead of dict() ---
+        intervals = [Interval(**i.model_dump()) for i in validated_request.intervals]
+        # --- END MODIFIED ---
 
         tracer = IntervalCoverageTracer()
         result = tracer.remove_covered_intervals(intervals)
@@ -52,21 +54,18 @@ def generate_trace():
         return jsonify(result)
     
     except ValidationError as e:
-        # --- MODIFIED: Manually build a clean, serializable error list ---
-        # This prevents the non-serializable ValueError from reaching jsonify.
         clean_errors = [
             {
                 "loc": err.get("loc"),
                 "msg": err.get("msg"),
                 "type": err.get("type")
             }
-            for err in e.errors(include_context=False) # Exclude context which may contain the ValueError
+            for err in e.errors(include_context=False)
         ]
         return jsonify({
             "error": "Invalid input data",
             "details": clean_errors
         }), 400
-        # --- END MODIFIED ---
     
     except (ValueError, RuntimeError) as e:
         return jsonify({"error": str(e)}), 400
@@ -76,6 +75,7 @@ def generate_trace():
         return jsonify({"error": "An unexpected server error occurred."}), 500
 
 
+# ... (rest of the file is unchanged) ...
 @app.route('/api/examples', methods=['GET'])
 def get_examples():
     """Provide pre-defined example inputs (NOT traces - just inputs!)"""
