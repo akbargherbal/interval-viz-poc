@@ -20,13 +20,8 @@
     },
 
     "playwright": {
-      "command": "node",
-      "args": [
-        "./node_modules/@modelcontextprotocol/server-playwright/dist/index.js"
-      ],
-      "env": {
-        "PLAYWRIGHT_BROWSERS_PATH": "0"
-      }
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
     }
   }
 }
