@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Loader, AlertCircle, SkipBack, ChevronRight } from "lucide-react";
 
-// Import the new components
+// Import the components
 import ControlBar from "./components/ControlBar";
 import CompletionModal from "./components/CompletionModal";
 import ErrorBoundary from "./components/ErrorBoundary";
 import KeyboardHints from "./components/KeyboardHints";
+import PredictionModal from "./components/PredictionModal";
 
-// NOTE: TimelineView and CallStackView are kept in this file for now,
-// but could be extracted into their own files in a future refactoring pass.
+// Import prediction utilities
+import { isPredictionPoint } from "./utils/predictionUtils";
 
 const TimelineView = ({ step }) => {
-  // Safe access with fallbacks
   const allIntervals = step?.data?.all_intervals || [];
   const maxEnd = step?.data?.max_end;
 
@@ -21,44 +21,21 @@ const TimelineView = ({ step }) => {
 
   const colorMap = {
     blue: { bg: "bg-blue-800", text: "text-white", border: "border-blue-600" },
-    green: {
-      bg: "bg-green-600",
-      text: "text-white",
-      border: "border-green-500",
-    },
-    amber: {
-      bg: "bg-amber-500",
-      text: "text-black",
-      border: "border-amber-400",
-    },
-    purple: {
-      bg: "bg-purple-600",
-      text: "text-white",
-      border: "border-purple-500",
-    },
+    green: { bg: "bg-green-600", text: "text-white", border: "border-green-500" },
+    amber: { bg: "bg-amber-500", text: "text-black", border: "border-amber-400" },
+    purple: { bg: "bg-purple-600", text: "text-white", border: "border-purple-500" },
   };
 
   return (
     <div className="relative h-full flex flex-col">
       <div className="relative flex-1 bg-slate-900/50 rounded-lg p-4">
-        {/* Timeline axis */}
         <div className="absolute bottom-6 left-4 right-4 h-0.5 bg-slate-600"></div>
 
-        {/* Scale markers */}
-        <div className="absolute bottom-1 left-4 text-slate-400 text-xs">
-          {minVal}
-        </div>
-        <div className="absolute bottom-1 left-1/3 text-slate-400 text-xs">
-          700
-        </div>
-        <div className="absolute bottom-1 left-2/3 text-slate-400 text-xs">
-          850
-        </div>
-        <div className="absolute bottom-1 right-4 text-slate-400 text-xs">
-          {maxVal}
-        </div>
+        <div className="absolute bottom-1 left-4 text-slate-400 text-xs">{minVal}</div>
+        <div className="absolute bottom-1 left-1/3 text-slate-400 text-xs">700</div>
+        <div className="absolute bottom-1 left-2/3 text-slate-400 text-xs">850</div>
+        <div className="absolute bottom-1 right-4 text-slate-400 text-xs">{maxVal}</div>
 
-        {/* Max end line */}
         {maxEnd !== undefined && maxEnd !== null && (
           <div
             className="absolute top-4 bottom-6 w-0.5 bg-cyan-400 z-10"
@@ -70,9 +47,7 @@ const TimelineView = ({ step }) => {
           </div>
         )}
 
-        {/* Interval bars */}
         {allIntervals.map((interval, idx) => {
-          // Skip malformed intervals
           if (!interval || typeof interval.start !== 'number' || typeof interval.end !== 'number') {
             return null;
           }
@@ -120,7 +95,6 @@ const TimelineView = ({ step }) => {
         })}
       </div>
 
-      {/* Legend */}
       <div className="mt-4 flex gap-4 text-xs">
         <div className="flex items-center gap-2">
           <div className="w-8 h-3 bg-cyan-400 rounded"></div>
@@ -140,7 +114,6 @@ const TimelineView = ({ step }) => {
 };
 
 const CallStackView = ({ step, activeCallRef }) => {
-  // Safe access with fallback
   const callStack = step?.data?.call_stack_state || [];
 
   if (callStack.length === 0) {
@@ -156,7 +129,6 @@ const CallStackView = ({ step, activeCallRef }) => {
   return (
     <div className="space-y-2">
       {callStack.map((call, idx) => {
-        // Skip malformed call entries
         if (!call) return null;
 
         const isActive = idx === callStack.length - 1;
@@ -177,7 +149,6 @@ const CallStackView = ({ step, activeCallRef }) => {
             }`}
             style={{ marginLeft: `${(call.depth || 0) * 24}px` }}
           >
-            {/* Call header */}
             <div className="flex items-center gap-2 mb-2">
               <div className="text-slate-400 text-xs font-mono">
                 CALL #{call.call_id || idx}
@@ -188,7 +159,6 @@ const CallStackView = ({ step, activeCallRef }) => {
               </div>
             </div>
 
-            {/* Current interval */}
             <div className="flex items-center gap-2 mb-2">
               <div className="text-slate-400 text-xs">Examining:</div>
               <div
@@ -206,7 +176,6 @@ const CallStackView = ({ step, activeCallRef }) => {
               </div>
             </div>
 
-            {/* Max end */}
             <div className="flex items-center gap-2 mb-2">
               <div className="text-slate-400 text-xs">max_end_so_far:</div>
               <div className="text-cyan-400 text-xs font-mono font-bold">
@@ -216,7 +185,6 @@ const CallStackView = ({ step, activeCallRef }) => {
               </div>
             </div>
 
-            {/* Decision */}
             {call.decision && (
               <div
                 className={`flex items-center gap-2 p-2 rounded ${
@@ -235,7 +203,6 @@ const CallStackView = ({ step, activeCallRef }) => {
               </div>
             )}
 
-            {/* Return value */}
             {call.return_value && call.return_value.length > 0 && (
               <div className="mt-2 pt-2 border-t border-slate-600">
                 <div className="text-slate-400 text-xs mb-1">↩️ RETURN:</div>
@@ -274,7 +241,6 @@ const CallStackView = ({ step, activeCallRef }) => {
   );
 };
 
-// --- The main App component, now much smaller ---
 const AlgorithmTracePlayer = () => {
   const [trace, setTrace] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
@@ -282,14 +248,20 @@ const AlgorithmTracePlayer = () => {
   const [error, setError] = useState(null);
   const activeCallRef = useRef(null);
 
+  // Prediction mode state
+  const [predictionMode, setPredictionMode] = useState(true);
+  const [showPrediction, setShowPrediction] = useState(false);
+  const [predictionStats, setPredictionStats] = useState({
+    total: 0,
+    correct: 0,
+  });
+
   const BACKEND_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
   useEffect(() => {
     loadExampleTrace();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-scroll to active call
   useEffect(() => {
     if (activeCallRef.current) {
       activeCallRef.current.scrollIntoView({
@@ -299,21 +271,36 @@ const AlgorithmTracePlayer = () => {
     }
   }, [currentStep]);
 
-  // SESSION 3: Keyboard shortcuts
+  // Detect prediction points
+  useEffect(() => {
+    if (!trace || !predictionMode) return;
+    
+    const step = trace?.trace?.steps?.[currentStep];
+    const nextStep = trace?.trace?.steps?.[currentStep + 1];
+    
+    if (isPredictionPoint(step) && nextStep?.type === "DECISION_MADE") {
+      setShowPrediction(true);
+    } else {
+      setShowPrediction(false);
+    }
+  }, [currentStep, trace, predictionMode]);
+
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (event) => {
-      // Ignore if user is typing in an input field
       if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
         return;
       }
 
-      // Check if completion modal is open
+      // Don't handle keys if prediction modal is open
+      if (showPrediction) return;
+
       const isComplete = trace?.trace?.steps?.[currentStep]?.type === "ALGORITHM_COMPLETE";
       
       switch (event.key) {
         case 'ArrowRight':
-        case ' ': // Space bar
-          event.preventDefault(); // Prevent page scroll on Space
+        case ' ':
+          event.preventDefault();
           if (!isComplete) {
             nextStep();
           }
@@ -341,7 +328,6 @@ const AlgorithmTracePlayer = () => {
           break;
         
         case 'Escape':
-          // Close modal by going back one step if on completion
           if (isComplete && currentStep > 0) {
             prevStep();
           }
@@ -352,20 +338,16 @@ const AlgorithmTracePlayer = () => {
       }
     };
 
-    // Add event listener
     window.addEventListener('keydown', handleKeyPress);
-
-    // Cleanup
-    return () => {
-      window.removeEventListener('keydown', handleKeyPress);
-    };
-  }, [currentStep, trace]); // Note: nextStep, prevStep, resetTrace are stable references
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [currentStep, trace, showPrediction]);
 
   const loadExampleTrace = async () => {
     setLoading(true);
     setError(null);
     setTrace(null);
     setCurrentStep(0);
+    setPredictionStats({ total: 0, correct: 0 });
 
     try {
       const response = await fetch(`${BACKEND_URL}/trace`, {
@@ -399,6 +381,8 @@ const AlgorithmTracePlayer = () => {
   };
 
   const nextStep = () => {
+    if (showPrediction) return; // Block during prediction
+    
     if (trace?.trace?.steps && currentStep < trace.trace.steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
@@ -412,6 +396,27 @@ const AlgorithmTracePlayer = () => {
 
   const resetTrace = () => {
     setCurrentStep(0);
+    setPredictionStats({ total: 0, correct: 0 });
+  };
+
+  const handlePredictionAnswer = (isCorrect) => {
+    setPredictionStats((prev) => ({
+      total: prev.total + 1,
+      correct: prev.correct + (isCorrect ? 1 : 0),
+    }));
+    
+    setShowPrediction(false);
+    nextStep();
+  };
+
+  const handlePredictionSkip = () => {
+    setShowPrediction(false);
+    nextStep();
+  };
+
+  const togglePredictionMode = () => {
+    setPredictionMode(!predictionMode);
+    setShowPrediction(false);
   };
 
   if (loading) {
@@ -456,10 +461,8 @@ const AlgorithmTracePlayer = () => {
     );
   }
 
-  // PHASE 5: Safe array access with optional chaining
   const step = trace?.trace?.steps?.[currentStep];
 
-  // Show error state if step data is invalid
   if (!step) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center p-8">
@@ -486,20 +489,57 @@ const AlgorithmTracePlayer = () => {
 
   return (
     <div className="w-full h-screen bg-slate-900 flex items-center justify-center p-4 overflow-hidden">
-      <CompletionModal trace={trace} step={step} onReset={resetTrace} />
+      {showPrediction && (
+        <PredictionModal
+          step={trace?.trace?.steps?.[currentStep]}
+          nextStep={trace?.trace?.steps?.[currentStep + 1]}
+          onAnswer={handlePredictionAnswer}
+          onSkip={handlePredictionSkip}
+        />
+      )}
+
+      <CompletionModal 
+        trace={trace} 
+        step={step} 
+        onReset={resetTrace}
+        predictionStats={predictionStats}
+      />
       
-      {/* SESSION 3: Keyboard hints component */}
       <KeyboardHints />
 
       <div className="w-full h-full max-w-7xl flex flex-col">
-        <ControlBar
-          currentStep={currentStep}
-          totalSteps={trace?.trace?.steps?.length || 0}
-          onPrev={prevStep}
-          onNext={nextStep}
-          onReset={resetTrace}
-          isComplete={isComplete}
-        />
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-white">
+              Remove Covered Intervals
+            </h1>
+            <p className="text-slate-400 text-sm">
+              Step {currentStep + 1} of {trace?.trace?.steps?.length || 0}
+            </p>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={togglePredictionMode}
+              className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors font-semibold ${
+                predictionMode
+                  ? "bg-blue-600 hover:bg-blue-500 text-white"
+                  : "bg-slate-700 hover:bg-slate-600 text-slate-300"
+              }`}
+            >
+              {predictionMode ? "🧠 Prediction: ON" : "👁️ Watch Mode"}
+            </button>
+
+            <ControlBar
+              currentStep={currentStep}
+              totalSteps={trace?.trace?.steps?.length || 0}
+              onPrev={prevStep}
+              onNext={nextStep}
+              onReset={resetTrace}
+              isComplete={isComplete}
+            />
+          </div>
+        </div>
 
         <div className="flex-1 flex gap-4 overflow-hidden">
           <div className="flex-1 bg-slate-800 rounded-xl p-6 shadow-2xl flex flex-col">
@@ -542,7 +582,7 @@ const AlgorithmTracePlayer = () => {
                 </button>
                 <button
                   onClick={nextStep}
-                  disabled={currentStep >= (trace?.trace?.steps?.length || 0) - 1}
+                  disabled={currentStep >= (trace?.trace?.steps?.length || 0) - 1 || showPrediction}
                   className="flex-1 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-700 disabled:cursor-not-allowed text-black px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors font-bold"
                 >
                   Next Step
