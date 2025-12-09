@@ -1,44 +1,79 @@
 # backend/app.py
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from pydantic import BaseModel, ValidationError, field_validator
+
 from algorithms.interval_coverage import Interval, IntervalCoverageTracer
 
 app = Flask(__name__)
-CORS(app)  # Allow frontend to call backend
+CORS(app)
+
+class IntervalInput(BaseModel):
+    id: int
+    start: int
+    end: int
+    color: str = 'blue'
+
+    @field_validator('id')
+    @classmethod
+    def id_must_be_non_negative(cls, v):
+        if v < 0:
+            raise ValueError('id must be a non-negative integer')
+        return v
+
+    @field_validator('end')
+    @classmethod
+    def end_must_be_greater_than_start(cls, v, info):
+        if 'start' in info.data and v <= info.data['start']:
+            raise ValueError(f'end ({v}) must be greater than start ({info.data["start"]})')
+        return v
+
+class TraceRequest(BaseModel):
+    intervals: list[IntervalInput]
 
 
 @app.route('/api/trace', methods=['POST'])
 def generate_trace():
     """
     Accept intervals, return complete trace.
-    Frontend sends: {"intervals": [...]}
-    Backend returns: {"result": [...], "trace": {...}, "metadata": {...}}
     """
     try:
         data = request.json
+        if not data:
+            return jsonify({"error": "Request body must be JSON"}), 400
+
+        validated_request = TraceRequest(**data)
         
-        if not data or 'intervals' not in data:
-            return jsonify({"error": "Missing 'intervals' in request body"}), 400
-        
-        # Convert input to Interval objects
-        intervals = [
-            Interval(
-                id=i['id'],
-                start=i['start'],
-                end=i['end'],
-                color=i.get('color', 'blue')
-            )
-            for i in data['intervals']
-        ]
-        
-        # Generate trace
+        intervals = [Interval(**i.dict()) for i in validated_request.intervals]
+
         tracer = IntervalCoverageTracer()
         result = tracer.remove_covered_intervals(intervals)
         
         return jsonify(result)
     
+    except ValidationError as e:
+        # --- MODIFIED: Manually build a clean, serializable error list ---
+        # This prevents the non-serializable ValueError from reaching jsonify.
+        clean_errors = [
+            {
+                "loc": err.get("loc"),
+                "msg": err.get("msg"),
+                "type": err.get("type")
+            }
+            for err in e.errors(include_context=False) # Exclude context which may contain the ValueError
+        ]
+        return jsonify({
+            "error": "Invalid input data",
+            "details": clean_errors
+        }), 400
+        # --- END MODIFIED ---
+    
+    except (ValueError, RuntimeError) as e:
+        return jsonify({"error": str(e)}), 400
+    
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        app.logger.error(f"An unexpected error occurred: {e}", exc_info=True)
+        return jsonify({"error": "An unexpected server error occurred."}), 500
 
 
 @app.route('/api/examples', methods=['GET'])
@@ -96,5 +131,4 @@ if __name__ == '__main__':
     print("=" * 60)
     print()
     
-    # For development
     app.run(debug=True, port=5000)

@@ -38,7 +38,11 @@ class IntervalCoverageTracer:
     Philosophy: Backend does ALL computation, frontend just displays.
     Every decision, comparison, and state change is recorded.
     """
-    
+    # --- NEW: Safety limits ---
+    MAX_INTERVALS = 100
+    MAX_STEPS = 10000
+    # --- END NEW ---
+
     def __init__(self):
         self.trace = []
         self.step_count = 0
@@ -50,6 +54,14 @@ class IntervalCoverageTracer:
         
     def _add_step(self, step_type: str, data: dict, description: str):
         """Record a step in the algorithm execution with complete visual state."""
+        # --- NEW: Step limit check ---
+        if self.step_count >= self.MAX_STEPS:
+            raise RuntimeError(
+                f"Trace generation aborted: Exceeded maximum of {self.MAX_STEPS} steps. "
+                "The input may be too complex or causing an infinite loop."
+            )
+        # --- END NEW ---
+
         # Enrich data with full visual state for ALL intervals
         enriched_data = {
             **data,
@@ -129,20 +141,17 @@ class IntervalCoverageTracer:
     def remove_covered_intervals(self, intervals: List[Interval]) -> dict:
         """
         Main algorithm with complete trace generation.
-        
-        Args:
-            intervals: List of Interval objects to process
-            
-        Returns:
-            dict containing:
-                - result: List of kept intervals
-                - trace: Complete execution trace with all steps
-                - metadata: Algorithm metadata
         """
-        # Store original intervals
+        # --- NEW: Interval limit check ---
+        if len(intervals) > self.MAX_INTERVALS:
+            raise ValueError(
+                f"Input validation failed: Too many intervals provided ({len(intervals)}). "
+                f"The maximum allowed is {self.MAX_INTERVALS}."
+            )
+        # --- END NEW ---
+
         self.original_intervals = intervals
         
-        # Initialize visual states
         for interval in intervals:
             self.interval_states[interval.id] = {
                 'is_examining': False,
@@ -151,17 +160,12 @@ class IntervalCoverageTracer:
                 'in_current_subset': True
             }
         
-        # Step 0: Initial state
         self._add_step(
             "INITIAL_STATE",
-            {
-                "intervals": [asdict(i) for i in intervals],
-                "count": len(intervals)
-            },
+            {"intervals": [asdict(i) for i in intervals], "count": len(intervals)},
             "Original unsorted intervals"
         )
         
-        # Step 1: Sort
         self._add_step(
             "SORT_BEGIN",
             {"description": "Sorting by (start ↑, end ↓)"},
@@ -176,14 +180,11 @@ class IntervalCoverageTracer:
             "Intervals sorted - ready for recursion"
         )
         
-        # Step 2: Recursive filtering
         result = self._filter_recursive(sorted_intervals, float('-inf'))
         
-        # Mark all kept intervals
         for interval in result:
             self._set_visual_state(interval.id, is_kept=True)
         
-        # Final step
         self._add_step(
             "ALGORITHM_COMPLETE",
             {
@@ -211,10 +212,7 @@ class IntervalCoverageTracer:
     def _filter_recursive(self, intervals: List[Interval], max_end: float) -> List[Interval]:
         """
         Recursive filtering with complete trace generation.
-        
-        Every recursive call, comparison, and decision is traced.
         """
-        # Base case
         if not intervals:
             call_id = self.next_call_id
             self.next_call_id += 1
@@ -230,7 +228,6 @@ class IntervalCoverageTracer:
             )
             return []
         
-        # Start new recursive call
         call_id = self.next_call_id
         self.next_call_id += 1
         depth = len(self.call_stack)
@@ -238,7 +235,6 @@ class IntervalCoverageTracer:
         current = intervals[0]
         remaining = intervals[1:]
         
-        # Add to call stack
         call_info = {
             'id': call_id,
             'depth': depth,
@@ -251,15 +247,12 @@ class IntervalCoverageTracer:
         }
         self.call_stack.append(call_info)
         
-        # Mark current interval as examining
         self._reset_all_visual_states()
         self._set_visual_state(current.id, is_examining=True, in_current_subset=True)
         
-        # Mark remaining intervals as in current subset
         for interval in remaining:
             self._set_visual_state(interval.id, in_current_subset=True)
         
-        # Trace: Call start
         self._add_step(
             "CALL_START",
             {
@@ -273,7 +266,6 @@ class IntervalCoverageTracer:
             f"Call #{call_id}: examining interval ({current.start}, {current.end})"
         )
         
-        # Trace: Examining interval
         self._add_step(
             "EXAMINING_INTERVAL",
             {
@@ -285,21 +277,17 @@ class IntervalCoverageTracer:
             f"Comparing interval end ({current.end}) with max_end"
         )
         
-        # Make decision: Keep or covered?
         is_covered = current.end <= max_end
         decision = "covered" if is_covered else "keep"
         
-        # Update call info
         call_info['status'] = 'decided'
         call_info['decision'] = decision
         
-        # Update visual state based on decision
         if is_covered:
             self._set_visual_state(current.id, is_covered=True, is_examining=False)
         else:
             self._set_visual_state(current.id, is_examining=False)
         
-        # Trace: Decision made
         self._add_step(
             "DECISION_MADE",
             {
@@ -313,7 +301,6 @@ class IntervalCoverageTracer:
         )
         
         if not is_covered:
-            # Keep this interval - update max_end
             new_max_end = max(max_end, current.end)
             
             self._add_step(
@@ -327,18 +314,14 @@ class IntervalCoverageTracer:
                 f"Updating max_end: {max_end if max_end != float('-inf') else '-∞'} → {new_max_end}"
             )
             
-            # Recurse with updated max_end
             rest = self._filter_recursive(remaining, new_max_end)
             result = [current] + rest
         else:
-            # Skip this interval (it's covered)
             result = self._filter_recursive(remaining, max_end)
         
-        # Update return value in call info
         call_info['status'] = 'returning'
         call_info['return_value'] = result
         
-        # Trace: Return from call
         self._add_step(
             "CALL_RETURN",
             {
@@ -352,6 +335,7 @@ class IntervalCoverageTracer:
         
         self.call_stack.pop()
         return result
+
 
 
 # Standalone test/demo
