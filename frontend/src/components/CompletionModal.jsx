@@ -104,7 +104,10 @@ const CompletionModal = ({ trace, step, onReset, predictionStats }) => {
           </div>
         )}
 
-        <div className="flex-grow mb-4 min-h-0">
+        {/* --- MODIFICATION START --- */}
+        {/* Removed 'flex-grow' and 'min-h-0' to allow natural height */}
+        <div className="mb-4">
+        {/* --- MODIFICATION END --- */}
           <div className="text-slate-300 font-semibold mb-2 text-sm">
             Final Result:
           </div>
@@ -141,7 +144,7 @@ const CompletionModal = ({ trace, step, onReset, predictionStats }) => {
 
         <button
           onClick={onReset}
-          className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 mt-auto"
         >
           <RotateCcw size={18} />
           Start Over
