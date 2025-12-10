@@ -7,10 +7,13 @@ import CompletionModal from "./components/CompletionModal";
 import ErrorBoundary from "./components/ErrorBoundary";
 import KeyboardHints from "./components/KeyboardHints";
 import PredictionModal from "./components/PredictionModal";
-import AlgorithmSwitcher from "./components/AlgorithmSwitcher"; // NEW
+import AlgorithmSwitcher from "./components/AlgorithmSwitcher";
 
 // Import extracted visualization components
 import { TimelineView, CallStackView } from "./components/visualizations";
+
+// PHASE 3: Import visualization registry
+import { getVisualizationComponent } from "./utils/visualizationRegistry";
 
 // Import extracted utilities
 import { getStepTypeBadge } from "./utils/stepBadges";
@@ -24,11 +27,12 @@ import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 
 const AlgorithmTracePlayer = () => {
   // 1. Data Loading Hook
-  const { 
-    trace, 
-    loading, 
-    error, 
+  const {
+    trace,
+    loading,
+    error,
     currentAlgorithm,
+    availableAlgorithms,
     loadExampleIntervalTrace,
     loadExampleBinarySearchTrace
   } = useTraceLoader();
@@ -59,6 +63,11 @@ const AlgorithmTracePlayer = () => {
 
   // 4. Visual Highlight Hook
   const highlight = useVisualHighlight(trace, currentStep);
+
+  // PHASE 3: Dynamically select visualization component
+  const visualizationType = trace?.metadata?.visualization_type || "timeline";
+  const visualizationConfig = trace?.metadata?.visualization_config || {};
+  const MainVisualizationComponent = getVisualizationComponent(visualizationType);
 
   // --- HANDLERS ---
 
@@ -171,11 +180,15 @@ const AlgorithmTracePlayer = () => {
 
   const badge = getStepTypeBadge(step?.type);
 
+  // PHASE 3: Determine if we need special right panel rendering
+  const isIntervalCoverage = currentAlgorithm === "interval-coverage";
+
   return (
     <div className="w-full h-screen bg-slate-900 flex flex-col overflow-hidden">
-      {/* NEW: Algorithm Switcher at the top */}
+      {/* Algorithm Switcher with registry support */}
       <AlgorithmSwitcher
         currentAlgorithm={currentAlgorithm}
+        availableAlgorithms={availableAlgorithms}
         onLoadIntervalExample={loadExampleIntervalTrace}
         onLoadBinarySearchExample={loadExampleBinarySearchTrace}
       />
@@ -204,9 +217,7 @@ const AlgorithmTracePlayer = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-2xl font-bold text-white">
-                {currentAlgorithm === "binary-search" 
-                  ? "Binary Search Visualization"
-                  : "Remove Covered Intervals"}
+                {trace?.metadata?.display_name || currentAlgorithm}
               </h1>
               <p className="text-slate-400 text-sm">
                 Step {currentStep + 1} of {totalSteps || 0}
@@ -236,63 +247,90 @@ const AlgorithmTracePlayer = () => {
           </div>
 
           <div className="flex-1 flex gap-4 overflow-hidden">
+            {/* PHASE 3: Main visualization panel - dynamically rendered */}
             <div className="flex-1 bg-slate-800 rounded-xl p-6 shadow-2xl flex flex-col">
               <h2 className="text-white font-bold mb-4">
-                {currentAlgorithm === "binary-search"
-                  ? "Array Visualization (Raw Data)"
-                  : "Timeline Visualization"}
+                {visualizationType === "array" ? "Array Visualization" : "Timeline Visualization"}
               </h2>
               <div className="flex-1 overflow-hidden">
                 <ErrorBoundary>
-                  {currentAlgorithm === "binary-search" ? (
-                    // TEMPORARY: Show raw JSON for binary search
-                    <div className="h-full overflow-auto">
-                      <pre className="text-xs text-gray-300 whitespace-pre-wrap">
-                        {JSON.stringify(step, null, 2)}
-                      </pre>
-                    </div>
-                  ) : (
-                    <TimelineView
-                      step={step}
-                      highlightedIntervalId={highlight.effectiveHighlight}
-                      onIntervalHover={highlight.handleIntervalHover}
-                    />
-                  )}
+                  <MainVisualizationComponent
+                    step={step}
+                    config={visualizationConfig}
+                    highlightedIntervalId={highlight.effectiveHighlight}
+                    onIntervalHover={highlight.handleIntervalHover}
+                  />
                 </ErrorBoundary>
               </div>
             </div>
 
+            {/* Right panel - context-specific rendering */}
             <div className="w-96 bg-slate-800 rounded-xl shadow-2xl flex flex-col">
               <div className="p-6 pb-4 border-b border-slate-700">
                 <h2 className="text-white font-bold">
-                  {currentAlgorithm === "binary-search"
-                    ? "Algorithm State"
-                    : "Recursive Call Stack"}
+                  {isIntervalCoverage ? "Recursive Call Stack" : "Algorithm State"}
                 </h2>
               </div>
               <div className="flex-1 overflow-y-auto p-6">
                 <ErrorBoundary>
-                  {currentAlgorithm === "binary-search" ? (
-                    // TEMPORARY: Show raw visualization state for binary search
-                    <div className="h-full overflow-auto">
-                      <pre className="text-xs text-gray-300 whitespace-pre-wrap">
-                        {JSON.stringify(step?.data?.visualization, null, 2)}
-                      </pre>
-                    </div>
-                  ) : (
+                  {isIntervalCoverage ? (
                     <CallStackView
                       step={step}
                       activeCallRef={activeCallRef}
                       onIntervalHover={highlight.handleIntervalHover}
                     />
+                  ) : (
+                    // For other algorithms, show key state information
+                    <div className="space-y-4">
+                      {step?.data?.visualization?.pointers && (
+                        <div className="bg-slate-700/50 rounded-lg p-4">
+                          <h3 className="text-white font-semibold mb-2">Pointers</h3>
+                          <div className="space-y-2 text-sm">
+                            {Object.entries(step.data.visualization.pointers).map(([key, value]) => (
+                              value !== null && value !== undefined && (
+                                <div key={key} className="flex justify-between">
+                                  <span className="text-gray-400 capitalize">{key}:</span>
+                                  <span className="text-white font-mono">{value}</span>
+                                </div>
+                              )
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {step?.data?.visualization?.search_space_size !== undefined && (
+                        <div className="bg-slate-700/50 rounded-lg p-4">
+                          <h3 className="text-white font-semibold mb-2">Search Progress</h3>
+                          <div className="text-sm">
+                            <div className="flex justify-between mb-2">
+                              <span className="text-gray-400">Space Size:</span>
+                              <span className="text-white font-mono">
+                                {step.data.visualization.search_space_size}
+                              </span>
+                            </div>
+                            <div className="w-full bg-slate-600 rounded-full h-2">
+                              <div
+                                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                                style={{
+                                  width: `${Math.max(
+                                    0,
+                                    100 - (step.data.visualization.search_space_size / 
+                                           (step.data.visualization.array?.length || 1) * 100)
+                                  )}%`
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </ErrorBoundary>
               </div>
 
-              {/* PHASE 3: Enhanced Description Section */}
+              {/* Description Section */}
               <div className="border-t border-slate-700 p-4 bg-slate-800">
                 <div className="p-4 bg-gradient-to-br from-slate-700/60 to-slate-800/60 rounded-lg border border-slate-600/50 shadow-lg">
-                  {/* Step type badge at the top */}
                   <div className="mb-3">
                     <span
                       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold ${badge.color}`}
@@ -300,8 +338,6 @@ const AlgorithmTracePlayer = () => {
                       {badge.label}
                     </span>
                   </div>
-
-                  {/* Description text - larger and more prominent */}
                   <p className="text-white text-base font-medium leading-relaxed">
                     {step?.description || "No description available"}
                   </p>
