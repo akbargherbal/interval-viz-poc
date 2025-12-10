@@ -17,18 +17,18 @@ import inspect
 class AlgorithmRegistry:
     """
     Central registry for algorithm tracers.
-    
+
     Provides:
     - Algorithm registration with metadata
     - Retrieval by algorithm name
     - List all available algorithms with metadata
     - Validation of tracer implementations
     """
-    
+
     def __init__(self):
         """Initialize empty registry."""
         self._algorithms: Dict[str, Dict[str, Any]] = {}
-    
+
     def register(
         self,
         name: str,
@@ -40,7 +40,7 @@ class AlgorithmRegistry:
     ):
         """
         Register an algorithm tracer with metadata.
-        
+
         Args:
             name: Unique identifier (e.g., 'binary-search', 'interval-coverage')
             tracer_class: Class inheriting from AlgorithmTracer
@@ -48,21 +48,21 @@ class AlgorithmRegistry:
             description: Brief explanation of the algorithm
             example_inputs: List of example input dictionaries for quick testing
             input_schema: Optional JSON schema for input validation
-        
+
         Raises:
             ValueError: If name already registered or tracer_class invalid
         """
         # Validate tracer class
         if not inspect.isclass(tracer_class):
             raise ValueError(f"tracer_class must be a class, got {type(tracer_class)}")
-        
+
         if not issubclass(tracer_class, AlgorithmTracer):
             raise ValueError(f"{tracer_class.__name__} must inherit from AlgorithmTracer")
-        
+
         # Check for duplicate registration
         if name in self._algorithms:
             raise ValueError(f"Algorithm '{name}' is already registered")
-        
+
         # Store algorithm metadata
         self._algorithms[name] = {
             'name': name,
@@ -72,17 +72,17 @@ class AlgorithmRegistry:
             'example_inputs': example_inputs,
             'input_schema': input_schema
         }
-    
+
     def get(self, name: str) -> Type[AlgorithmTracer]:
         """
         Retrieve tracer class by algorithm name.
-        
+
         Args:
             name: Algorithm identifier
-        
+
         Returns:
             Tracer class for instantiation
-        
+
         Raises:
             KeyError: If algorithm not found
         """
@@ -92,38 +92,38 @@ class AlgorithmRegistry:
                 f"Algorithm '{name}' not found. "
                 f"Available algorithms: {available}"
             )
-        
+
         return self._algorithms[name]['tracer_class']
-    
+
     def get_metadata(self, name: str) -> Dict[str, Any]:
         """
         Get complete metadata for an algorithm (excluding tracer_class).
-        
+
         Args:
             name: Algorithm identifier
-        
+
         Returns:
             Dictionary with display_name, description, example_inputs, etc.
-        
+
         Raises:
             KeyError: If algorithm not found
         """
         if name not in self._algorithms:
             raise KeyError(f"Algorithm '{name}' not found")
-        
+
         # Return copy without tracer_class (not JSON-serializable)
         metadata = self._algorithms[name].copy()
         del metadata['tracer_class']
         return metadata
-    
+
     def list_algorithms(self) -> List[Dict[str, Any]]:
         """
         Return list of all registered algorithms with metadata.
-        
+
         Returns:
             List of algorithm metadata dictionaries (without tracer_class)
             Suitable for JSON serialization to frontend.
-        
+
         Example:
             [
                 {
@@ -136,19 +136,19 @@ class AlgorithmRegistry:
             ]
         """
         return [self.get_metadata(name) for name in self._algorithms.keys()]
-    
+
     def is_registered(self, name: str) -> bool:
         """Check if algorithm is registered."""
         return name in self._algorithms
-    
+
     def count(self) -> int:
         """Return number of registered algorithms."""
         return len(self._algorithms)
-    
+
     def __contains__(self, name: str) -> bool:
         """Support 'name in registry' syntax."""
         return self.is_registered(name)
-    
+
     def __len__(self) -> int:
         """Support len(registry) syntax."""
         return self.count()
@@ -169,20 +169,95 @@ registry = AlgorithmRegistry()
 def register_algorithms():
     """
     Register all available algorithm tracers.
-    
+
     This function is called once during module import to populate
     the registry. Adding a new algorithm only requires adding a
     registration call here.
-    
-    Note: IntervalCoverageTracer is currently NOT registered because
-    it's a legacy implementation that doesn't inherit from AlgorithmTracer.
-    It will be refactored in a future phase to use the base class.
     """
-    
+
     # Import algorithm tracers
     from .binary_search import BinarySearchTracer
-    # from .interval_coverage import IntervalCoverageTracer  # TODO: Refactor to use base class
-    
+    from .interval_coverage import IntervalCoverageTracer
+
+    # -------------------------------------------------------------------------
+    # Interval Coverage (PoC Algorithm - Now Refactored!)
+    # -------------------------------------------------------------------------
+    registry.register(
+        name='interval-coverage',
+        tracer_class=IntervalCoverageTracer,
+        display_name='Interval Coverage',
+        description='Remove intervals that are completely covered by other intervals using a greedy recursive strategy',
+        example_inputs=[
+            {
+                'name': 'Basic Example - 4 Intervals',
+                'input': {
+                    'intervals': [
+                        {'id': 1, 'start': 540, 'end': 660, 'color': 'blue'},
+                        {'id': 2, 'start': 600, 'end': 720, 'color': 'green'},
+                        {'id': 3, 'start': 540, 'end': 720, 'color': 'amber'},
+                        {'id': 4, 'start': 900, 'end': 960, 'color': 'purple'}
+                    ]
+                }
+            },
+            {
+                'name': 'No Overlap - All Kept',
+                'input': {
+                    'intervals': [
+                        {'id': 1, 'start': 100, 'end': 200, 'color': 'blue'},
+                        {'id': 2, 'start': 300, 'end': 400, 'color': 'green'},
+                        {'id': 3, 'start': 500, 'end': 600, 'color': 'amber'}
+                    ]
+                }
+            },
+            {
+                'name': 'Full Coverage - Only One Kept',
+                'input': {
+                    'intervals': [
+                        {'id': 1, 'start': 100, 'end': 500, 'color': 'blue'},
+                        {'id': 2, 'start': 150, 'end': 250, 'color': 'green'},
+                        {'id': 3, 'start': 200, 'end': 300, 'color': 'amber'},
+                        {'id': 4, 'start': 350, 'end': 450, 'color': 'purple'}
+                    ]
+                }
+            },
+            {
+                'name': 'Complex Case - 6 Intervals',
+                'input': {
+                    'intervals': [
+                        {'id': 1, 'start': 0, 'end': 300, 'color': 'blue'},
+                        {'id': 2, 'start': 100, 'end': 200, 'color': 'green'},
+                        {'id': 3, 'start': 250, 'end': 500, 'color': 'amber'},
+                        {'id': 4, 'start': 150, 'end': 350, 'color': 'purple'},
+                        {'id': 5, 'start': 600, 'end': 700, 'color': 'red'},
+                        {'id': 6, 'start': 650, 'end': 800, 'color': 'orange'}
+                    ]
+                }
+            }
+        ],
+        input_schema={
+            'type': 'object',
+            'required': ['intervals'],
+            'properties': {
+                'intervals': {
+                    'type': 'array',
+                    'items': {
+                        'type': 'object',
+                        'required': ['id', 'start', 'end', 'color'],
+                        'properties': {
+                            'id': {'type': 'integer'},
+                            'start': {'type': 'integer'},
+                            'end': {'type': 'integer'},
+                            'color': {'type': 'string'}
+                        }
+                    },
+                    'minItems': 1,
+                    'maxItems': 100,
+                    'description': 'List of time intervals to analyze'
+                }
+            }
+        }
+    )
+
     # -------------------------------------------------------------------------
     # Binary Search
     # -------------------------------------------------------------------------
@@ -252,21 +327,6 @@ def register_algorithms():
             }
         }
     )
-    
-    # -------------------------------------------------------------------------
-    # Interval Coverage - TEMPORARILY DISABLED
-    # -------------------------------------------------------------------------
-    # TODO: Refactor IntervalCoverageTracer to inherit from AlgorithmTracer
-    # Currently uses legacy implementation with direct method calls.
-    # Will be enabled once refactored in future phase.
-    
-    # registry.register(
-    #     name='interval-coverage',
-    #     tracer_class=IntervalCoverageTracer,
-    #     display_name='Interval Coverage',
-    #     description='Remove intervals that are completely covered by other intervals using a greedy recursive strategy',
-    #     example_inputs=[...]
-    # )
 
 
 # Auto-register algorithms on module import

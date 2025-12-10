@@ -30,10 +30,30 @@ export const useTraceLoader = () => {
   }, [BACKEND_URL]);
 
   /**
+   * Format input data for specific algorithms when using unified endpoint.
+   * Each algorithm may have different input format requirements.
+   */
+  const formatInputForUnifiedEndpoint = (algorithm, inputData) => {
+    switch (algorithm) {
+      case "interval-coverage":
+        // IntervalCoverageTracer expects: {"intervals": [...]}
+        return { intervals: inputData };
+      
+      case "binary-search":
+        // BinarySearchTracer expects: {"array": [...], "target": ...}
+        return inputData; // Already in correct format
+      
+      default:
+        // Default: assume input is already correctly formatted
+        return inputData;
+    }
+  };
+
+  /**
    * Generic trace loader - supports multiple algorithms.
-   * 
+   *
    * Phase 2: Uses unified endpoint for registry-based algorithms,
-   * falls back to legacy endpoints for non-registry algorithms.
+   * falls back to legacy endpoints for backward compatibility.
    *
    * @param {string} algorithm - Algorithm identifier ('interval-coverage' or 'binary-search')
    * @param {object} inputData - Algorithm-specific input data
@@ -58,10 +78,12 @@ export const useTraceLoader = () => {
           endpoint = `${BACKEND_URL}/trace/unified`;
           requestBody = {
             algorithm: algorithm,
-            input: inputData,
+            input: formatInputForUnifiedEndpoint(algorithm, inputData),
           };
         } else if (algorithm === "interval-coverage") {
-          // Legacy endpoint for Interval Coverage (not in registry yet)
+          // FALLBACK: Legacy endpoint for Interval Coverage
+          // Note: interval-coverage IS in registry, but this fallback handles
+          // the race condition where availableAlgorithms hasn't loaded yet
           endpoint = `${BACKEND_URL}/trace`;
           requestBody = { intervals: inputData };
         } else {
@@ -102,7 +124,7 @@ export const useTraceLoader = () => {
 
   /**
    * Load interval coverage trace (backward compatible).
-   * Uses legacy endpoint since IntervalCoverageTracer not in registry yet.
+   * Uses legacy endpoint as fallback during initial load.
    */
   const loadIntervalTrace = useCallback(
     (intervals) => {
@@ -113,7 +135,7 @@ export const useTraceLoader = () => {
 
   /**
    * Load binary search trace.
-   * Now uses unified endpoint via registry!
+   * Uses unified endpoint via registry.
    */
   const loadBinarySearchTrace = useCallback(
     (array, target) => {

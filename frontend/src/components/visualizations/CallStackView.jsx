@@ -1,10 +1,21 @@
-import React from "react";
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import { ChevronRight } from "lucide-react";
 import { getIntervalColor } from "../../constants/intervalColors";
 
 const CallStackView = ({ step, activeCallRef, onIntervalHover }) => {
-  const callStack = step?.data?.call_stack_state || [];
+  // FIXED: Updated to use new standardized path (step.data.visualization.call_stack_state)
+  const callStack = step?.data?.visualization?.call_stack_state || [];
+
+  // FIXED (Session 9): Ensure auto-scroll happens when callStack changes
+  useEffect(() => {
+    if (activeCallRef?.current) {
+      activeCallRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [callStack, activeCallRef]);
 
   if (callStack.length === 0) {
     return (
@@ -32,6 +43,8 @@ const CallStackView = ({ step, activeCallRef, onIntervalHover }) => {
         return (
           <div
             key={call.call_id || idx}
+            // FIXED: Add id="step-current" for the active call
+            id={isActive ? "step-current" : undefined}
             ref={isActive ? activeCallRef : null}
             className={`p-3 rounded-lg border-2 transition-all ${
               isActive

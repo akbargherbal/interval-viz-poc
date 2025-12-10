@@ -379,12 +379,6 @@ class IntervalCoverageTracer(AlgorithmTracer):
 
 # Standalone test/demo
 if __name__ == "__main__":
-    import sys
-    from pathlib import Path
-    
-    # Add parent directory to path for imports when running standalone
-    sys.path.insert(0, str(Path(__file__).parent.parent))
-    
     print("=" * 60)
     print("Testing Interval Coverage Tracer (Refactored)")
     print("=" * 60)

@@ -5,6 +5,7 @@ import React from "react";
  *
  * Phase 3: Dynamic visualization for Binary Search and other array algorithms.
  * FIXED (Session 6): Proper overflow handling to prevent cutoff.
+ * FIXED (Session 9): Added left padding to prevent index 0 cutoff.
  *
  * Expected data structure:
  * step.data.visualization = {
@@ -107,8 +108,8 @@ const ArrayView = ({ step, config = {} }) => {
   };
 
   return (
-    // FIXED: Use auto overflow with proper flex constraints
-    <div className="h-full flex flex-col items-center justify-start overflow-auto py-4">
+    // FIXED: Added px-6 to prevent left edge cutoff
+    <div className="h-full flex flex-col items-center justify-start overflow-auto py-4 px-6">
       <div className="flex flex-col items-center gap-6 min-h-0">
         {/* Target indicator */}
         {pointers.target !== null && pointers.target !== undefined && (

@@ -66,9 +66,9 @@ class BinarySearchRequest(BaseModel):
 def list_algorithms():
     """
     Return list of all available algorithms with metadata.
-    
+
     Frontend uses this to dynamically populate algorithm selector.
-    
+
     Returns:
         JSON array of algorithm metadata:
         [
@@ -93,15 +93,15 @@ def list_algorithms():
 def generate_trace_unified():
     """
     Unified trace generation endpoint - routes to correct algorithm.
-    
+
     Input format:
         {
             "algorithm": "binary-search" | "interval-coverage",
             "input": { ... algorithm-specific input ... }
         }
-    
+
     Output: Standard trace result from algorithm tracer
-    
+
     This endpoint replaces algorithm-specific endpoints and enables
     adding new algorithms without modifying app.py.
     """
@@ -109,20 +109,20 @@ def generate_trace_unified():
         data = request.json
         if not data:
             return jsonify({"error": "Request body must be JSON"}), 400
-        
+
         # Extract algorithm name and input
         algorithm_name = data.get('algorithm')
         algorithm_input = data.get('input')
-        
+
         if not algorithm_name:
             return jsonify({
                 "error": "Missing required field: 'algorithm'",
                 "available_algorithms": [alg['name'] for alg in registry.list_algorithms()]
             }), 400
-        
+
         if not algorithm_input:
             return jsonify({"error": "Missing required field: 'input'"}), 400
-        
+
         # Check if algorithm exists
         if algorithm_name not in registry:
             available = [alg['name'] for alg in registry.list_algorithms()]
@@ -130,25 +130,25 @@ def generate_trace_unified():
                 "error": f"Unknown algorithm: '{algorithm_name}'",
                 "available_algorithms": available
             }), 404
-        
+
         # Get tracer class and instantiate
         tracer_class = registry.get(algorithm_name)
         tracer = tracer_class()
-        
+
         # Execute algorithm with input
         # Note: Algorithm-specific validation happens in tracer.execute()
         result = tracer.execute(algorithm_input)
-        
+
         return jsonify(result)
-    
+
     except ValueError as e:
         # Algorithm-specific validation errors
         return jsonify({"error": str(e)}), 400
-    
+
     except RuntimeError as e:
         # Algorithm execution errors (e.g., max steps exceeded)
         return jsonify({"error": str(e)}), 400
-    
+
     except Exception as e:
         app.logger.error(f"Unexpected error in unified trace endpoint: {e}", exc_info=True)
         return jsonify({"error": "An unexpected server error occurred"}), 500
@@ -164,6 +164,8 @@ def generate_trace():
     LEGACY ENDPOINT: Interval Coverage algorithm.
     Kept for backward compatibility with existing frontend.
 
+    Now uses refactored IntervalCoverageTracer.execute() method.
+    
     Accept intervals, return complete trace.
     """
     try:
@@ -172,10 +174,11 @@ def generate_trace():
             return jsonify({"error": "Request body must be JSON"}), 400
 
         validated_request = IntervalTraceRequest(**data)
-        intervals = [Interval(**i.model_dump()) for i in validated_request.intervals]
+        intervals = [i.model_dump() for i in validated_request.intervals]
 
+        # FIXED: Use refactored execute() method instead of remove_covered_intervals()
         tracer = IntervalCoverageTracer()
-        result = tracer.remove_covered_intervals(intervals)
+        result = tracer.execute({"intervals": intervals})
 
         return jsonify(result)
 
@@ -251,7 +254,7 @@ def generate_binary_search_trace():
 def get_examples():
     """
     LEGACY ENDPOINT: Provide interval coverage examples.
-    
+
     FUTURE: This will be replaced by registry-based example retrieval.
     """
     examples = [
@@ -288,7 +291,7 @@ def get_examples():
 def get_binary_search_examples():
     """
     LEGACY ENDPOINT: Provide binary search examples.
-    
+
     FUTURE: This will be replaced by registry-based example retrieval.
     """
     examples = [
@@ -330,7 +333,7 @@ def get_binary_search_examples():
 def health_check():
     """
     Health check endpoint.
-    
+
     Now includes dynamic algorithm count from registry.
     """
     return jsonify({

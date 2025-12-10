@@ -3,8 +3,11 @@ import PropTypes from "prop-types";
 import { getIntervalColor } from "../../constants/intervalColors";
 
 const TimelineView = ({ step, highlightedIntervalId, onIntervalHover }) => {
-  const allIntervals = step?.data?.all_intervals || [];
-  const maxEnd = step?.data?.max_end;
+  // FIXED: Check for data in both new structure (visualization) and legacy (top-level)
+  // New structure (Phase 2+): step.data.visualization.all_intervals
+  // Legacy structure: step.data.all_intervals
+  const allIntervals = step?.data?.visualization?.all_intervals || step?.data?.all_intervals || [];
+  const maxEnd = step?.data?.visualization?.max_end ?? step?.data?.max_end;
 
   const minVal = 500;
   const maxVal = 1000;
@@ -130,6 +133,10 @@ TimelineView.propTypes = {
     data: PropTypes.shape({
       all_intervals: PropTypes.arrayOf(PropTypes.object),
       max_end: PropTypes.number,
+      visualization: PropTypes.shape({
+        all_intervals: PropTypes.arrayOf(PropTypes.object),
+        max_end: PropTypes.number,
+      }),
     }),
   }),
   highlightedIntervalId: PropTypes.number,

@@ -7,9 +7,7 @@ import CompletionModal from "./components/CompletionModal";
 import ErrorBoundary from "./components/ErrorBoundary";
 import KeyboardHints from "./components/KeyboardHints";
 import PredictionModal from "./components/PredictionModal";
-
-// Import extracted visualization components
-import { TimelineView, CallStackView } from "./components/visualizations";
+import CallStackView from "./components/visualizations/CallStackView"; // Direct import for right panel
 
 // PHASE 3: Import visualization registry
 import { getVisualizationComponent } from "./utils/visualizationRegistry";
@@ -60,7 +58,7 @@ const AlgorithmTracePlayer = () => {
     resetPredictionStatsRef.current = prediction.resetPredictionStats;
   }, [prediction.resetPredictionStats]);
 
-  // 4. Visual Highlight Hook
+  // 4. Visual Highlight Hook (for Interval Coverage)
   const highlight = useVisualHighlight(trace, currentStep);
 
   // PHASE 3: Dynamically select visualization component
@@ -85,18 +83,6 @@ const AlgorithmTracePlayer = () => {
   const handlePredictionSkip = () => {
     prediction.handlePredictionSkip();
   };
-
-  // --- EFFECTS ---
-
-  // Effect 1: Scroll active call into view
-  useEffect(() => {
-    if (activeCallRef.current) {
-      activeCallRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }
-  }, [currentStep]);
 
   // 5. Keyboard Shortcuts Hook
   useKeyboardShortcuts({
@@ -179,16 +165,14 @@ const AlgorithmTracePlayer = () => {
 
   const badge = getStepTypeBadge(step?.type);
 
-  // PHASE 3: Determine if we need special right panel rendering
   const isIntervalCoverage = currentAlgorithm === "interval-coverage";
 
-  // Map registry algorithms to button configs
   const algorithmButtons = availableAlgorithms.length > 0
     ? availableAlgorithms.map((alg) => ({
         name: alg.name,
         display_name: alg.display_name,
-        handler: alg.name === "binary-search" 
-          ? loadExampleBinarySearchTrace 
+        handler: alg.name === "binary-search"
+          ? loadExampleBinarySearchTrace
           : loadExampleIntervalTrace,
       }))
     : [
@@ -196,12 +180,21 @@ const AlgorithmTracePlayer = () => {
         { name: "binary-search", display_name: "Binary Search", handler: loadExampleBinarySearchTrace },
       ];
 
+  // ✅ FIX: Create a generic props object and conditionally add algorithm-specific props.
+  const mainVisualizationProps = {
+    step: step,
+    config: visualizationConfig,
+  };
+
+  if (isIntervalCoverage) {
+    mainVisualizationProps.highlightedIntervalId = highlight.effectiveHighlight;
+    mainVisualizationProps.onIntervalHover = highlight.handleIntervalHover;
+  }
+
   return (
     <div id="app-root" className="w-full h-screen bg-slate-900 flex flex-col overflow-hidden">
-      {/* FIXED: Compact header with integrated algorithm switcher */}
       <div id="app-header" className="bg-slate-800 border-b border-slate-700 px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          {/* Left: Algorithm info + switcher */}
           <div className="flex items-center gap-4">
             <div>
               <h1 className="text-xl font-bold text-white">
@@ -211,8 +204,6 @@ const AlgorithmTracePlayer = () => {
                 Step {currentStep + 1} of {totalSteps || 0}
               </p>
             </div>
-
-            {/* FIXED: Compact algorithm pills */}
             <div className="flex items-center gap-2 pl-4 border-l border-slate-600">
               {algorithmButtons.map((alg) => (
                 <button
@@ -229,8 +220,6 @@ const AlgorithmTracePlayer = () => {
               ))}
             </div>
           </div>
-
-          {/* Right: Mode toggle + controls */}
           <div className="flex items-center gap-2">
             <button
               onClick={prediction.togglePredictionMode}
@@ -242,7 +231,6 @@ const AlgorithmTracePlayer = () => {
             >
               {prediction.predictionMode ? "⏳ Predict" : "⚡ Watch"}
             </button>
-
             <ControlBar
               currentStep={currentStep}
               totalSteps={totalSteps || 0}
@@ -254,7 +242,6 @@ const AlgorithmTracePlayer = () => {
         </div>
       </div>
 
-      {/* Main content area */}
       <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
         {prediction.showPrediction && (
           <PredictionModal
@@ -264,20 +251,16 @@ const AlgorithmTracePlayer = () => {
             onSkip={handlePredictionSkip}
           />
         )}
-
         <CompletionModal
           trace={trace}
           step={step}
           onReset={resetTrace}
           predictionStats={prediction.predictionStats}
         />
-
         <KeyboardHints />
-
         <div className="w-full h-full max-w-7xl flex gap-4 overflow-hidden">
-          {/* FIXED: Main visualization panel with ID */}
-          <div 
-            id="panel-visualization" 
+          <div
+            id="panel-visualization"
             className="flex-1 bg-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden"
           >
             <div className="px-6 pt-6 pb-3 border-b border-slate-700">
@@ -285,22 +268,15 @@ const AlgorithmTracePlayer = () => {
                 {visualizationType === "array" ? "Array Visualization" : "Timeline Visualization"}
               </h2>
             </div>
-            {/* FIXED: Proper overflow handling */}
             <div className="flex-1 overflow-auto p-6">
               <ErrorBoundary>
-                <MainVisualizationComponent
-                  step={step}
-                  config={visualizationConfig}
-                  highlightedIntervalId={highlight.effectiveHighlight}
-                  onIntervalHover={highlight.handleIntervalHover}
-                />
+                {/* ✅ FIX: Spread the conditional props object */}
+                <MainVisualizationComponent {...mainVisualizationProps} />
               </ErrorBoundary>
             </div>
           </div>
-
-          {/* FIXED: Right panel with ID and proper scrolling */}
-          <div 
-            id="panel-steps" 
+          <div
+            id="panel-steps"
             className="w-96 bg-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden"
           >
             <div className="px-6 py-4 border-b border-slate-700">
@@ -308,10 +284,8 @@ const AlgorithmTracePlayer = () => {
                 {isIntervalCoverage ? "Recursive Call Stack" : "Algorithm State"}
               </h2>
             </div>
-            
-            {/* FIXED: Scrollable steps list with ID */}
-            <div 
-              id="panel-steps-list" 
+            <div
+              id="panel-steps-list"
               className="flex-1 overflow-y-auto px-6 py-4"
             >
               <ErrorBoundary>
@@ -322,7 +296,6 @@ const AlgorithmTracePlayer = () => {
                     onIntervalHover={highlight.handleIntervalHover}
                   />
                 ) : (
-                  // For other algorithms, show key state information
                   <div className="space-y-4">
                     {step?.data?.visualization?.pointers && (
                       <div className="bg-slate-700/50 rounded-lg p-4">
@@ -339,7 +312,6 @@ const AlgorithmTracePlayer = () => {
                         </div>
                       </div>
                     )}
-
                     {step?.data?.visualization?.search_space_size !== undefined && (
                       <div className="bg-slate-700/50 rounded-lg p-4">
                         <h3 className="text-white font-semibold mb-2">Search Progress</h3>
@@ -357,7 +329,7 @@ const AlgorithmTracePlayer = () => {
                                 width: `${Math.max(
                                   0,
                                   100 - (step.data.visualization.search_space_size /
-                                         (step.data.visualization.array?.length || 1) * 100)
+                                         (trace?.metadata?.input_size || 1) * 100)
                                 )}%`
                               }}
                             />
@@ -369,10 +341,8 @@ const AlgorithmTracePlayer = () => {
                 )}
               </ErrorBoundary>
             </div>
-
-            {/* FIXED: Description section with ID */}
-            <div 
-              id="panel-step-description" 
+            <div
+              id="panel-step-description"
               className="border-t border-slate-700 p-4 bg-slate-800"
             >
               <div className="p-4 bg-gradient-to-br from-slate-700/60 to-slate-800/60 rounded-lg border border-slate-600/50 shadow-lg">
