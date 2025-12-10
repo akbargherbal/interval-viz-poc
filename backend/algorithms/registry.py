@@ -1,0 +1,287 @@
+# backend/algorithms/registry.py
+"""
+Algorithm Registry for automatic discovery and routing.
+
+This registry system allows adding new algorithms without modifying
+app.py or frontend components. Each algorithm tracer registers itself
+with metadata that drives the frontend UI and routing logic.
+
+Phase 2: Dynamic algorithm discovery and unified routing
+"""
+
+from typing import Dict, Type, List, Any, Optional
+from .base_tracer import AlgorithmTracer
+import inspect
+
+
+class AlgorithmRegistry:
+    """
+    Central registry for algorithm tracers.
+    
+    Provides:
+    - Algorithm registration with metadata
+    - Retrieval by algorithm name
+    - List all available algorithms with metadata
+    - Validation of tracer implementations
+    """
+    
+    def __init__(self):
+        """Initialize empty registry."""
+        self._algorithms: Dict[str, Dict[str, Any]] = {}
+    
+    def register(
+        self,
+        name: str,
+        tracer_class: Type[AlgorithmTracer],
+        display_name: str,
+        description: str,
+        example_inputs: List[Dict[str, Any]],
+        input_schema: Optional[Dict[str, Any]] = None
+    ):
+        """
+        Register an algorithm tracer with metadata.
+        
+        Args:
+            name: Unique identifier (e.g., 'binary-search', 'interval-coverage')
+            tracer_class: Class inheriting from AlgorithmTracer
+            display_name: Human-readable name for UI (e.g., 'Binary Search')
+            description: Brief explanation of the algorithm
+            example_inputs: List of example input dictionaries for quick testing
+            input_schema: Optional JSON schema for input validation
+        
+        Raises:
+            ValueError: If name already registered or tracer_class invalid
+        """
+        # Validate tracer class
+        if not inspect.isclass(tracer_class):
+            raise ValueError(f"tracer_class must be a class, got {type(tracer_class)}")
+        
+        if not issubclass(tracer_class, AlgorithmTracer):
+            raise ValueError(f"{tracer_class.__name__} must inherit from AlgorithmTracer")
+        
+        # Check for duplicate registration
+        if name in self._algorithms:
+            raise ValueError(f"Algorithm '{name}' is already registered")
+        
+        # Store algorithm metadata
+        self._algorithms[name] = {
+            'name': name,
+            'tracer_class': tracer_class,
+            'display_name': display_name,
+            'description': description,
+            'example_inputs': example_inputs,
+            'input_schema': input_schema
+        }
+    
+    def get(self, name: str) -> Type[AlgorithmTracer]:
+        """
+        Retrieve tracer class by algorithm name.
+        
+        Args:
+            name: Algorithm identifier
+        
+        Returns:
+            Tracer class for instantiation
+        
+        Raises:
+            KeyError: If algorithm not found
+        """
+        if name not in self._algorithms:
+            available = ', '.join(self._algorithms.keys())
+            raise KeyError(
+                f"Algorithm '{name}' not found. "
+                f"Available algorithms: {available}"
+            )
+        
+        return self._algorithms[name]['tracer_class']
+    
+    def get_metadata(self, name: str) -> Dict[str, Any]:
+        """
+        Get complete metadata for an algorithm (excluding tracer_class).
+        
+        Args:
+            name: Algorithm identifier
+        
+        Returns:
+            Dictionary with display_name, description, example_inputs, etc.
+        
+        Raises:
+            KeyError: If algorithm not found
+        """
+        if name not in self._algorithms:
+            raise KeyError(f"Algorithm '{name}' not found")
+        
+        # Return copy without tracer_class (not JSON-serializable)
+        metadata = self._algorithms[name].copy()
+        del metadata['tracer_class']
+        return metadata
+    
+    def list_algorithms(self) -> List[Dict[str, Any]]:
+        """
+        Return list of all registered algorithms with metadata.
+        
+        Returns:
+            List of algorithm metadata dictionaries (without tracer_class)
+            Suitable for JSON serialization to frontend.
+        
+        Example:
+            [
+                {
+                    'name': 'binary-search',
+                    'display_name': 'Binary Search',
+                    'description': 'Search sorted array in O(log n) time',
+                    'example_inputs': [...]
+                },
+                ...
+            ]
+        """
+        return [self.get_metadata(name) for name in self._algorithms.keys()]
+    
+    def is_registered(self, name: str) -> bool:
+        """Check if algorithm is registered."""
+        return name in self._algorithms
+    
+    def count(self) -> int:
+        """Return number of registered algorithms."""
+        return len(self._algorithms)
+    
+    def __contains__(self, name: str) -> bool:
+        """Support 'name in registry' syntax."""
+        return self.is_registered(name)
+    
+    def __len__(self) -> int:
+        """Support len(registry) syntax."""
+        return self.count()
+
+
+# =============================================================================
+# Singleton Registry Instance
+# =============================================================================
+
+# Create global registry instance
+registry = AlgorithmRegistry()
+
+
+# =============================================================================
+# Algorithm Registrations
+# =============================================================================
+
+def register_algorithms():
+    """
+    Register all available algorithm tracers.
+    
+    This function is called once during module import to populate
+    the registry. Adding a new algorithm only requires adding a
+    registration call here.
+    
+    Note: IntervalCoverageTracer is currently NOT registered because
+    it's a legacy implementation that doesn't inherit from AlgorithmTracer.
+    It will be refactored in a future phase to use the base class.
+    """
+    
+    # Import algorithm tracers
+    from .binary_search import BinarySearchTracer
+    # from .interval_coverage import IntervalCoverageTracer  # TODO: Refactor to use base class
+    
+    # -------------------------------------------------------------------------
+    # Binary Search
+    # -------------------------------------------------------------------------
+    registry.register(
+        name='binary-search',
+        tracer_class=BinarySearchTracer,
+        display_name='Binary Search',
+        description='Search for a target value in a sorted array using divide-and-conquer strategy (O(log n) time complexity)',
+        example_inputs=[
+            {
+                'name': 'Basic Search - Target Found',
+                'input': {
+                    'array': [1, 3, 5, 7, 9, 11, 13, 15],
+                    'target': 7
+                }
+            },
+            {
+                'name': 'Basic Search - Target Not Found',
+                'input': {
+                    'array': [1, 3, 5, 7, 9, 11, 13, 15],
+                    'target': 6
+                }
+            },
+            {
+                'name': 'Large Array',
+                'input': {
+                    'array': list(range(1, 101, 2)),  # [1, 3, 5, ..., 99]
+                    'target': 51
+                }
+            },
+            {
+                'name': 'Single Element - Found',
+                'input': {
+                    'array': [42],
+                    'target': 42
+                }
+            },
+            {
+                'name': 'Target at Start',
+                'input': {
+                    'array': [10, 20, 30, 40, 50],
+                    'target': 10
+                }
+            },
+            {
+                'name': 'Target at End',
+                'input': {
+                    'array': [10, 20, 30, 40, 50],
+                    'target': 50
+                }
+            }
+        ],
+        input_schema={
+            'type': 'object',
+            'required': ['array', 'target'],
+            'properties': {
+                'array': {
+                    'type': 'array',
+                    'items': {'type': 'integer'},
+                    'minItems': 1,
+                    'description': 'Sorted array of integers'
+                },
+                'target': {
+                    'type': 'integer',
+                    'description': 'Value to search for'
+                }
+            }
+        }
+    )
+    
+    # -------------------------------------------------------------------------
+    # Interval Coverage - TEMPORARILY DISABLED
+    # -------------------------------------------------------------------------
+    # TODO: Refactor IntervalCoverageTracer to inherit from AlgorithmTracer
+    # Currently uses legacy implementation with direct method calls.
+    # Will be enabled once refactored in future phase.
+    
+    # registry.register(
+    #     name='interval-coverage',
+    #     tracer_class=IntervalCoverageTracer,
+    #     display_name='Interval Coverage',
+    #     description='Remove intervals that are completely covered by other intervals using a greedy recursive strategy',
+    #     example_inputs=[...]
+    # )
+
+
+# Auto-register algorithms on module import
+register_algorithms()
+
+
+# =============================================================================
+# Convenience Functions
+# =============================================================================
+
+def get_algorithm_names() -> List[str]:
+    """Get list of all registered algorithm names."""
+    return list(registry._algorithms.keys())
+
+
+def get_algorithm(name: str) -> Type[AlgorithmTracer]:
+    """Alias for registry.get() for convenience."""
+    return registry.get(name)

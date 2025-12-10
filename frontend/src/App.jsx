@@ -7,6 +7,7 @@ import CompletionModal from "./components/CompletionModal";
 import ErrorBoundary from "./components/ErrorBoundary";
 import KeyboardHints from "./components/KeyboardHints";
 import PredictionModal from "./components/PredictionModal";
+import AlgorithmSwitcher from "./components/AlgorithmSwitcher"; // NEW
 
 // Import extracted visualization components
 import { TimelineView, CallStackView } from "./components/visualizations";
@@ -19,15 +20,22 @@ import { useTraceLoader } from "./hooks/useTraceLoader";
 import { useTraceNavigation } from "./hooks/useTraceNavigation";
 import { usePredictionMode } from "./hooks/usePredictionMode";
 import { useVisualHighlight } from "./hooks/useVisualHighlight";
-import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts"; // NEW
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 
 const AlgorithmTracePlayer = () => {
   // 1. Data Loading Hook
-  const { trace, loading, error, loadExampleTrace } = useTraceLoader();
+  const { 
+    trace, 
+    loading, 
+    error, 
+    currentAlgorithm,
+    loadExampleIntervalTrace,
+    loadExampleBinarySearchTrace
+  } = useTraceLoader();
 
   // 2. Navigation Hook (requires prediction reset function)
-  const resetPredictionStatsRef = useRef(() => {}); 
-  
+  const resetPredictionStatsRef = useRef(() => {});
+
   const {
     currentStep,
     currentStepData,
@@ -118,7 +126,7 @@ const AlgorithmTracePlayer = () => {
           </h2>
           <p className="text-gray-300 mb-6">{error}</p>
           <button
-            onClick={loadExampleTrace}
+            onClick={loadExampleIntervalTrace}
             className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-6 py-2 rounded-lg transition"
           >
             Retry Connection
@@ -164,104 +172,140 @@ const AlgorithmTracePlayer = () => {
   const badge = getStepTypeBadge(step?.type);
 
   return (
-    <div className="w-full h-screen bg-slate-900 flex items-center justify-center p-4 overflow-hidden">
-      {prediction.showPrediction && (
-        <PredictionModal
-          step={trace?.trace?.steps?.[currentStep]}
-          nextStep={trace?.trace?.steps?.[currentStep + 1]}
-          onAnswer={handlePredictionAnswer}
-          onSkip={handlePredictionSkip}
-        />
-      )}
-
-      <CompletionModal
-        trace={trace}
-        step={step}
-        onReset={resetTrace}
-        predictionStats={prediction.predictionStats}
+    <div className="w-full h-screen bg-slate-900 flex flex-col overflow-hidden">
+      {/* NEW: Algorithm Switcher at the top */}
+      <AlgorithmSwitcher
+        currentAlgorithm={currentAlgorithm}
+        onLoadIntervalExample={loadExampleIntervalTrace}
+        onLoadBinarySearchExample={loadExampleBinarySearchTrace}
       />
 
-      <KeyboardHints />
+      {/* Main content area */}
+      <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+        {prediction.showPrediction && (
+          <PredictionModal
+            step={trace?.trace?.steps?.[currentStep]}
+            nextStep={trace?.trace?.steps?.[currentStep + 1]}
+            onAnswer={handlePredictionAnswer}
+            onSkip={handlePredictionSkip}
+          />
+        )}
 
-      <div className="w-full h-full max-w-7xl flex flex-col">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-white">
-              Remove Covered Intervals
-            </h1>
-            <p className="text-slate-400 text-sm">
-              Step {currentStep + 1} of {totalSteps || 0}
-            </p>
-          </div>
+        <CompletionModal
+          trace={trace}
+          step={step}
+          onReset={resetTrace}
+          predictionStats={prediction.predictionStats}
+        />
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={prediction.togglePredictionMode}
-              className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors font-semibold ${
-                prediction.predictionMode
-                  ? "bg-blue-600 hover:bg-blue-500 text-white"
-                  : "bg-slate-700 hover:bg-slate-600 text-slate-300"
-              }`}
-            >
-              {prediction.predictionMode ? "⏳ Predict" : "⚡ Watch"}
-            </button>
+        <KeyboardHints />
 
-            <ControlBar
-              currentStep={currentStep}
-              totalSteps={totalSteps || 0}
-              onPrev={prevStep}
-              onNext={nextStep}
-              onReset={resetTrace}
-            />
-          </div>
-        </div>
+        <div className="w-full h-full max-w-7xl flex flex-col">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-white">
+                {currentAlgorithm === "binary-search" 
+                  ? "Binary Search Visualization"
+                  : "Remove Covered Intervals"}
+              </h1>
+              <p className="text-slate-400 text-sm">
+                Step {currentStep + 1} of {totalSteps || 0}
+              </p>
+            </div>
 
-        <div className="flex-1 flex gap-4 overflow-hidden">
-          <div className="flex-1 bg-slate-800 rounded-xl p-6 shadow-2xl flex flex-col">
-            <h2 className="text-white font-bold mb-4">
-              Timeline Visualization
-            </h2>
-            <div className="flex-1 overflow-hidden">
-              <ErrorBoundary>
-                <TimelineView
-                  step={step}
-                  highlightedIntervalId={highlight.effectiveHighlight}
-                  onIntervalHover={highlight.handleIntervalHover}
-                />
-              </ErrorBoundary>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={prediction.togglePredictionMode}
+                className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors font-semibold ${
+                  prediction.predictionMode
+                    ? "bg-blue-600 hover:bg-blue-500 text-white"
+                    : "bg-slate-700 hover:bg-slate-600 text-slate-300"
+                }`}
+              >
+                {prediction.predictionMode ? "⏳ Predict" : "⚡ Watch"}
+              </button>
+
+              <ControlBar
+                currentStep={currentStep}
+                totalSteps={totalSteps || 0}
+                onPrev={prevStep}
+                onNext={nextStep}
+                onReset={resetTrace}
+              />
             </div>
           </div>
 
-          <div className="w-96 bg-slate-800 rounded-xl shadow-2xl flex flex-col">
-            <div className="p-6 pb-4 border-b border-slate-700">
-              <h2 className="text-white font-bold">Recursive Call Stack</h2>
-            </div>
-            <div className="flex-1 overflow-y-auto p-6">
-              <ErrorBoundary>
-                <CallStackView
-                  step={step}
-                  activeCallRef={activeCallRef}
-                  onIntervalHover={highlight.handleIntervalHover}
-                />
-              </ErrorBoundary>
+          <div className="flex-1 flex gap-4 overflow-hidden">
+            <div className="flex-1 bg-slate-800 rounded-xl p-6 shadow-2xl flex flex-col">
+              <h2 className="text-white font-bold mb-4">
+                {currentAlgorithm === "binary-search"
+                  ? "Array Visualization (Raw Data)"
+                  : "Timeline Visualization"}
+              </h2>
+              <div className="flex-1 overflow-hidden">
+                <ErrorBoundary>
+                  {currentAlgorithm === "binary-search" ? (
+                    // TEMPORARY: Show raw JSON for binary search
+                    <div className="h-full overflow-auto">
+                      <pre className="text-xs text-gray-300 whitespace-pre-wrap">
+                        {JSON.stringify(step, null, 2)}
+                      </pre>
+                    </div>
+                  ) : (
+                    <TimelineView
+                      step={step}
+                      highlightedIntervalId={highlight.effectiveHighlight}
+                      onIntervalHover={highlight.handleIntervalHover}
+                    />
+                  )}
+                </ErrorBoundary>
+              </div>
             </div>
 
-            {/* PHASE 3: Enhanced Description Section */}
-            <div className="border-t border-slate-700 p-4 bg-slate-800">
-              <div className="p-4 bg-gradient-to-br from-slate-700/60 to-slate-800/60 rounded-lg border border-slate-600/50 shadow-lg">
-                {/* Step type badge at the top */}
-                <div className="mb-3">
-                  <span
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold ${badge.color}`}
-                  >
-                    {badge.label}
-                  </span>
+            <div className="w-96 bg-slate-800 rounded-xl shadow-2xl flex flex-col">
+              <div className="p-6 pb-4 border-b border-slate-700">
+                <h2 className="text-white font-bold">
+                  {currentAlgorithm === "binary-search"
+                    ? "Algorithm State"
+                    : "Recursive Call Stack"}
+                </h2>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6">
+                <ErrorBoundary>
+                  {currentAlgorithm === "binary-search" ? (
+                    // TEMPORARY: Show raw visualization state for binary search
+                    <div className="h-full overflow-auto">
+                      <pre className="text-xs text-gray-300 whitespace-pre-wrap">
+                        {JSON.stringify(step?.data?.visualization, null, 2)}
+                      </pre>
+                    </div>
+                  ) : (
+                    <CallStackView
+                      step={step}
+                      activeCallRef={activeCallRef}
+                      onIntervalHover={highlight.handleIntervalHover}
+                    />
+                  )}
+                </ErrorBoundary>
+              </div>
+
+              {/* PHASE 3: Enhanced Description Section */}
+              <div className="border-t border-slate-700 p-4 bg-slate-800">
+                <div className="p-4 bg-gradient-to-br from-slate-700/60 to-slate-800/60 rounded-lg border border-slate-600/50 shadow-lg">
+                  {/* Step type badge at the top */}
+                  <div className="mb-3">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold ${badge.color}`}
+                    >
+                      {badge.label}
+                    </span>
+                  </div>
+
+                  {/* Description text - larger and more prominent */}
+                  <p className="text-white text-base font-medium leading-relaxed">
+                    {step?.description || "No description available"}
+                  </p>
                 </div>
-
-                {/* Description text - larger and more prominent */}
-                <p className="text-white text-base font-medium leading-relaxed">
-                  {step?.description || "No description available"}
-                </p>
               </div>
             </div>
           </div>

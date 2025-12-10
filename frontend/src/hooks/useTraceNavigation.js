@@ -1,9 +1,17 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 
 export const useTraceNavigation = (trace, resetPredictionStats) => {
   const [currentStep, setCurrentStep] = useState(0);
-
   const totalSteps = trace?.trace?.steps?.length || 0;
+
+  // NEW: Reset currentStep when trace changes (algorithm switch)
+  useEffect(() => {
+    setCurrentStep(0);
+    // Also reset prediction stats when switching algorithms
+    if (resetPredictionStats) {
+      resetPredictionStats();
+    }
+  }, [trace, resetPredictionStats]);
 
   const nextStep = useCallback(() => {
     if (totalSteps > 0 && currentStep < totalSteps - 1) {
