@@ -2,22 +2,22 @@ import React from "react";
 
 /**
  * ArrayView - Visualization component for array-based algorithms
- * 
+ *
  * Phase 3: Dynamic visualization for Binary Search and other array algorithms.
- * Displays array elements with state-based styling and pointer indicators.
- * 
+ * FIXED (Session 6): Proper overflow handling to prevent cutoff.
+ *
  * Expected data structure:
  * step.data.visualization = {
  *   array: [{index, value, state}, ...],
  *   pointers: {left, right, mid, target},
  *   search_space_size: number
  * }
- * 
+ *
  * Element states: 'active_range', 'examining', 'found', 'excluded'
  */
 const ArrayView = ({ step, config = {} }) => {
   const visualization = step?.data?.visualization;
-  
+
   if (!visualization || !visualization.array) {
     return (
       <div className="flex items-center justify-center h-full text-gray-400">
@@ -39,8 +39,8 @@ const ArrayView = ({ step, config = {} }) => {
 
   // Map element states to Tailwind classes
   const getElementClasses = (element) => {
-    const baseClasses = "w-16 h-16 flex items-center justify-center rounded-lg font-bold text-lg transition-all duration-300 border-2";
-    
+    const baseClasses = "w-16 h-16 flex items-center justify-center rounded-lg font-bold text-lg transition-all duration-300 border-2 flex-shrink-0";
+
     switch (element.state) {
       case "examining":
         return `${baseClasses} bg-yellow-500 border-yellow-400 text-black scale-110 shadow-lg animate-pulse`;
@@ -58,7 +58,7 @@ const ArrayView = ({ step, config = {} }) => {
   // Render pointer indicator below array
   const renderPointers = () => {
     const pointerIcons = [];
-    
+
     if (pointers.left !== null && pointers.left !== undefined) {
       pointerIcons.push({
         index: pointers.left,
@@ -67,7 +67,7 @@ const ArrayView = ({ step, config = {} }) => {
         bgColor: "bg-blue-900/50"
       });
     }
-    
+
     if (pointers.right !== null && pointers.right !== undefined) {
       pointerIcons.push({
         index: pointers.right,
@@ -76,7 +76,7 @@ const ArrayView = ({ step, config = {} }) => {
         bgColor: "bg-red-900/50"
       });
     }
-    
+
     if (pointers.mid !== null && pointers.mid !== undefined) {
       pointerIcons.push({
         index: pointers.mid,
@@ -89,7 +89,7 @@ const ArrayView = ({ step, config = {} }) => {
     return (
       <div className="flex gap-2 mt-2">
         {array.map((element, idx) => (
-          <div key={idx} className="w-16 h-8 flex flex-col items-center justify-end">
+          <div key={idx} className="w-16 h-8 flex flex-col items-center justify-end flex-shrink-0">
             {pointerIcons
               .filter(p => p.index === element.index)
               .map((pointer, pIdx) => (
@@ -107,71 +107,74 @@ const ArrayView = ({ step, config = {} }) => {
   };
 
   return (
-    <div className="h-full flex flex-col items-center justify-center p-4">
-      {/* Target indicator */}
-      {pointers.target !== null && pointers.target !== undefined && (
-        <div className="mb-6 px-4 py-2 bg-green-900/30 border border-green-600/50 rounded-lg">
-          <span className="text-green-400 font-semibold">
-            🎯 Target: <span className="text-white text-lg font-bold">{pointers.target}</span>
-          </span>
-        </div>
-      )}
-
-      {/* Array visualization */}
-      <div className="flex flex-col items-center">
-        {/* Index labels (top) */}
-        {show_indices && (
-          <div className="flex gap-2 mb-2">
-            {array.map((element) => (
-              <div
-                key={element.index}
-                className="w-16 text-center text-gray-400 text-xs font-mono"
-              >
-                [{element.index}]
-              </div>
-            ))}
+    // FIXED: Use auto overflow with proper flex constraints
+    <div className="h-full flex flex-col items-center justify-start overflow-auto py-4">
+      <div className="flex flex-col items-center gap-6 min-h-0">
+        {/* Target indicator */}
+        {pointers.target !== null && pointers.target !== undefined && (
+          <div className="px-4 py-2 bg-green-900/30 border border-green-600/50 rounded-lg flex-shrink-0">
+            <span className="text-green-400 font-semibold">
+              🎯 Target: <span className="text-white text-lg font-bold">{pointers.target}</span>
+            </span>
           </div>
         )}
 
-        {/* Array elements */}
-        <div className="flex gap-2">
-          {array.map((element) => (
-            <div
-              key={element.index}
-              className={getElementClasses(element)}
-              title={`Index ${element.index}: ${element.value} (${element.state})`}
-            >
-              {element.value}
+        {/* Array visualization */}
+        <div className="flex flex-col items-center flex-shrink-0">
+          {/* Index labels (top) */}
+          {show_indices && (
+            <div className="flex gap-2 mb-2">
+              {array.map((element) => (
+                <div
+                  key={element.index}
+                  className="w-16 text-center text-gray-400 text-xs font-mono flex-shrink-0"
+                >
+                  [{element.index}]
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+
+          {/* Array elements */}
+          <div className="flex gap-2">
+            {array.map((element) => (
+              <div
+                key={element.index}
+                className={getElementClasses(element)}
+                title={`Index ${element.index}: ${element.value} (${element.state})`}
+              >
+                {element.value}
+              </div>
+            ))}
+          </div>
+
+          {/* Pointer indicators (bottom) */}
+          {renderPointers()}
         </div>
 
-        {/* Pointer indicators (bottom) */}
-        {renderPointers()}
-      </div>
+        {/* Search space info */}
+        <div className="text-sm text-gray-400 flex-shrink-0">
+          Search space: <span className="text-white font-semibold">{search_space_size}</span> elements
+        </div>
 
-      {/* Search space info */}
-      <div className="mt-6 text-sm text-gray-400">
-        Search space: <span className="text-white font-semibold">{search_space_size}</span> elements
-      </div>
-
-      {/* State legend */}
-      <div className="mt-6 flex gap-4 text-xs">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-blue-600 border border-blue-500 rounded"></div>
-          <span className="text-gray-400">Active Range</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-yellow-500 border border-yellow-400 rounded"></div>
-          <span className="text-gray-400">Examining</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-green-500 border border-green-400 rounded"></div>
-          <span className="text-gray-400">Found</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-gray-700 border border-gray-600 rounded opacity-50"></div>
-          <span className="text-gray-400">Excluded</span>
+        {/* State legend */}
+        <div className="flex flex-wrap gap-4 text-xs justify-center flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-blue-600 border border-blue-500 rounded flex-shrink-0"></div>
+            <span className="text-gray-400">Active Range</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-yellow-500 border border-yellow-400 rounded flex-shrink-0"></div>
+            <span className="text-gray-400">Examining</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-green-500 border border-green-400 rounded flex-shrink-0"></div>
+            <span className="text-gray-400">Found</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-gray-700 border border-gray-600 rounded opacity-50 flex-shrink-0"></div>
+            <span className="text-gray-400">Excluded</span>
+          </div>
         </div>
       </div>
     </div>

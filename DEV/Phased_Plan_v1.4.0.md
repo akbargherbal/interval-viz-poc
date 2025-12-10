@@ -597,6 +597,266 @@ const AlgorithmTracePlayer = () => {
 
 ---
 
+# Phase 3.5: UI Regression Prevention Addendum
+
+**Added:** Session 6 (Post-Phase 3 Review)  
+**Rationale:** Backend refactoring introduced UI regressions that broke PoC-era stability. This phase codifies design principles to prevent future violations.
+
+---
+
+## Problem Statement
+
+During Phase 3 implementation, we introduced several UI regressions:
+
+1. **Space Hierarchy Violation**: `AlgorithmSwitcher` consumed excessive vertical space, pushing Timeline/Stack views off-screen
+2. **Missing Element IDs**: Zero landmark elements had HTML IDs, breaking:
+   - Auto-scroll behavior (no `#step-current` target)
+   - Testing/debugging workflows
+   - Accessibility references
+3. **Layout Overflow Issues**: `ArrayView` and right panel lacked proper overflow constraints
+4. **Navigation Drift**: Control buttons scattered across header vs. integrated design
+
+These violations undermined the core PoC achievement: **stable, consistent UI where students don't have to do anything except watch the Stack and Timeline**.
+
+---
+
+## Core Design Principles (Non-Negotiable)
+
+### 1. **Space Hierarchy**
+
+**Rule:** The Timeline (visualization) and Stack (steps/state) are **PRIMARY UI elements**. All other components must accommodate them, never the reverse.
+
+**Rationale:** These are the core educational elements. A student watching an algorithm trace should see:
+
+- The data structure being operated on (Timeline/Array/Graph)
+- The execution context (Call Stack/Algorithm State)
+- The current step description
+
+Everything else (controls, algorithm switchers, mode toggles) is **secondary**.
+
+**Implementation:**
+
+```jsx
+// ✅ CORRECT: Compact header, maximum viewport for primary content
+<div id="app-header" className="px-4 py-3"> {/* ~50px total */}
+  {/* Algorithm info + switcher + controls */}
+</div>
+<div className="flex-1"> {/* Remaining viewport */}
+  <div id="panel-visualization">{/* Timeline/Array */}</div>
+  <div id="panel-steps">{/* Stack/State */}</div>
+</div>
+
+// ❌ WRONG: Bloated switcher, cramped visualization
+<div className="p-4 border-b-2"> {/* ~80px+ */}
+  <AlgorithmSwitcher /> {/* Takes too much space */}
+</div>
+<div className="flex-1"> {/* Squished */}
+  {/* Visualization cramped */}
+</div>
+```
+
+---
+
+### 2. **HTML IDs for Landmark Elements**
+
+**Rule:** Major UI landmarks MUST have semantic HTML IDs for:
+
+- Direct DOM access (testing, debugging)
+- Auto-scroll targets
+- Accessibility (ARIA labels, screen readers)
+
+**Rationale:** While React encourages `useRef()` for dynamic interactions, IDs provide:
+
+- **Debugging speed**: `document.getElementById('panel-visualization')` in console
+- **Test stability**: Selectors like `#step-current` don't break on class changes
+- **Accessibility**: WCAG guidelines recommend ID references for complex UIs
+
+**Required IDs:**
+
+```jsx
+// Application structure
+#app-root           // <div> Top-level app container
+#app-header         // <div> Main header bar
+
+// Content panels
+#panel-visualization  // <div> Main visualization area (Timeline/Array/Graph)
+#panel-steps          // <div> Right panel container
+#panel-steps-list     // <div> Scrollable steps/stack list
+#panel-step-description // <div> Current step description
+
+// Dynamic elements (added by components)
+#step-current         // <div> Currently executing step (auto-scroll target)
+```
+
+**When to use IDs vs useRef():**
+
+| Use Case                    | Solution                        | Example                                          |
+| --------------------------- | ------------------------------- | ------------------------------------------------ |
+| Auto-scroll to current step | `useRef()` + `scrollIntoView()` | `activeCallRef.current.scrollIntoView()`         |
+| Test targeting              | HTML ID                         | `cy.get('#panel-steps-list')`                    |
+| Accessibility labels        | HTML ID                         | `<button aria-describedby="step-description">`   |
+| Console debugging           | HTML ID                         | `document.getElementById('panel-visualization')` |
+| Class-based styling         | Tailwind classes                | `className="bg-slate-800"`                       |
+
+---
+
+### 3. **Overflow and Scroll Behavior**
+
+**Rule:** Visualization and steps panels MUST handle overflow gracefully. Never sacrifice viewport space for "perfect centering."
+
+**Implementation:**
+
+```jsx
+// ✅ CORRECT: Overflow scrolls, content always accessible
+<div id="panel-visualization" className="flex-1 flex flex-col overflow-hidden">
+  <div className="flex-1 overflow-auto p-6">
+    {/* Content scrolls within container */}
+  </div>
+</div>
+
+// ❌ WRONG: Flex centering causes cutoff
+<div className="flex-1 flex items-center justify-center">
+  {/* Content can overflow viewport */}
+</div>
+```
+
+**Critical Auto-Scroll:**
+
+- The `#step-current` element (in CallStackView or equivalent) MUST scroll into view on step change
+- Use `scrollIntoView({ behavior: 'smooth', block: 'center' })` for optimal UX
+- This is **mandatory** for recursive algorithms where the stack grows beyond viewport
+
+---
+
+### 4. **Compact, Integrated Controls**
+
+**Rule:** Controls (algorithm switcher, mode toggle, navigation buttons) should be **compact and header-integrated**, not scattered or bloated.
+
+**Reference:** See `CONCEPT_static_mockup.html` for the original compact design.
+
+**Before (Session 5 - Bloated):**
+
+```jsx
+<div className="bg-gray-800 border-b border-gray-700 p-4">
+  {" "}
+  {/* 80px+ */}
+  <div className="max-w-7xl mx-auto">
+    <span>Select Algorithm:</span>
+    {/* Large buttons, excessive padding */}
+  </div>
+</div>
+```
+
+**After (Session 6 - Compact):**
+
+```jsx
+<div id="app-header" className="bg-slate-800 px-4 py-3">
+  {" "}
+  {/* ~50px */}
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-4">
+      {/* Algo info + compact pills */}
+    </div>
+    <div className="flex items-center gap-2">
+      {/* Mode toggle + controls */}
+    </div>
+  </div>
+</div>
+```
+
+---
+
+## Implementation Checklist (Every Phase)
+
+Before merging any UI changes, verify:
+
+- [ ] **Space Test**: Do Timeline + Stack occupy ≥85% of viewport height?
+- [ ] **ID Audit**: Are all 6 required IDs present (`#app-root`, `#app-header`, `#panel-visualization`, `#panel-steps`, `#panel-steps-list`, `#panel-step-description`)?
+- [ ] **Scroll Test**: Does auto-scroll to `#step-current` work? (Test with 10+ step trace)
+- [ ] **Overflow Test**: Does ArrayView handle 20+ element arrays without cutoff?
+- [ ] **Regression Test**: Load Interval Coverage trace. Does it look identical to PoC?
+- [ ] **Control Compactness**: Is header ≤60px tall?
+
+---
+
+## Rollback Trigger
+
+**If** any phase introduces UI regressions that violate these principles:
+
+1. **STOP implementation** of current phase
+2. **Create regression fix branch**
+3. **Restore PoC-era behavior** using static mockup as reference
+4. **Document root cause** (e.g., "Flex centering broke overflow handling")
+5. **Resume phase** only after regression fixed and tested
+
+---
+
+## Visual Regression Testing (Future Enhancement)
+
+Consider adding Percy or Chromatic for automated visual regression detection:
+
+```javascript
+// Example: Cypress + Percy
+describe("UI Regression Suite", () => {
+  it("Timeline View - Interval Coverage", () => {
+    cy.visit("/");
+    cy.get("#panel-visualization").percySnapshot("Interval Coverage - Step 1");
+  });
+
+  it("Array View - Binary Search", () => {
+    cy.get("button").contains("Binary Search").click();
+    cy.get("#panel-visualization").percySnapshot("Binary Search - Step 1");
+  });
+});
+```
+
+---
+
+## Session 6 Fixes Applied
+
+| Issue                     | Fix                                           | Files Modified  |
+| ------------------------- | --------------------------------------------- | --------------- |
+| Bloated AlgorithmSwitcher | Compacted into header, removed excess padding | `App.jsx`       |
+| Missing IDs               | Added 6 required landmark IDs                 | `App.jsx`       |
+| ArrayView cutoff          | Changed flex centering to overflow-auto       | `ArrayView.jsx` |
+| Right panel scroll        | Added proper overflow constraints             | `App.jsx`       |
+
+**Result:** UI now matches PoC-era stability. Timeline/Stack remain primary focus.
+
+---
+
+## Best Practices Summary
+
+### DO ✅
+
+- Keep header ≤60px tall
+- Use IDs for landmark elements
+- Implement auto-scroll for `#step-current`
+- Test with 20+ step traces to verify scrolling
+- Reference `CONCEPT_static_mockup.html` for layout decisions
+
+### DON'T ❌
+
+- Let secondary UI elements (switchers, controls) dominate viewport
+- Remove IDs "because React doesn't need them"
+- Use flex centering without overflow handling
+- Break PoC-era features (Stack auto-scroll, Timeline highlighting)
+- Ignore the static mockup's design principles
+
+---
+
+## Next Steps
+
+With UI stability restored:
+
+1. ✅ **Session 6 Complete**: UI regressions fixed
+2. 🎯 **Next Session**: Resume Phase 4 (Generalize Prediction Mode)
+3. 📋 **Future**: Consider visual regression testing setup
+
+**The PoC's stability is now codified. Protect it vigilantly.**
+
+---
+
 ## Phase 4: Generalize Prediction Mode (5-7 hours)
 
 ### Goal

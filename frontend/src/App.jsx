@@ -7,7 +7,6 @@ import CompletionModal from "./components/CompletionModal";
 import ErrorBoundary from "./components/ErrorBoundary";
 import KeyboardHints from "./components/KeyboardHints";
 import PredictionModal from "./components/PredictionModal";
-import AlgorithmSwitcher from "./components/AlgorithmSwitcher";
 
 // Import extracted visualization components
 import { TimelineView, CallStackView } from "./components/visualizations";
@@ -89,7 +88,7 @@ const AlgorithmTracePlayer = () => {
 
   // --- EFFECTS ---
 
-  // Effect 1: Scroll active call into view (kept here for now)
+  // Effect 1: Scroll active call into view
   useEffect(() => {
     if (activeCallRef.current) {
       activeCallRef.current.scrollIntoView({
@@ -99,7 +98,7 @@ const AlgorithmTracePlayer = () => {
     }
   }, [currentStep]);
 
-  // 5. Keyboard Shortcuts Hook (replaces final useEffect)
+  // 5. Keyboard Shortcuts Hook
   useKeyboardShortcuts({
     onNext: nextStep,
     onPrev: prevStep,
@@ -183,15 +182,77 @@ const AlgorithmTracePlayer = () => {
   // PHASE 3: Determine if we need special right panel rendering
   const isIntervalCoverage = currentAlgorithm === "interval-coverage";
 
+  // Map registry algorithms to button configs
+  const algorithmButtons = availableAlgorithms.length > 0
+    ? availableAlgorithms.map((alg) => ({
+        name: alg.name,
+        display_name: alg.display_name,
+        handler: alg.name === "binary-search" 
+          ? loadExampleBinarySearchTrace 
+          : loadExampleIntervalTrace,
+      }))
+    : [
+        { name: "interval-coverage", display_name: "Interval Coverage", handler: loadExampleIntervalTrace },
+        { name: "binary-search", display_name: "Binary Search", handler: loadExampleBinarySearchTrace },
+      ];
+
   return (
-    <div className="w-full h-screen bg-slate-900 flex flex-col overflow-hidden">
-      {/* Algorithm Switcher with registry support */}
-      <AlgorithmSwitcher
-        currentAlgorithm={currentAlgorithm}
-        availableAlgorithms={availableAlgorithms}
-        onLoadIntervalExample={loadExampleIntervalTrace}
-        onLoadBinarySearchExample={loadExampleBinarySearchTrace}
-      />
+    <div id="app-root" className="w-full h-screen bg-slate-900 flex flex-col overflow-hidden">
+      {/* FIXED: Compact header with integrated algorithm switcher */}
+      <div id="app-header" className="bg-slate-800 border-b border-slate-700 px-4 py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          {/* Left: Algorithm info + switcher */}
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-xl font-bold text-white">
+                {trace?.metadata?.display_name || currentAlgorithm}
+              </h1>
+              <p className="text-slate-400 text-xs">
+                Step {currentStep + 1} of {totalSteps || 0}
+              </p>
+            </div>
+
+            {/* FIXED: Compact algorithm pills */}
+            <div className="flex items-center gap-2 pl-4 border-l border-slate-600">
+              {algorithmButtons.map((alg) => (
+                <button
+                  key={alg.name}
+                  onClick={alg.handler}
+                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                    currentAlgorithm === alg.name
+                      ? "bg-blue-600 text-white"
+                      : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                  }`}
+                >
+                  {alg.display_name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: Mode toggle + controls */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={prediction.togglePredictionMode}
+              className={`px-3 py-1.5 rounded text-sm flex items-center gap-2 transition-colors font-semibold ${
+                prediction.predictionMode
+                  ? "bg-blue-600 hover:bg-blue-500 text-white"
+                  : "bg-slate-700 hover:bg-slate-600 text-slate-300"
+              }`}
+            >
+              {prediction.predictionMode ? "⏳ Predict" : "⚡ Watch"}
+            </button>
+
+            <ControlBar
+              currentStep={currentStep}
+              totalSteps={totalSteps || 0}
+              onPrev={prevStep}
+              onNext={nextStep}
+              onReset={resetTrace}
+            />
+          </div>
+        </div>
+      </div>
 
       {/* Main content area */}
       <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
@@ -213,135 +274,118 @@ const AlgorithmTracePlayer = () => {
 
         <KeyboardHints />
 
-        <div className="w-full h-full max-w-7xl flex flex-col">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-white">
-                {trace?.metadata?.display_name || currentAlgorithm}
-              </h1>
-              <p className="text-slate-400 text-sm">
-                Step {currentStep + 1} of {totalSteps || 0}
-              </p>
+        <div className="w-full h-full max-w-7xl flex gap-4 overflow-hidden">
+          {/* FIXED: Main visualization panel with ID */}
+          <div 
+            id="panel-visualization" 
+            className="flex-1 bg-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden"
+          >
+            <div className="px-6 pt-6 pb-3 border-b border-slate-700">
+              <h2 className="text-white font-bold">
+                {visualizationType === "array" ? "Array Visualization" : "Timeline Visualization"}
+              </h2>
             </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={prediction.togglePredictionMode}
-                className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors font-semibold ${
-                  prediction.predictionMode
-                    ? "bg-blue-600 hover:bg-blue-500 text-white"
-                    : "bg-slate-700 hover:bg-slate-600 text-slate-300"
-                }`}
-              >
-                {prediction.predictionMode ? "⏳ Predict" : "⚡ Watch"}
-              </button>
-
-              <ControlBar
-                currentStep={currentStep}
-                totalSteps={totalSteps || 0}
-                onPrev={prevStep}
-                onNext={nextStep}
-                onReset={resetTrace}
-              />
+            {/* FIXED: Proper overflow handling */}
+            <div className="flex-1 overflow-auto p-6">
+              <ErrorBoundary>
+                <MainVisualizationComponent
+                  step={step}
+                  config={visualizationConfig}
+                  highlightedIntervalId={highlight.effectiveHighlight}
+                  onIntervalHover={highlight.handleIntervalHover}
+                />
+              </ErrorBoundary>
             </div>
           </div>
 
-          <div className="flex-1 flex gap-4 overflow-hidden">
-            {/* PHASE 3: Main visualization panel - dynamically rendered */}
-            <div className="flex-1 bg-slate-800 rounded-xl p-6 shadow-2xl flex flex-col">
-              <h2 className="text-white font-bold mb-4">
-                {visualizationType === "array" ? "Array Visualization" : "Timeline Visualization"}
+          {/* FIXED: Right panel with ID and proper scrolling */}
+          <div 
+            id="panel-steps" 
+            className="w-96 bg-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden"
+          >
+            <div className="px-6 py-4 border-b border-slate-700">
+              <h2 className="text-white font-bold">
+                {isIntervalCoverage ? "Recursive Call Stack" : "Algorithm State"}
               </h2>
-              <div className="flex-1 overflow-hidden">
-                <ErrorBoundary>
-                  <MainVisualizationComponent
+            </div>
+            
+            {/* FIXED: Scrollable steps list with ID */}
+            <div 
+              id="panel-steps-list" 
+              className="flex-1 overflow-y-auto px-6 py-4"
+            >
+              <ErrorBoundary>
+                {isIntervalCoverage ? (
+                  <CallStackView
                     step={step}
-                    config={visualizationConfig}
-                    highlightedIntervalId={highlight.effectiveHighlight}
+                    activeCallRef={activeCallRef}
                     onIntervalHover={highlight.handleIntervalHover}
                   />
-                </ErrorBoundary>
-              </div>
+                ) : (
+                  // For other algorithms, show key state information
+                  <div className="space-y-4">
+                    {step?.data?.visualization?.pointers && (
+                      <div className="bg-slate-700/50 rounded-lg p-4">
+                        <h3 className="text-white font-semibold mb-2">Pointers</h3>
+                        <div className="space-y-2 text-sm">
+                          {Object.entries(step.data.visualization.pointers).map(([key, value]) => (
+                            value !== null && value !== undefined && (
+                              <div key={key} className="flex justify-between">
+                                <span className="text-gray-400 capitalize">{key}:</span>
+                                <span className="text-white font-mono">{value}</span>
+                              </div>
+                            )
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {step?.data?.visualization?.search_space_size !== undefined && (
+                      <div className="bg-slate-700/50 rounded-lg p-4">
+                        <h3 className="text-white font-semibold mb-2">Search Progress</h3>
+                        <div className="text-sm">
+                          <div className="flex justify-between mb-2">
+                            <span className="text-gray-400">Space Size:</span>
+                            <span className="text-white font-mono">
+                              {step.data.visualization.search_space_size}
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-600 rounded-full h-2">
+                            <div
+                              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                              style={{
+                                width: `${Math.max(
+                                  0,
+                                  100 - (step.data.visualization.search_space_size /
+                                         (step.data.visualization.array?.length || 1) * 100)
+                                )}%`
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </ErrorBoundary>
             </div>
 
-            {/* Right panel - context-specific rendering */}
-            <div className="w-96 bg-slate-800 rounded-xl shadow-2xl flex flex-col">
-              <div className="p-6 pb-4 border-b border-slate-700">
-                <h2 className="text-white font-bold">
-                  {isIntervalCoverage ? "Recursive Call Stack" : "Algorithm State"}
-                </h2>
-              </div>
-              <div className="flex-1 overflow-y-auto p-6">
-                <ErrorBoundary>
-                  {isIntervalCoverage ? (
-                    <CallStackView
-                      step={step}
-                      activeCallRef={activeCallRef}
-                      onIntervalHover={highlight.handleIntervalHover}
-                    />
-                  ) : (
-                    // For other algorithms, show key state information
-                    <div className="space-y-4">
-                      {step?.data?.visualization?.pointers && (
-                        <div className="bg-slate-700/50 rounded-lg p-4">
-                          <h3 className="text-white font-semibold mb-2">Pointers</h3>
-                          <div className="space-y-2 text-sm">
-                            {Object.entries(step.data.visualization.pointers).map(([key, value]) => (
-                              value !== null && value !== undefined && (
-                                <div key={key} className="flex justify-between">
-                                  <span className="text-gray-400 capitalize">{key}:</span>
-                                  <span className="text-white font-mono">{value}</span>
-                                </div>
-                              )
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {step?.data?.visualization?.search_space_size !== undefined && (
-                        <div className="bg-slate-700/50 rounded-lg p-4">
-                          <h3 className="text-white font-semibold mb-2">Search Progress</h3>
-                          <div className="text-sm">
-                            <div className="flex justify-between mb-2">
-                              <span className="text-gray-400">Space Size:</span>
-                              <span className="text-white font-mono">
-                                {step.data.visualization.search_space_size}
-                              </span>
-                            </div>
-                            <div className="w-full bg-slate-600 rounded-full h-2">
-                              <div
-                                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                                style={{
-                                  width: `${Math.max(
-                                    0,
-                                    100 - (step.data.visualization.search_space_size / 
-                                           (step.data.visualization.array?.length || 1) * 100)
-                                  )}%`
-                                }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </ErrorBoundary>
-              </div>
-
-              {/* Description Section */}
-              <div className="border-t border-slate-700 p-4 bg-slate-800">
-                <div className="p-4 bg-gradient-to-br from-slate-700/60 to-slate-800/60 rounded-lg border border-slate-600/50 shadow-lg">
-                  <div className="mb-3">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold ${badge.color}`}
-                    >
-                      {badge.label}
-                    </span>
-                  </div>
-                  <p className="text-white text-base font-medium leading-relaxed">
-                    {step?.description || "No description available"}
-                  </p>
+            {/* FIXED: Description section with ID */}
+            <div 
+              id="panel-step-description" 
+              className="border-t border-slate-700 p-4 bg-slate-800"
+            >
+              <div className="p-4 bg-gradient-to-br from-slate-700/60 to-slate-800/60 rounded-lg border border-slate-600/50 shadow-lg">
+                <div className="mb-3">
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold ${badge.color}`}
+                  >
+                    {badge.label}
+                  </span>
                 </div>
+                <p className="text-white text-base font-medium leading-relaxed">
+                  {step?.description || "No description available"}
+                </p>
               </div>
             </div>
           </div>
