@@ -8,7 +8,6 @@ algorithmic logic on its side.
 
 Phase 2 Refactor: Now inherits from AlgorithmTracer for consistency.
 Phase 3 Enhancement: Educational descriptions that explain strategy, not just mechanics.
-Session 18 Refactor: Backend Compliance Checklist fixes applied.
 """
 
 from typing import List, Dict, Any
@@ -58,7 +57,7 @@ class IntervalCoverageTracer(AlgorithmTracer):
         """
         # Parse input
         intervals_data = input_data.get('intervals', [])
-
+        
         if len(intervals_data) > self.MAX_INTERVALS:
             raise ValueError(
                 f"Input validation failed: Too many intervals provided ({len(intervals_data)}). "
@@ -87,10 +86,9 @@ class IntervalCoverageTracer(AlgorithmTracer):
                 'in_current_subset': True
             }
 
-        # Set metadata for frontend (COMPLIANCE FIX: Added display_name)
+        # Set metadata for frontend
         self.metadata = {
             'algorithm': 'interval-coverage',
-            'display_name': 'Interval Coverage',  # ✅ FIXED: Added required field
             'visualization_type': 'timeline',
             'input_size': len(intervals),
             'visualization_config': {
@@ -153,107 +151,77 @@ class IntervalCoverageTracer(AlgorithmTracer):
             'all_intervals': self._get_all_intervals_with_state(),
             'call_stack_state': self._get_call_stack_state()
         }
-
+    
     def get_prediction_points(self) -> List[Dict[str, Any]]:
-        """
-        Identify prediction moments in the trace.
-        Finds all EXAMINING_INTERVAL steps and creates prediction questions
-        about whether the interval will be kept or covered.
-
-        Returns predictions in standardized format matching binary_search.py:
-        {
-            'step_index': int,
-            'question': str,
-            'choices': [{'id': str, 'label': str}, ...],
-            'hint': str,
-            'correct_answer': str,
-            'explanation': str (optional)
-        }
-        """
-        predictions = []
-        for i, step in enumerate(self.trace):
-            if step.type == "EXAMINING_INTERVAL":
-                # Look ahead to find the decision
-                if i + 1 < len(self.trace):
-                    decision_step = self.trace[i + 1]
-                    if decision_step.type == "DECISION_MADE":
-                        interval_data = step.data.get('interval', {})
-                        decision = decision_step.data.get('decision')
-                        start = interval_data.get('start')
-                        end = interval_data.get('end')
-
-                        predictions.append({
-                            'step_index': i,
-                            'question': f"Will interval ({start}, {end}) be kept or covered?",
-                            'choices': [
-                                {
-                                    'id': 'keep',
-                                    'label': 'Keep this interval'
-                                },
-                                {
-                                    'id': 'covered',
-                                    'label': 'Covered by previous'
-                                }
-                            ],
-                            'hint': f"Compare interval.end ({end}) with max_end",
-                            'correct_answer': decision,
-                            'explanation': (
-                                f"Interval ({start}, {end}) was {decision}." if decision == 'keep'
-                                else f"Interval ({start}, {end}) is covered by a previous interval."
-                            )
-                        })
-        return predictions
-
-    def _get_interval_state_string(self, interval_id: int) -> str:
-        """
-        Convert internal visual state dict to single state string for frontend.
-        
-        COMPLIANCE FIX: Frontend expects 'state' as string, not nested dict.
-        
-        Args:
-            interval_id: Interval ID to get state for
+            """
+            Identify prediction moments in the trace.
+            Finds all EXAMINING_INTERVAL steps and creates prediction questions
+            about whether the interval will be kept or covered.
             
-        Returns:
-            State string: "examining" | "covered" | "kept" | "active"
-        """
-        state = self.interval_states.get(interval_id, {})
-        
-        # Priority order: examining > covered > kept > active
-        if state.get('is_examining'):
-            return 'examining'
-        elif state.get('is_covered'):
-            return 'covered'
-        elif state.get('is_kept'):
-            return 'kept'
-        else:
-            return 'active'
+            Returns predictions in standardized format matching binary_search.py:
+            {
+                'step_index': int,
+                'question': str,
+                'choices': [{'id': str, 'label': str}, ...],
+                'hint': str,
+                'correct_answer': str,
+                'explanation': str (optional)
+            }
+            """
+            predictions = []
+            for i, step in enumerate(self.trace):
+                if step.type == "EXAMINING_INTERVAL":
+                    # Look ahead to find the decision
+                    if i + 1 < len(self.trace):
+                        decision_step = self.trace[i + 1]
+                        if decision_step.type == "DECISION_MADE":
+                            interval_data = step.data.get('interval', {})
+                            decision = decision_step.data.get('decision')
+                            start = interval_data.get('start')
+                            end = interval_data.get('end')
+                            
+                            predictions.append({
+                                'step_index': i,
+                                'question': f"Will interval ({start}, {end}) be kept or covered?",
+                                'choices': [
+                                    {
+                                        'id': 'keep',
+                                        'label': 'Keep this interval'
+                                    },
+                                    {
+                                        'id': 'covered',
+                                        'label': 'Covered by previous'
+                                    }
+                                ],
+                                'hint': f"Compare interval.end ({end}) with max_end",
+                                'correct_answer': decision,
+                                'explanation': (
+                                    f"Interval ({start}, {end}) was {decision}." if decision == 'keep'
+                                    else f"Interval ({start}, {end}) is covered by a previous interval."
+                                )
+                            })
+            return predictions
 
     def _get_all_intervals_with_state(self):
-        """
-        Get all original intervals with their current visual state.
-        
-        COMPLIANCE FIX: Returns 'state' (string) instead of 'visual_state' (dict).
-        """
+        """Get all original intervals with their current visual state."""
         return [
             {
                 **asdict(interval),
-                'state': self._get_interval_state_string(interval.id)  # ✅ FIXED: state string
+                'visual_state': self.interval_states.get(interval.id, {
+                    'is_examining': False,
+                    'is_covered': False,
+                    'is_kept': False,
+                    'in_current_subset': True
+                })
             }
             for interval in self.original_intervals
         ]
 
     def _get_call_stack_state(self):
-        """
-        Get complete call stack state for visualization.
-        
-        COMPLIANCE FIXES:
-        - Renamed 'call_id' to 'id'
-        - Added 'is_active' boolean field
-        """
+        """Get complete call stack state for visualization."""
         return [
             {
-                'id': call['id'],  # ✅ FIXED: Renamed from 'call_id'
-                'is_active': call['status'] == 'examining',  # ✅ FIXED: Added required field
+                'call_id': call['id'],
                 'depth': call['depth'],
                 'current_interval': asdict(call['current']) if call.get('current') else None,
                 'max_end': self._serialize_value(call['max_end']),
@@ -289,7 +257,7 @@ class IntervalCoverageTracer(AlgorithmTracer):
     def _filter_recursive(self, intervals: List[Interval], max_end: float) -> List[Interval]:
         """
         Recursive filtering with complete trace generation.
-
+        
         Note: No longer manually enriches data in _add_step() calls because
         _get_visualization_state() handles it automatically.
         """
@@ -435,15 +403,12 @@ class IntervalCoverageTracer(AlgorithmTracer):
 if __name__ == "__main__":
     import sys
     from pathlib import Path
-
+    
     # Add parent directory to path for imports when running standalone
     sys.path.insert(0, str(Path(__file__).parent.parent))
     
-    # Import with absolute path when running as script
-    from algorithms.base_tracer import AlgorithmTracer
-
     print("=" * 60)
-    print("Testing Interval Coverage Tracer (Compliance Refactor)")
+    print("Testing Interval Coverage Tracer (Refactored)")
     print("=" * 60)
 
     test_input = {
@@ -480,32 +445,5 @@ if __name__ == "__main__":
     for pred in result['metadata']['prediction_points'][:3]:
         print(f"  Step {pred['step_index']}: {pred['question']}")
         print(f"    Answer: {pred['correct_answer']}")
-    
-    # COMPLIANCE VERIFICATION
-    print("\n" + "=" * 60)
-    print("COMPLIANCE VERIFICATION")
-    print("=" * 60)
-    
-    # Check metadata
-    print("\n✓ Metadata compliance:")
-    print(f"  algorithm: {result['metadata']['algorithm']}")
-    print(f"  display_name: {result['metadata']['display_name']}")  # NEW
-    print(f"  visualization_type: {result['metadata']['visualization_type']}")
-    print(f"  input_size: {result['metadata']['input_size']}")
-    
-    # Check visualization state structure
-    print("\n✓ Visualization state compliance:")
-    first_step = result['trace']['steps'][0]
-    if 'visualization' in first_step['data']:
-        viz = first_step['data']['visualization']
-        if 'all_intervals' in viz and len(viz['all_intervals']) > 0:
-            sample_interval = viz['all_intervals'][0]
-            print(f"  Interval has 'state' field: {'state' in sample_interval}")
-            print(f"  Sample state value: {sample_interval.get('state', 'MISSING')}")
-        
-        if 'call_stack_state' in viz and len(viz['call_stack_state']) > 0:
-            sample_frame = viz['call_stack_state'][0]
-            print(f"  Frame has 'id' field: {'id' in sample_frame}")
-            print(f"  Frame has 'is_active' field: {'is_active' in sample_frame}")
 
     print("\n" + "=" * 60)
