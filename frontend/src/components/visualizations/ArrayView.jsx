@@ -4,8 +4,13 @@ import React from "react";
  * ArrayView - Visualization component for array-based algorithms
  *
  * Phase 3: Dynamic visualization for Binary Search and other array algorithms.
- * FIXED (Session 6): Proper overflow handling to prevent cutoff.
- * FIXED (Session 9): Added left padding to prevent index 0 cutoff.
+ * PERMANENT FIX (Session 14): Solved recurring overflow cutoff issue.
+ *
+ * ROOT CAUSE: Using `items-center` + `overflow-auto` causes flex centering
+ * to cut off left content. This is a well-documented CSS flexbox issue.
+ *
+ * SOLUTION: Use `items-start` on outer container, then center inner content
+ * with `mx-auto`. This allows proper scrolling without cutoff.
  *
  * Expected data structure:
  * step.data.visualization = {
@@ -108,9 +113,10 @@ const ArrayView = ({ step, config = {} }) => {
   };
 
   return (
-    // FIXED: Added px-6 to prevent left edge cutoff
-    <div className="h-full flex flex-col items-center justify-start overflow-auto py-4 px-6">
-      <div className="flex flex-col items-center gap-6 min-h-0">
+    // PERMANENT FIX: Use items-start + mx-auto pattern instead of items-center
+    // This prevents flex centering from cutting off left overflow
+    <div className="h-full flex flex-col items-start overflow-auto py-4 px-6">
+      <div className="mx-auto flex flex-col items-center gap-6 min-h-0">
         {/* Target indicator */}
         {pointers.target !== null && pointers.target !== undefined && (
           <div className="px-4 py-2 bg-green-900/30 border border-green-600/50 rounded-lg flex-shrink-0">

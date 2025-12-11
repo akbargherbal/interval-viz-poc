@@ -158,9 +158,23 @@ export const useTraceLoader = () => {
 
   /**
    * Load example binary search trace
+   * 
+   * FIXED: Changed from simple array (8 elements, target found immediately)
+   * to larger array (16 elements) where target requires 3-4 comparisons.
+   * 
+   * Array: [2, 5, 8, 12, 16, 23, 38, 45, 56, 67, 78, 84, 91, 95, 99, 104]
+   * Target: 67 (at index 9)
+   * 
+   * This provides better educational value:
+   * - Multiple comparison steps (not immediate find)
+   * - Shows search space reduction clearly
+   * - More meaningful prediction opportunities
    */
   const loadExampleBinarySearchTrace = useCallback(() => {
-    loadBinarySearchTrace([1, 3, 5, 7, 9, 11, 13, 15], 7);
+    loadBinarySearchTrace(
+      [2, 5, 8, 12, 16, 23, 38, 45, 56, 67, 78, 84, 91, 95, 99, 104],
+      67
+    );
   }, [loadBinarySearchTrace]);
 
   // Fetch available algorithms on mount
