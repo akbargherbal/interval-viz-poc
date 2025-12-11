@@ -1186,3 +1186,91 @@ Create `docs/phase0_architecture.md` with:
 **None** - The plan is self-contained. Phase 0 will surface any ambiguities through thought experiments. If the design can't handle Binary Search on paper, we'll know immediately.
 
 **Critical Success Factor**: Do NOT proceed past Phase 0 unless all three thought experiments prove the architecture is sound. This is your protection against the "overfitting trap."
+
+---
+
+You are absolutely right. My apologies. I overlooked that the plan was included in the initial context. That was a preventable error; I should have verified my internal state before making the request.
+
+[CONFIDENCE: HIGH]
+
+I have reviewed the provided `Phased_Plan_v1.4.0.md`. As you said, our first task is to add an addendum that retroactively documents the "Constitutional Sprint" from Sessions 15 and 16. This will formally integrate the `TENANT_GUIDE.md` and its mockups into our master plan.
+
+I will now generate the addendum. It is designed to be appended directly to the end of the existing `Phased_Plan_v1.4.0.md` file.
+
+Here is the content for the addendum:
+
+```markdown
+---
+
+## Addendum: The Tenant Guide & Visual Constitution
+
+**Added:** Session 17 (Post-Phase 3.5 Review)  
+**Rationale:** Sessions 15 and 16 constituted a critical "Constitutional Sprint" to codify the platform's architectural and visual principles. This work, resulting in the `TENANT_GUIDE.md` and its corresponding static mockups, is a foundational architectural milestone. This addendum formally integrates these artifacts into the master plan, establishing them as the governing authority for all subsequent development phases.
+
+---
+
+### The Constitutional Framework
+
+The project's "source of truth" for all frontend development is now defined by two sets of artifacts:
+
+1.  **The Written Constitution (`TENANT_GUIDE.md`)**: This document establishes the three-tier jurisdiction system (LOCKED, CONSTRAINED, FREE) and provides explicit rules and code patterns for all developers (human or AI) to follow.
+2.  **The Visual Mockups (`docs/static_mockup/`)**: These HTML files serve as the canonical, pixel-perfect reference implementations of the principles defined in the Tenant Guide. They are the visual ground truth.
+    - `algorithm_page_mockup.html`: Defines the main application layout, including panel ratios, header design, and landmark IDs.
+    - `prediction_modal_mockup.html`: Defines the standards for prediction modals, including the 3-choice hard limit.
+    - `completion_modal_mockup.html`: Defines the standards for the completion modal, including outcome-driven theming.
+
+### Governing Principle
+
+**The Tenant Guide is the supreme architectural authority.** All subsequent work in Phases 4, 5, and beyond **must** comply with its LOCKED and CONSTRAINED requirements. Any deviation from these standards without a corresponding update to the guide will be treated as a regression.
+
+### Impact on Project Plan
+
+The immediate next steps are now focused on bringing the existing application into full compliance with this new framework before proceeding to new feature development.
+
+**Revised Immediate Roadmap (Post-Session 17):**
+
+1.  **Compliance Audit & Refactor ("Dog-Fooding")**: Systematically refactor `App.jsx`, `PredictionModal.jsx`, and `CompletionModal.jsx` to perfectly match the standards set by the guide and its visual mockups.
+2.  **Finalize Tenant Guide**: Update `TENANT_GUIDE.md` with any new standards discovered during the refactor (e.g., Outcome-Driven Theming) and add direct references to the mockups.
+3.  **Update Project README**: Rewrite the root `README.md` to reflect the new multi-algorithm architecture and point new contributors to the Tenant Guide.
+4.  **Resume Phased Plan**: Once the application is fully compliant, resume with **Phase 4: Generalize Prediction Mode**.
+
+This addendum ensures our master plan accurately reflects the project's current state and codifies the critical design work completed in the previous sessions.
+
+---
+
+## Addendum: The Tenant Guide & Visual Constitution
+
+**Added:** Session 17 (Post-Phase 3.5 Review)  
+**Rationale:** Sessions 15 and 16 constituted a critical "Constitutional Sprint" to codify the platform's architectural and visual principles. This work, resulting in the `TENANT_GUIDE.md` and its corresponding static mockups, is a foundational architectural milestone. This addendum formally integrates these artifacts into the master plan, establishing them as the governing authority for all subsequent development phases.
+
+---
+
+### The Constitutional Framework
+
+The project's "source of truth" for all frontend development is now defined by two sets of artifacts:
+
+1.  **The Written Constitution (`TENANT_GUIDE.md`)**: This document establishes the three-tier jurisdiction system (LOCKED, CONSTRAINED, FREE) and provides explicit rules and code patterns for all developers (human or AI) to follow.
+2.  **The Visual Mockups (`docs/static_mockup/`)**: These HTML files serve as the canonical, pixel-perfect reference implementations of the principles defined in the Tenant Guide. They are the visual ground truth.
+    - `algorithm_page_mockup.html`: Defines the main application layout, including panel ratios, header design, and landmark IDs.
+    - `prediction_modal_mockup.html`: Defines the standards for prediction modals, including the 3-choice hard limit.
+    - `completion_modal_mockup.html`: Defines the standards for the completion modal, including outcome-driven theming.
+
+### Governing Principle
+
+**The Tenant Guide is the supreme architectural authority.** All subsequent work in Phases 4, 5, and beyond **must** comply with its LOCKED and CONSTRAINED requirements. Any deviation from these standards without a corresponding update to the guide will be treated as a regression.
+
+### Impact on Project Plan
+
+The immediate next steps are now focused on bringing the existing application into full compliance with this new framework before proceeding to new feature development.
+
+**Revised Immediate Roadmap (Post-Session 17):**
+
+1.  **Compliance Audit & Refactor ("Dog-Fooding")**: Systematically refactor `App.jsx`, `PredictionModal.jsx`, and `CompletionModal.jsx` to perfectly match the standards set by the guide and its visual mockups.
+2.  **Finalize Tenant Guide**: Update `TENANT_GUIDE.md` with any new standards discovered during the refactor (e.g., Outcome-Driven Theming) and add direct references to the mockups.
+3.  **Update Project README**: Rewrite the root `README.md` to reflect the new multi-algorithm architecture and point new contributors to the Tenant Guide.
+4.  **Resume Phased Plan**: Once the application is fully compliant, resume with **Phase 4: Generalize Prediction Mode**.
+
+This addendum ensures our master plan accurately reflects the project's current state and codifies the critical design work completed in the previous sessions.
+
+---
+```
