@@ -62,9 +62,9 @@ const deriveShortcut = (choice, allChoices, index) => {
  */
 const getChoiceColor = (label) => {
   const lowerLabel = label.toLowerCase();
-  
+
   // Positive/Success actions (green/emerald)
-  if (lowerLabel.includes('found') || lowerLabel.includes('keep') || 
+  if (lowerLabel.includes('found') || lowerLabel.includes('keep') ||
       lowerLabel.includes('yes') || lowerLabel.includes('continue')) {
     return {
       base: 'bg-emerald-600 hover:bg-emerald-500',
@@ -72,9 +72,9 @@ const getChoiceColor = (label) => {
       unselected: 'bg-emerald-600/50 opacity-60'
     };
   }
-  
+
   // Negative/Discard actions (orange)
-  if (lowerLabel.includes('covered') || lowerLabel.includes('discard') || 
+  if (lowerLabel.includes('covered') || lowerLabel.includes('discard') ||
       lowerLabel.includes('no') || lowerLabel.includes('stop')) {
     return {
       base: 'bg-orange-600 hover:bg-orange-500',
@@ -82,9 +82,9 @@ const getChoiceColor = (label) => {
       unselected: 'bg-orange-600/50 opacity-60'
     };
   }
-  
+
   // Left/backward direction (blue)
-  if (lowerLabel.includes('left') || lowerLabel.includes('back') || 
+  if (lowerLabel.includes('left') || lowerLabel.includes('back') ||
       lowerLabel.includes('previous')) {
     return {
       base: 'bg-blue-600 hover:bg-blue-500',
@@ -92,9 +92,9 @@ const getChoiceColor = (label) => {
       unselected: 'bg-blue-600/50 opacity-60'
     };
   }
-  
+
   // Right/forward direction (red)
-  if (lowerLabel.includes('right') || lowerLabel.includes('forward') || 
+  if (lowerLabel.includes('right') || lowerLabel.includes('forward') ||
       lowerLabel.includes('next')) {
     return {
       base: 'bg-red-600 hover:bg-red-500',
@@ -102,7 +102,7 @@ const getChoiceColor = (label) => {
       unselected: 'bg-red-600/50 opacity-60'
     };
   }
-  
+
   // Default fallback (blue)
   return {
     base: 'bg-blue-600 hover:bg-blue-500',
@@ -214,27 +214,27 @@ const PredictionModal = ({ predictionData, onAnswer, onSkip }) => {
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-slate-800 rounded-2xl shadow-2xl border-2 border-blue-500 max-w-lg w-full p-6">
-        {/* Header */}
-        <div className="mb-4">
+        {/* Header - FIX 1: Changed mb-4 to mb-6 */}
+        <div className="mb-6">
           <h3 className="text-2xl font-bold text-white mb-2">{question}</h3>
           <p className="text-slate-400 text-sm">
             {predictionData.step_description || "Make your prediction"}
           </p>
         </div>
 
-        {/* Hint Box */}
+        {/* Hint Box - FIX 2: Changed mb-4 to mb-6, FIX 3: Changed p-3 to p-4 */}
         {hint && !showFeedback && (
-          <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3 mb-4">
+          <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mb-6">
             <p className="text-blue-300 text-sm">
               💡 <strong>Hint:</strong> {hint}
             </p>
           </div>
         )}
 
-        {/* Feedback */}
+        {/* Feedback - FIX 4: Changed mb-4 to mb-6 */}
         {showFeedback && (
           <div
-            className={`rounded-lg p-3 mb-4 border-2 ${
+            className={`rounded-lg p-3 mb-6 border-2 ${
               isCorrect
                 ? "bg-emerald-900/30 border-emerald-500"
                 : "bg-red-900/30 border-red-500"
@@ -258,10 +258,10 @@ const PredictionModal = ({ predictionData, onAnswer, onSkip }) => {
           </div>
         )}
 
-        {/* Choice Buttons - Dynamic Grid with Semantic Colors */}
+        {/* Choice Buttons - Dynamic Grid with Semantic Colors - FIX 5: Changed mb-4 to mb-6 */}
         {!showFeedback && (
           <div
-            className={`grid gap-3 mb-4 ${
+            className={`grid gap-3 mb-6 ${
               choices.length <= 2
                 ? "grid-cols-2"
                 : choices.length === 3
@@ -273,7 +273,7 @@ const PredictionModal = ({ predictionData, onAnswer, onSkip }) => {
               const colors = getChoiceColor(choice.label);
               const isSelected = selected === choice.id;
               const isUnselected = selected && !isSelected;
-              
+
               return (
                 <button
                   key={choice.id}

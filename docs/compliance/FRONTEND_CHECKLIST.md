@@ -1,6 +1,6 @@
 # Frontend UI/UX Compliance Checklist
 
-**Version:** 1.1 (Session 22 - Corrected)
+**Version:** 1.2 (Session 23 - Critical Correction)
 **Authority:** TENANT_GUIDE.md v1.0 - Sections 1 (LOCKED) & 2 (CONSTRAINED)
 **Visual Authority:** Static Mockups (`docs/static_mockup/*.html`)
 **Purpose:** Verify UI components comply with platform standards
@@ -14,16 +14,17 @@
 #### Size Constraints
 
 - [ ] **All modals use `max-w-lg` (512px)** - PredictionModal, CompletionModal, all dialogs
-- [ ] **NO height constraints** - Content designed to fit naturally (no `max-h-[85vh]`)
+- [ ] **Mandatory height constraint: `max-h-[85vh]`** - Prevents modal from exceeding viewport height
 - [ ] **Outer padding: `p-6`** - Consistent 24px padding on all modals
-- [ ] **No internal scrolling** - Content must fit without `overflow-y-auto`
+- [ ] **No internal scrolling** - Content must fit without `overflow-y-auto` (enforced by `max-h-[85vh]`)
 
 **Source:** `completion_modal_mockup.html` and `prediction_modal_mockup.html` - all examples use `max-w-lg w-full p-6`
 
 **Rationale:**
 
 - Single width maintains visual consistency across all modal types
-- Height constraints unnecessary: 3-choice limit + compact spacing + flex-wrap patterns keep modals naturally compact
+- Height constraint (`max-h-[85vh]`) is mandatory to prevent viewport overflow on smaller screens.
+- Internal content must remain compact: 3-choice limit + compact spacing + flex-wrap patterns are required to fit content within the height limit without scrolling.
 - Example: `completion_modal_mockup.html` Example 3 shows complex interval data fitting perfectly at 512px using flex-wrap
 
 #### Positioning
@@ -87,6 +88,18 @@
 - [ ] **Text hierarchy clear** (size differences create visual structure)
 - [ ] **Compact without cramped** (breathing room without waste)
 - [ ] **Matches static mockup** (side-by-side comparison passes)
+
+---
+
+### 1.1.2 Outcome-Driven Theming (LOCKED)
+
+**Source:** `completion_modal_mockup.html` Implementation Notes
+
+- [ ] **Theming Mandatory** - Modal border and header icon color must reflect the algorithm result.
+- [ ] **Success Theme:** Use Emerald/Green palette (e.g., `border-emerald-500`, `bg-emerald-500`).
+- [ ] **Failure Theme:** Use Red palette (e.g., `border-red-500`, `bg-red-500`).
+- [ ] **Neutral/Completion Theme:** Use Blue palette (e.g., `border-blue-500`, `bg-blue-500`).
+- [ ] **Standardized Actions:** Primary action (Start Over) must be Blue (`bg-blue-600`), secondary (Close) must be Slate/Gray (`bg-slate-600`).
 
 ---
 
@@ -317,8 +330,9 @@
 ### LOCKED Requirements Test
 
 - [ ] **Modal uses `max-w-lg`** - Measure width (should be 512px max)
-- [ ] **Modal has NO height constraint** - No `max-h-[85vh]` class present
+- [ ] **Modal uses `max-h-[85vh]`** - Verify height constraint is present
 - [ ] **Modal outer padding is `p-6`** - Measure padding (should be 24px)
+- [ ] **Outcome Theming correct** - Border/Icon color matches Success/Failure result
 - [ ] **Panel layout uses 3:1.5 ratio** - Measure widths
 - [ ] **All 6 required IDs present** - Inspect DOM
 - [ ] **Keyboard shortcuts work** - Arrow keys, Space, R, Enter, S
@@ -345,17 +359,17 @@
 
 ## Quick Reference: Modal Standards
 
-| Property               | Value              | Source                 |
-| ---------------------- | ------------------ | ---------------------- |
-| **Width**              | `max-w-lg` (512px) | All mockup examples    |
-| **Height**             | No constraint      | Content fits naturally |
-| **Padding**            | `p-6` (24px)       | All mockup examples    |
-| **Major section gaps** | `mb-6` (24px)      | PredictionModal        |
-| **Minor section gaps** | `mb-4` (16px)      | CompletionModal        |
-| **Inner padding**      | `p-3` (12px)       | Content boxes          |
-| **Grid gaps**          | `gap-3` (12px)     | Stats, choices         |
-| **Title font**         | `text-2xl`         | NOT text-3xl           |
-| **Stat values**        | `text-xl`          | NOT text-2xl           |
+| Property               | Value              | Source                         |
+| ---------------------- | ------------------ | ------------------------------ |
+| **Width**              | `max-w-lg` (512px) | All mockup examples            |
+| **Height**             | `max-h-[85vh]`     | `completion_modal_mockup.html` |
+| **Padding**            | `p-6` (24px)       | All mockup examples            |
+| **Major section gaps** | `mb-6` (24px)      | PredictionModal                |
+| **Minor section gaps** | `mb-4` (16px)      | CompletionModal                |
+| **Inner padding**      | `p-3` (12px)       | Content boxes                  |
+| **Grid gaps**          | `gap-3` (12px)     | Stats, choices                 |
+| **Title font**         | `text-2xl`         | NOT text-3xl                   |
+| **Stat values**        | `text-xl`          | NOT text-2xl                   |
 
 ---
 
@@ -396,3 +410,6 @@
   - Changed CompletionModal from `max-w-2xl` to `max-w-lg` (matches mockups)
   - Corrected padding from `p-5` to `p-6` (matches mockups)
   - Added detailed spacing verification based on mockup HTML structure
+- v1.2: Critical correction based on explicit documentation in `completion_modal_mockup.html` (Session 23)
+  - Restored mandatory `max-h-[85vh]` requirement (Section 1.1)
+  - Elevated Outcome-Driven Theming to a LOCKED requirement (New Section 1.1.2)

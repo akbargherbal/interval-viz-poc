@@ -287,10 +287,13 @@ const AlgorithmTracePlayer = () => {
                   : "Timeline Visualization"}
               </h2>
             </div>
-            <div className="flex-1 overflow-auto p-6">
-              <ErrorBoundary>
-                <MainVisualizationComponent {...mainVisualizationProps} />
-              </ErrorBoundary>
+            {/* FIX 13: Apply overflow pattern - items-start on outer container, mx-auto on inner wrapper */}
+            <div className="flex-1 flex flex-col items-start overflow-auto p-6">
+              <div className="mx-auto h-full w-full">
+                <ErrorBoundary>
+                  <MainVisualizationComponent {...mainVisualizationProps} />
+                </ErrorBoundary>
+              </div>
             </div>
           </div>
           <div

@@ -10,7 +10,7 @@ import { getIntervalColor } from "../constants/intervalColors";
 const getOutcomeTheme = (trace) => {
   const result = trace?.result || {};
   const algorithm = trace?.metadata?.algorithm || "unknown";
-  
+
   // Binary Search: Check if target was found
   if (algorithm === "binary-search") {
     if (result.found === true) {
@@ -31,14 +31,14 @@ const getOutcomeTheme = (trace) => {
       };
     }
   }
-  
+
   // Interval Coverage or other algorithms: Neutral/Complete
   return {
     border: "border-blue-500",
     icon: "bg-blue-500",
     iconPath: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z", // Circle check
     title: "Algorithm Complete!",
-    subtitle: algorithm === "interval-coverage" 
+    subtitle: algorithm === "interval-coverage"
       ? "Successfully removed covered intervals"
       : "Execution finished."
   };
@@ -97,8 +97,8 @@ const CompletionModal = ({ trace, step, onReset, predictionStats }) => {
 
     return (
       <>
-        {/* Stats Section */}
-        <div className="bg-slate-900/50 rounded-lg p-3 mb-3">
+        {/* Stats Section - FIX 7: Changed mb-3 to mb-4 */}
+        <div className="bg-slate-900/50 rounded-lg p-3 mb-4">
           <div className="grid grid-cols-3 gap-3 text-center">
             <div>
               <div className="text-slate-400 text-xs mb-0.5">Initial</div>
@@ -209,10 +209,12 @@ const CompletionModal = ({ trace, step, onReset, predictionStats }) => {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className={`bg-slate-800 rounded-2xl shadow-2xl border-2 ${theme.border} max-w-lg w-full p-5`}>
-        {/* Header Section with Outcome-Driven Theming */}
-        <div className="text-center mb-3">
-          <div className={`inline-flex items-center justify-center w-12 h-12 ${theme.icon} rounded-full mb-2`}>
+      {/* FIX 6: CRITICAL - Changed p-5 to p-6 */}
+      <div className={`bg-slate-800 rounded-2xl shadow-2xl border-2 ${theme.border} max-w-lg w-full p-6`}>
+        {/* Header Section with Outcome-Driven Theming - FIX 8: Changed mb-3 to mb-4 */}
+        <div className="text-center mb-4">
+          {/* FIX 9: Changed mb-2 to mb-3 */}
+          <div className={`inline-flex items-center justify-center w-12 h-12 ${theme.icon} rounded-full mb-3`}>
             <svg
               className="w-8 h-8 text-white"
               fill="none"
@@ -227,8 +229,9 @@ const CompletionModal = ({ trace, step, onReset, predictionStats }) => {
               />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-white">{theme.title}</h2>
-          <p className="text-slate-400 text-xs mt-0.5">
+          {/* FIX 10: CRITICAL - Changed text-xl to text-2xl */}
+          <h2 className="text-2xl font-bold text-white">{theme.title}</h2>
+          <p className="text-slate-400 text-sm mt-1">
             {theme.subtitle}
           </p>
         </div>
@@ -236,16 +239,16 @@ const CompletionModal = ({ trace, step, onReset, predictionStats }) => {
         {/* Algorithm-Specific Results */}
         {renderAlgorithmResults()}
 
-        {/* Prediction Accuracy Section (works for all algorithms) */}
+        {/* Prediction Accuracy Section (works for all algorithms) - FIX 11: Changed mb-3 to mb-4 */}
         {predictionStats?.total > 0 && (
-          <div className="bg-slate-900/50 rounded-lg p-3 mb-3 border-2 border-blue-500/50">
+          <div className="bg-slate-900/50 rounded-lg p-3 mb-4 border-2 border-blue-500/50">
             <div className="flex items-center justify-between mb-1">
               <h3 className="text-white font-bold text-sm">
                 Prediction Accuracy
               </h3>
               <div className="flex items-baseline gap-1">
                 <span
-                  className={`text-xl font-bold ${
+                  className={`text-2xl font-bold ${
                     feedback.color === "emerald"
                       ? "text-emerald-400"
                       : feedback.color === "amber"
@@ -293,8 +296,8 @@ const CompletionModal = ({ trace, step, onReset, predictionStats }) => {
           </div>
         )}
 
-        {/* Actions - Two-Button Layout per Mockup */}
-        <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-700">
+        {/* Actions - Two-Button Layout per Mockup - FIX 12: Changed pt-3 to pt-4 */}
+        <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-700">
           <button
             onClick={() => window.history.back()}
             className="bg-slate-600 hover:bg-slate-500 text-white font-semibold py-2 px-4 rounded-lg transition-colors"

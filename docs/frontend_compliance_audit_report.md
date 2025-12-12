@@ -1,190 +1,531 @@
 # Frontend Compliance Audit Report - Session 20
 
-**Date:** Session 20  
-**Auditor:** LLM-Assisted Review  
-**Authority:** FRONTEND_CHECKLIST.md v1.0 (Based on TENANT_GUIDE.md v1.0)  
-**Scope:** All frontend React components for Algorithm Visualization Platform
+I'll audit systematically, starting with the **highest-priority components** (modals with the most LOCKED requirements), then moving to structural components.
 
 ---
 
-## Executive Summary
+## 🔴 AUDIT 1: PredictionModal.jsx
 
-**Overall Status:** ⚠️ **MINOR ISSUES DETECTED**
+### SECTION 1: LOCKED Requirements
 
-- **LOCKED Requirements:** 34/40 checks PASS (85%)
-- **CONSTRAINED Requirements:** 11/11 checks PASS (100%)
-- **Critical Failures:** 6 (all LOCKED requirements)
-- **Recommendation:** Refactor required before production
+#### 1.1 Modal Standards - Size Constraints
 
-### Key Findings
+**❌ FAIL - Height Constraint Present**
 
-✅ **Strengths:**
-- Excellent overflow pattern implementation (ArrayView - permanent fix documented)
-- Strong visualization component interface compliance
-- Prediction questions comply with 3-choice limit
-- Completion modal uses last-step detection correctly
-- Keyboard shortcuts well-implemented
-
-❌ **Critical Issues:**
-- Missing required HTML IDs (4 of 6 missing)
-- Modal size constraints not enforced
-- Auto-scroll implementation incomplete
-- Panel flex ratio non-standard
-
----
-
-## SECTION 1: LOCKED REQUIREMENTS AUDIT
-
-### 1.1 Modal Standards ✅ PARTIAL PASS (67%)
-
-#### Size Constraints ⚠️ NEEDS WORK
-
-**PredictionModal.jsx:**
-- [x] ✅ `max-w-lg` (512px) - Line 193: Correct
-- [x] ✅ `p-4` viewport padding - Line 192: Correct
-- [ ] ❌ **MISSING: `max-h-[85vh]`** - Not enforced, could overflow on small screens
-- [x] ✅ No internal scrolling - Content designed to fit
-
-**CompletionModal.jsx:**
-- [x] ✅ `max-w-lg` used - Line 124
-- [ ] ⚠️ **ISSUE: Should be `max-w-2xl` (672px)** per checklist for complex results
-- [ ] ❌ **MISSING: `max-h-[85vh]`** - Not enforced
-- [x] ✅ `p-4` viewport padding - Line 123
-- [x] ✅ No internal scrolling - Grid layout prevents overflow
-
-**Code Evidence:**
 ```jsx
-// PredictionModal.jsx:192-193
-<div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-  <div className="bg-slate-800 rounded-2xl shadow-2xl border-2 border-blue-500 max-w-lg w-full p-6">
-
-// CompletionModal.jsx:123-124
-<div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-  <div className="bg-slate-800 rounded-2xl shadow-2xl border-2 border-emerald-500 max-w-lg w-full p-5">
+// Line 181: VIOLATION
+<div className="bg-slate-800 rounded-2xl shadow-2xl border-2 border-blue-500 max-w-lg w-full p-6">
 ```
 
-**Fixes Required:**
-1. Add `max-h-[85vh]` to both modal inner divs
-2. Change CompletionModal to `max-w-2xl`
+**Issue:** Missing explicit height verification, but the checklist v1.1 states "NO height constraints" and mockup shows no `max-h-[85vh]`.
 
-#### Positioning ✅ PASS (100%)
+**Status:** ✅ PASS (no height constraint present - this is correct)
 
-- [x] ✅ `fixed inset-0` - Both modals correct
-- [x] ✅ `bg-black/80 backdrop-blur-sm` - PredictionModal correct
-- [x] ⚠️ CompletionModal uses `bg-black/70` (acceptable variant)
-- [x] ✅ `flex items-center justify-center` - Both correct
-- [x] ✅ `z-50` - Both correct
+**❌ FAIL - Padding Incorrect**
 
-#### Scrolling Prohibition ✅ PASS (100%)
+```jsx
+// Line 181: VIOLATION
+<div className="... p-6">
+```
 
-- [x] ✅ NO `overflow-y-auto` on modal body
-- [x] ✅ Content designed to fit (grid layouts, compact spacing)
-- [x] ✅ PredictionModal uses dynamic grid (`grid-cols-2` or `grid-cols-3`)
-- [x] ✅ CompletionModal uses `grid-cols-3` for stats
+**Issue:** Uses `p-6` (24px) which matches checklist requirement.
+
+**Status:** ✅ PASS
+
+**Width Check:**
+
+```jsx
+// Line 181
+max-w-lg w-full
+```
+
+**Status:** ✅ PASS (512px as required)
 
 ---
 
-### 1.2 Panel Layout Architecture ❌ FAIL (33%)
+#### 1.1.1 Modal Spacing Standards
 
-**App.jsx - Main Layout (Lines 254-333)**
+**Checking against detailed spacing requirements...**
 
-#### Mandatory Flex Ratio ❌ CRITICAL ISSUE
+**❌ FAIL - Question Header Margin**
 
 ```jsx
-// Line 270: Visualization Panel
-<div id="panel-visualization" className="flex-1 bg-slate-800 ...">
+// Line 185: VIOLATION
+<div className="mb-4">  // Should be mb-6 (24px for major section)
+  <h3 className="text-2xl font-bold text-white mb-2">{question}</h3>
+```
 
-// Line 283: Steps Panel
+**Required:** `mb-6` (24px - major section break)  
+**Actual:** `mb-4` (16px)  
+**Fix:** Change to `mb-6`
+
+**❌ FAIL - Hint Box Margin**
+
+```jsx
+// Line 193: VIOLATION
+<div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3 mb-4">
+```
+
+**Required:** `mb-6` (24px - major section break)  
+**Actual:** `mb-4` (16px)  
+**Fix:** Change to `mb-6`
+
+**❌ FAIL - Hint Box Padding**
+
+```jsx
+// Line 193: VIOLATION
+<div className="... p-3 ...">
+```
+
+**Required:** `p-4` (16px internal padding)  
+**Actual:** `p-3` (12px)  
+**Fix:** Change to `p-4`
+
+**❌ FAIL - Feedback Box Margin**
+
+```jsx
+// Line 202: VIOLATION
+<div className={`rounded-lg p-3 mb-4 border-2 ...`}>
+```
+
+**Required:** Should follow hint box pattern with `mb-6`  
+**Actual:** `mb-4`  
+**Fix:** Change to `mb-6`
+
+**❌ FAIL - Choices Grid Margin**
+
+```jsx
+// Line 227: VIOLATION
+<div className={`grid gap-3 mb-4 ...`}>
+```
+
+**Required:** `mb-6` (24px below choices - major section)  
+**Actual:** `mb-4` (16px)  
+**Fix:** Change to `mb-6`
+
+**✅ PASS - Choices Grid Gap**
+
+```jsx
+// Line 227
+gap - 3; // Correct: 12px between buttons
+```
+
+**✅ PASS - Actions Section Padding**
+
+```jsx
+// Line 260
+<div className="flex justify-between items-center pt-4 border-t border-slate-700">
+```
+
+**Status:** ✅ PASS (16px above actions)
+
+---
+
+#### Typography Verification
+
+**✅ PASS - Modal Title**
+
+```jsx
+// Line 186
+<h3 className="text-2xl font-bold text-white mb-2">{question}</h3>
+```
+
+**Status:** ✅ PASS (text-2xl, NOT text-3xl)
+
+**✅ PASS - Subtitle**
+
+```jsx
+// Line 187
+<p className="text-slate-400 text-sm">
+```
+
+**Status:** ✅ PASS
+
+**✅ PASS - Button Text**
+
+```jsx
+// Line 247
+<div className="text-base mb-1">{choice.label}</div>
+<div className="text-xs opacity-75">Press {shortcuts[index] || (index + 1)}</div>
+```
+
+**Status:** ✅ PASS (text-base for main, text-xs for shortcuts)
+
+---
+
+### SECTION 2: CONSTRAINED Requirements
+
+#### 2.2 Prediction Questions - Choice Limit
+
+**✅ PASS - No Hardcoded Limit Enforcement**
+
+```jsx
+// Lines 227-235: Dynamic grid based on choice count
+className={`grid gap-3 mb-4 ${
+  choices.length <= 2
+    ? "grid-cols-2"
+    : choices.length === 3
+    ? "grid-cols-3"
+    : "grid-cols-2"
+}`}
+```
+
+**Status:** ✅ PASS (handles 2-3 choices correctly)
+
+**Note:** Backend validation should enforce ≤3 limit. Frontend gracefully handles it.
+
+---
+
+#### Button States
+
+**✅ PASS - Semantic Colors Implemented**
+
+```jsx
+// Lines 27-70: getChoiceColor function
+// Correctly maps: emerald (success), orange (discard), blue (left), red (right)
+```
+
+**✅ PASS - Selected State**
+
+```jsx
+// Line 241-246
+className={`... ${
+  isSelected
+    ? colors.selected  // scale-105 ring-2 ring-{color}-400
+    : isUnselected
+    ? colors.unselected  // opacity-60
+    : colors.base
+} ...`}
+```
+
+**Status:** ✅ PASS (matches mockup standards)
+
+---
+
+### PredictionModal Summary
+
+| Category              | Pass | Fail | Score   |
+| --------------------- | ---- | ---- | ------- |
+| **Modal Size**        | 2    | 0    | 100%    |
+| **Spacing Standards** | 2    | 5    | 29%     |
+| **Typography**        | 3    | 0    | 100%    |
+| **Choice Limit**      | 1    | 0    | 100%    |
+| **Button States**     | 2    | 0    | 100%    |
+| **TOTAL**             | 10   | 5    | **67%** |
+
+**Status:** ⚠️ **MINOR ISSUES** - Spacing doesn't match mockup exactly
+
+---
+
+## 🔴 AUDIT 2: CompletionModal.jsx
+
+### SECTION 1: LOCKED Requirements
+
+#### 1.1 Modal Standards - Size Constraints
+
+**❌ CRITICAL FAIL - Padding Incorrect**
+
+```jsx
+// Line 86: VIOLATION
+<div className={`bg-slate-800 rounded-2xl shadow-2xl border-2 ${theme.border} max-w-lg w-full p-5`}>
+```
+
+**Required:** `p-6` (24px outer padding)  
+**Actual:** `p-5` (20px)  
+**Fix:** Change `p-5` to `p-6`
+
+**✅ PASS - Width**
+
+```jsx
+max-w-lg w-full  // Correct: 512px
+```
+
+**✅ PASS - No Height Constraint**
+
+```jsx
+// No max-h-[85vh] present - correctly omitted per v1.1 checklist
+```
+
+---
+
+#### 1.1.1 Modal Spacing Standards
+
+**❌ FAIL - Header Icon Margin**
+
+```jsx
+// Line 90: VIOLATION
+<div className={`inline-flex items-center justify-center w-12 h-12 ${theme.icon} rounded-full mb-2`}>
+```
+
+**Required:** `mb-3` (12px below icon)  
+**Actual:** `mb-2` (8px)  
+**Fix:** Change to `mb-3`
+
+**❌ FAIL - Header Section Margin**
+
+```jsx
+// Line 88: VIOLATION
+<div className="text-center mb-3">
+```
+
+**Required:** `mb-4` (16px below entire header)  
+**Actual:** `mb-3` (12px)  
+**Fix:** Change to `mb-4`
+
+**❌ FAIL - Stats Section Margin**
+
+```jsx
+// Line 118: VIOLATION (Interval Coverage example)
+<div className="bg-slate-900/50 rounded-lg p-3 mb-3">
+```
+
+**Required:** `mb-4` (16px - minor section gap)  
+**Actual:** `mb-3` (12px)  
+**Fix:** Change to `mb-4`
+
+**✅ PASS - Inner Content Padding**
+
+```jsx
+// Line 118
+p - 3; // Correct: 12px for content boxes
+```
+
+**✅ PASS - Grid Gaps**
+
+```jsx
+// Line 119
+gap - 3; // Correct: 12px between stat columns
+```
+
+**✅ PASS - Actions Section Padding**
+
+```jsx
+// Line 213
+<div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-700">
+```
+
+**Issue:** Should be `pt-4` (16px above buttons)  
+**Actual:** `pt-3` (12px)  
+**Status:** ❌ FAIL
+
+**✅ PASS - Actions Gap**
+
+```jsx
+gap - 3; // Correct: 12px between buttons
+```
+
+---
+
+#### Typography Verification
+
+**❌ FAIL - Modal Title**
+
+```jsx
+// Line 99: VIOLATION
+<h2 className="text-xl font-bold text-white">{theme.title}</h2>
+```
+
+**Required:** `text-2xl` (NOT text-3xl, NOT text-xl)  
+**Actual:** `text-xl`  
+**Fix:** Change to `text-2xl`
+
+**✅ PASS - Subtitle**
+
+```jsx
+// Line 100
+<p className="text-slate-400 text-xs mt-0.5">
+```
+
+**Status:** ✅ PASS (text-sm would also be acceptable)
+
+**✅ PASS - Stat Values**
+
+```jsx
+// Line 123 (example)
+<div className="text-xl font-bold text-white">{inputSize}</div>
+```
+
+**Status:** ✅ PASS
+
+---
+
+### SECTION 2: CONSTRAINED Requirements
+
+#### 2.3 Completion Modal Standards
+
+**✅ PASS - Last-Step Detection**
+
+```jsx
+// Lines 51-53
+const isLastStep =
+  trace?.trace?.steps && step?.step === trace.trace.steps.length - 1;
+```
+
+**Status:** ✅ PASS (algorithm-agnostic, uses step index)
+
+**✅ PASS - Outcome-Driven Theming**
+
+```jsx
+// Lines 8-42: getOutcomeTheme function
+// Correctly checks trace.result.found for binary search
+// Provides neutral theme for other algorithms
+```
+
+**Status:** ✅ PASS
+
+**✅ PASS - Algorithm-Specific Rendering**
+
+```jsx
+// Lines 64-74: renderAlgorithmResults function
+// Detects algorithm from metadata
+// Renders appropriate results with fallback
+```
+
+**Status:** ✅ PASS
+
+**✅ PASS - Prediction Accuracy Display**
+
+```jsx
+// Lines 172-201: Conditional rendering based on predictionStats.total
+```
+
+**Status:** ✅ PASS
+
+---
+
+### CompletionModal Summary
+
+| Category              | Pass | Fail | Score   |
+| --------------------- | ---- | ---- | ------- |
+| **Modal Size**        | 2    | 1    | 67%     |
+| **Spacing Standards** | 4    | 4    | 50%     |
+| **Typography**        | 2    | 1    | 67%     |
+| **Detection Logic**   | 1    | 0    | 100%    |
+| **Theming**           | 2    | 0    | 100%    |
+| **TOTAL**             | 11   | 6    | **65%** |
+
+**Status:** ⚠️ **MINOR ISSUES** - Spacing and typography need adjustment
+
+---
+
+## 🔴 AUDIT 3: App.jsx (Main Structure)
+
+### SECTION 1: LOCKED Requirements
+
+#### 1.2 Panel Layout Architecture
+
+**✅ PASS - Visualization Panel Ratio**
+
+```jsx
+// Line 231
+<div id="panel-visualization" className="flex-[3] bg-slate-800 ...">
+```
+
+**Status:** ✅ PASS (66.67% width)
+
+**✅ PASS - Steps Panel Width**
+
+```jsx
+// Line 244
 <div id="panel-steps" className="w-96 bg-slate-800 ...">
 ```
 
-**Issues:**
-- [ ] ❌ **Visualization panel uses `flex-1` instead of `flex-[3]`**
-  - Current: Equal split with other flex items
-  - Required: 66.67% width (3:1.5 ratio)
-- [x] ✅ Steps panel correctly uses `w-96` (384px)
-- [x] ✅ Gap between panels: `gap-4` (Line 269)
+**Status:** ✅ PASS (384px fixed width)
 
-**Impact:** Panel proportions don't match mockup specifications
+**✅ PASS - Gap Between Panels**
 
-#### Minimum Widths ✅ PASS (100%)
+```jsx
+// Line 228
+<div className="w-full h-full max-w-7xl flex gap-4 overflow-hidden">
+```
 
-- [x] ✅ Steps panel: `w-96` (384px minimum) - Correct
-- [x] ✅ Visualization panel: No minimum specified (correct)
-
-#### Overflow Handling ✅ PASS (100%)
-
-- [x] ✅ Visualization panel: `overflow-hidden` on parent (Line 270), `overflow-auto` on inner (Line 276)
-- [x] ✅ Steps panel: `overflow-hidden` on parent (Line 283), `overflow-y-auto` on list (Line 290)
-- [x] ✅ Visualization uses `items-start + mx-auto` pattern (verified in ArrayView)
+**Status:** ✅ PASS (1rem spacing)
 
 ---
 
-### 1.3 HTML Landmark IDs ❌ CRITICAL FAIL (33%)
+#### 1.3 HTML Landmark IDs
 
-**Required: 6 mandatory IDs + 1 dynamic ID**
+**✅ PASS - #app-root**
 
-#### Present IDs ✅
-
-- [x] ✅ `#app-root` - Line 250
-- [x] ✅ `#app-header` - Line 253
-- [x] ✅ `#panel-visualization` - Line 270
-- [x] ✅ `#panel-steps` - Line 283
-- [x] ✅ `#panel-steps-list` - Line 290
-- [x] ✅ `#panel-step-description` - Line 309
-
-**Code Evidence:**
 ```jsx
-// App.jsx:250-311 (IDs correctly placed)
-<div id="app-root" className="w-full h-screen ...">
-  <div id="app-header" className="bg-slate-800 ...">
-  ...
-  <div id="panel-visualization" className="flex-1 ...">
-  <div id="panel-steps" className="w-96 ...">
-    <div id="panel-steps-list" className="flex-1 overflow-y-auto ...">
-    <div id="panel-step-description" className="border-t ...">
+// Line 145
+<div id="app-root" className="w-full h-screen bg-slate-900 flex flex-col overflow-hidden">
 ```
 
-#### Dynamic ID ⚠️ PARTIAL IMPLEMENTATION
+**✅ PASS - #app-header**
 
-- [x] ✅ `#step-current` implemented in CallStackView.jsx (Line 46)
-- [ ] ⚠️ **NOT implemented for Binary Search** (ArrayView doesn't use it)
-- [ ] ⚠️ **Only ONE element should have this ID at a time** - Correctly implemented in CallStackView
-
-**CallStackView.jsx Evidence:**
 ```jsx
-// Line 46-48
+// Line 146
+<div id="app-header" className="bg-slate-800 border-b border-slate-700 px-4 py-3">
+```
+
+**✅ PASS - #panel-visualization**
+
+```jsx
+// Line 231
+<div id="panel-visualization" className="flex-[3] ...">
+```
+
+**✅ PASS - #panel-steps**
+
+```jsx
+// Line 244
+<div id="panel-steps" className="w-96 ...">
+```
+
+**✅ PASS - #panel-steps-list**
+
+```jsx
+// Line 251
+<div id="panel-steps-list" className="flex-1 overflow-y-auto px-6 py-4">
+```
+
+**✅ PASS - #panel-step-description**
+
+```jsx
+// Line 308
+<div id="panel-step-description" className="border-t border-slate-700 p-4 bg-slate-800">
+```
+
+**❌ FAIL - #step-current Missing in App.jsx**
+
+```jsx
+// No #step-current ID found in App.jsx
+// This ID should be applied to the active step/call in the steps list
+```
+
+**Issue:** The `#step-current` ID is not applied in App.jsx. However, checking CallStackView.jsx...
+
+**✅ CONDITIONAL PASS - Found in CallStackView.jsx**
+
+```jsx
+// CallStackView.jsx, Line 35
 id={isActive ? "step-current" : undefined}
-ref={isActive ? activeCallRef : null}
 ```
 
-**Issue:** Binary Search visualization (right panel shows pointers/state, not CallStackView) doesn't have `#step-current` marker, so auto-scroll won't work correctly.
+**Status:** ✅ PASS (delegated to visualization component)
 
 ---
 
-### 1.4 Keyboard Navigation ✅ PASS (100%)
+#### 1.4 Keyboard Navigation
 
-**useKeyboardShortcuts.js - Excellent Implementation**
+**Checking useKeyboardShortcuts.js implementation...**
 
-#### Standard Shortcuts ✅
+**✅ PASS - Standard Shortcuts**
 
-- [x] ✅ → (Right Arrow) - Next Step (Line 21-24)
-- [x] ✅ ← (Left Arrow) - Previous Step (Line 26-29)
-- [x] ✅ Space - Toggle Mode (Line 21-24, same as Right Arrow for next)
-- [x] ✅ R - Reset (Line 31-35)
-
-**Code Evidence:**
 ```jsx
-// Lines 21-35
+// Lines 14-36
 case "ArrowRight":
-case " ":  // Space bar mapped to next
+case " ":           // Space
   event.preventDefault();
   if (!isComplete) onNext?.();
   break;
+
 case "ArrowLeft":
   event.preventDefault();
   if (!isComplete) onPrev?.();
   break;
+
 case "r":
 case "R":
 case "Home":
@@ -193,67 +534,38 @@ case "Home":
   break;
 ```
 
-#### Modal-Specific Shortcuts ✅
+**Status:** ✅ PASS (all required shortcuts present)
 
-**PredictionModal.jsx:**
-- [x] ✅ Enter - Submit (Lines 87-92)
-- [x] ✅ S - Skip (Lines 77-83)
-- [x] ✅ Escape - Not implemented (optional per checklist)
+**✅ PASS - Modal Blocking**
 
-**Code Evidence:**
 ```jsx
-// PredictionModal.jsx:77-92
-if (event.key.toLowerCase() === "s") {
-  event.preventDefault();
-  if (onSkip) onSkip();
-  return;
-}
-if (event.key === "Enter") {
-  if (selected) {
-    event.preventDefault();
-    handleSubmit();
-  }
+// Line 13
+if (modalOpen) return;
+```
+
+**Status:** ✅ PASS (blocks navigation when prediction modal open)
+
+**✅ PASS - Input Field Check**
+
+```jsx
+// Lines 6-11
+if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") {
   return;
 }
 ```
 
-#### Prediction Shortcuts ✅ EXCELLENT
-
-- [x] ✅ **HARD LIMIT: ≤3 choices enforced** (PredictionModal grid: `grid-cols-2` or `grid-cols-3`)
-- [x] ✅ **Derivation strategy implemented** (Lines 15-53: First letter → key words → numbers)
-- [x] ✅ **Fallback numbers work** (Lines 109-117)
-
-**deriveShortcut() function is EXEMPLARY:**
-```jsx
-// Lines 15-53: Semantic shortcut derivation
-// Strategy 1: First letter (if unique)
-// Strategy 2: Key words (capitalized words)
-// Strategy 3: Fallback to numbers (1, 2, 3)
-```
-
-#### Implementation Pattern ✅
-
-- [x] ✅ `useEffect` + `window.addEventListener` (useKeyboardShortcuts.js:10)
-- [x] ✅ Ignore when modal open (Line 18: `if (modalOpen) return`)
-- [x] ✅ Ignore when typing in INPUT/TEXTAREA (Lines 12-16)
-- [x] ✅ `event.preventDefault()` used (Lines 22, 27, 32, etc.)
+**Status:** ✅ PASS
 
 ---
 
-### 1.5 Auto-Scroll Behavior ⚠️ PARTIAL PASS (60%)
+#### 1.5 Auto-Scroll Behavior
 
-**App.jsx:**
-- [x] ✅ `useRef()` for active element - Line 52: `const activeCallRef = useRef(null)`
-- [x] ✅ Ref passed to CallStackView (Line 297)
+**Checking CallStackView.jsx (where #step-current is applied)...**
 
-**CallStackView.jsx:**
-- [x] ✅ `scrollIntoView()` on step change - Lines 10-18
-- [x] ✅ Options: `behavior: 'smooth', block: 'center'` - Lines 13-14
-- [x] ✅ Dependency: `[callStack, activeCallRef]` - Line 17
+**✅ PASS - Auto-Scroll Implementation**
 
-**Code Evidence:**
 ```jsx
-// CallStackView.jsx:10-18
+// CallStackView.jsx, Lines 17-24
 useEffect(() => {
   if (activeCallRef?.current) {
     activeCallRef.current.scrollIntoView({
@@ -261,355 +573,176 @@ useEffect(() => {
       block: "center",
     });
   }
-}, [callStack, activeCallRef]);
+}, [currentStep, activeCallRef]);
 ```
 
-**Issues:**
-- [ ] ❌ **Missing for Binary Search** - ArrayView doesn't implement auto-scroll
-- [ ] ⚠️ **Dependency should be `[currentStep]` not `[callStack]`** per checklist
-  - Current implementation works but doesn't match specification
-
-#### Scroll Triggers ⚠️ PARTIAL
-
-- [x] ✅ User navigates (Arrow keys work)
-- [x] ✅ Prediction mode auto-advances (correct answer triggers next step)
-- [ ] ⚠️ Watch mode - Not verified (auto-play not in scope)
-- [x] ✅ NOT on manual scroll (correct - not fighting user)
-- [x] ✅ NOT on algorithm switch (correct - resets expected)
+**Status:** ✅ PASS (uses currentStep dependency, scrollIntoView with correct options)
 
 ---
 
-### 1.6 Overflow Handling Anti-Patterns ✅ EXCELLENT (100%)
+#### 1.6 Overflow Handling
 
-**ArrayView.jsx - PERMANENT FIX DOCUMENTED**
+**Checking Visualization Components...**
 
-This is the **gold standard** implementation with detailed documentation explaining the fix.
-
-#### The Critical Pattern ✅ PERFECT
+**✅ PASS - ArrayView.jsx**
 
 ```jsx
-// ArrayView.jsx:68-69 - THE CORRECT PATTERN
+// ArrayView.jsx, Line 79
 <div className="h-full flex flex-col items-start overflow-auto py-4 px-6">
   <div className="mx-auto flex flex-col items-center gap-6 min-h-0">
 ```
 
-**Documentation (Lines 8-13):**
+**Status:** ✅ PASS (uses items-start + mx-auto pattern)
+
+**❌ FAIL - TimelineView.jsx**
+
 ```jsx
-/**
- * PERMANENT FIX (Session 14): Solved recurring overflow cutoff issue.
- *
- * ROOT CAUSE: Using `items-center` + `overflow-auto` causes flex centering
- * to cut off left content. This is a well-documented CSS flexbox issue.
- *
- * SOLUTION: Use `items-start` on outer container, then center inner content
- * with `mx-auto`. This allows proper scrolling without cutoff.
- */
+// TimelineView.jsx, Line 14
+<div className="relative h-full flex flex-col">
+  <div className="relative flex-1 bg-slate-900/50 rounded-lg p-4">
 ```
 
-#### Checklist ✅
+**Issue:** No explicit overflow handling or items-start pattern visible.  
+**Status:** ⚠️ **NEEDS VERIFICATION** - Timeline uses absolute positioning, may not need pattern
 
-- [x] ✅ Visualization panel uses `items-start` - ArrayView:68
-- [x] ✅ Inner wrapper has `mx-auto` - ArrayView:69
-- [x] ✅ `overflow-auto` on outer container - ArrayView:68
-- [x] ✅ `flex-shrink-0` on elements - ArrayView:53, 79, 93, 128, 155, 161, 165, 169
-- [x] ✅ **Tested with wide content** - Session 14 fix suggests thorough testing
+**✅ PASS - CallStackView.jsx**
 
-**This implementation should be held as the reference example in the Tenant Guide.**
-
----
-
-## SECTION 2: CONSTRAINED REQUIREMENTS AUDIT
-
-### 2.1 Visualization Component Interface ✅ PASS (100%)
-
-#### Required Props ✅
-
-**ArrayView.jsx:**
-- [x] ✅ `step` prop - Line 27: `const ArrayView = ({ step, config = {} })`
-- [x] ✅ `config` prop with default - Line 27
-
-**TimelineView.jsx:**
-- [x] ✅ `step` prop - Line 5: `const TimelineView = ({ step, highlightedIntervalId, onIntervalHover })`
-- [x] ✅ Accepts algorithm-specific props (highlightedIntervalId, onIntervalHover)
-
-**CallStackView.jsx:**
-- [x] ✅ `step` prop - Line 5: `const CallStackView = ({ step, activeCallRef, onIntervalHover })`
-- [x] ✅ Accepts algorithm-specific props (activeCallRef, onIntervalHover)
-
-#### Required Behavior ✅
-
-- [x] ✅ **Extract visualization data** - ArrayView:28, TimelineView:8, CallStackView:9
-- [x] ✅ **Graceful fallback** - ArrayView:30-34 (shows message)
-- [x] ✅ **State-based styling** - ArrayView:48-62 (getElementClasses function)
-- [x] ✅ **Overflow pattern** - ArrayView:68-69 (items-start + mx-auto)
-
-**Code Evidence:**
 ```jsx
-// ArrayView.jsx:28-34 - Extraction + Fallback
-const visualization = step?.data?.visualization;
-if (!visualization || !visualization.array) {
-  return (
-    <div className="flex items-center justify-center h-full text-gray-400">
-      No array data available
-    </div>
-  );
-}
+// CallStackView.jsx, Line 27
+// Uses normal flex column, scrolling handled by parent #panel-steps-list
 ```
 
-#### Allowed Customizations ✅
+**Status:** ✅ PASS (parent container handles overflow)
 
-- [x] ✅ Custom animation styles - ArrayView uses Tailwind transitions
-- [x] ✅ Algorithm-specific elements - TimelineView has max_end line, hover states
-- [x] ✅ Color scheme variations - Both use Tailwind palette
-- [x] ✅ Layout within panel - Each component chooses its own layout
+**❌ FAIL - Main Visualization Area**
 
-#### Restrictions ✅
-
-- [x] ✅ NOT ignoring `step.data.visualization` structure - All components respect it
-- [x] ✅ NOT violating overflow pattern - ArrayView is exemplary
-- [x] ✅ NOT exceeding panel boundaries - `overflow-auto` used correctly
-
----
-
-### 2.2 Prediction Questions ✅ PASS (100%)
-
-#### HARD LIMIT: Maximum 3 Choices ✅
-
-**PredictionModal.jsx:**
-- [x] ✅ Grid supports 2-3 choices - Lines 218-224
-- [x] ✅ Dynamic grid: `grid-cols-2` for 2 choices, `grid-cols-3` for 3 choices
-- [x] ✅ Fallback to `grid-cols-2` if >3 (defensive coding)
-
-**Code Evidence:**
 ```jsx
-// Lines 218-224
-<div className={`grid gap-3 mb-4 ${
-  choices.length <= 2
-    ? "grid-cols-2"
-    : choices.length === 3
-    ? "grid-cols-3"
-    : "grid-cols-2"  // Fallback (shouldn't happen)
-}`}>
+// App.jsx, Line 237
+<div className="flex-1 overflow-auto p-6">
+  <ErrorBoundary>
+    <MainVisualizationComponent {...mainVisualizationProps} />
+  </ErrorBoundary>
+</div>
 ```
 
-**Backend Enforcement:** Checked in Session 18-19 backend audit - both algorithms respect 3-choice limit.
+**Issue:** No `items-start` on flex container wrapping visualization  
+**Fix:** Should be:
 
-#### Question Simplification ✅
-
-Not applicable - backend responsibility. Frontend correctly handles whatever backend provides.
-
-#### Button States ✅
-
-- [x] ✅ Default: `bg-slate-700` (Line 234 - acceptable slate variant)
-- [x] ✅ Hover: `hover:bg-slate-600` (Line 234)
-- [x] ✅ Selected: `scale-105 ring-2 ring-blue-400` (Line 233)
-- [x] ⚠️ **Color variant:** Uses `bg-blue-500` instead of `bg-{color}-600` (acceptable)
-- [ ] ❌ **Missing:** Unselected opacity after selection (all buttons remain visible)
-
-**Code Evidence:**
 ```jsx
-// Lines 230-234
-className={`py-3 px-4 rounded-lg font-medium transition-all ${
-  selected === choice.id
-    ? "bg-blue-500 text-white scale-105 ring-2 ring-blue-400"
-    : "bg-slate-700 text-slate-300 hover:bg-slate-600"
-}`}
-```
-
-**Minor Issue:** Once a choice is selected, unselected choices should have `opacity-60` applied. Currently all remain fully visible.
-
----
-
-### 2.3 Completion Modal ✅ PASS (100%)
-
-#### Detection Strategy ✅ PERFECT
-
-**CompletionModal.jsx:33-35**
-```jsx
-const isLastStep = trace?.trace?.steps &&
-  step?.step === trace.trace.steps.length - 1;
-```
-
-- [x] ✅ **Last-step detection** - Uses step index comparison
-- [x] ✅ **NOT step type check** - Algorithm-agnostic (perfect)
-
-**This is EXACTLY what the checklist requires.**
-
-#### Algorithm-Specific Rendering ✅
-
-- [x] ✅ Detect algorithm - Line 40: `const algorithm = trace?.metadata?.algorithm || "unknown"`
-- [x] ✅ Render appropriate results - Lines 70-162 (three render functions)
-- [x] ✅ Generic fallback - Lines 159-167 (renderGenericResults)
-
-**Code Evidence:**
-```jsx
-// Lines 40-42
-const algorithm = trace?.metadata?.algorithm || "unknown";
-const isIntervalCoverage = algorithm === "interval-coverage";
-const isBinarySearch = algorithm === "binary-search";
-
-// Lines 65-68 - Dispatch to correct renderer
-const renderAlgorithmResults = () => {
-  if (isIntervalCoverage) return renderIntervalCoverageResults();
-  else if (isBinarySearch) return renderBinarySearchResults();
-  else return renderGenericResults();
-};
-```
-
-#### Prediction Accuracy Display ✅
-
-- [x] ✅ Calculate accuracy - Lines 45-47
-- [x] ✅ Show stats - Lines 182-190 (correct/total, percentage)
-- [x] ✅ Feedback message - Lines 193-209 (color-coded feedback)
-- [x] ✅ Hide section - Line 181: `{predictionStats?.total > 0 && ...}`
-
-**Code Evidence:**
-```jsx
-// Lines 45-47
-const accuracy = predictionStats?.total > 0
-  ? Math.round((predictionStats.correct / predictionStats.total) * 100)
-  : null;
-
-// Line 181 - Conditional rendering
-{predictionStats?.total > 0 && (
-  <div className="bg-slate-900/50 rounded-lg ...">
+<div className="flex-1 flex flex-col items-start overflow-auto p-6">
+  <div className="mx-auto">
+    <ErrorBoundary>
+      <MainVisualizationComponent {...mainVisualizationProps} />
+    </ErrorBoundary>
+  </div>
+</div>
 ```
 
 ---
 
-## SECTION 3: FREE CHOICES AUDIT (Informational)
+### App.jsx Summary
 
-### Component Architecture ✅ GOOD
+| Category               | Pass | Fail | Score   |
+| ---------------------- | ---- | ---- | ------- |
+| **Panel Layout**       | 3    | 0    | 100%    |
+| **HTML IDs**           | 7    | 0    | 100%    |
+| **Keyboard Shortcuts** | 3    | 0    | 100%    |
+| **Auto-Scroll**        | 1    | 0    | 100%    |
+| **Overflow Pattern**   | 2    | 1    | 67%     |
+| **TOTAL**              | 16   | 1    | **94%** |
 
-- ✅ File organization: Flat structure with categorized folders (components/, hooks/, utils/)
-- ✅ Component patterns: All functional components with hooks
-- ✅ Code splitting: Not needed at current scale
-
-### State Management ✅ GOOD
-
-- ✅ Built-in React state: useState, useEffect, useRef used throughout
-- ✅ Custom hooks: Excellent separation of concerns (5 custom hooks)
-- ✅ No external libraries: Appropriate for current complexity
-
-### Performance ✅ GOOD
-
-- ✅ Memoization: React.memo used in TimelineView and CallStackView
-- ✅ Virtualization: Not needed (step count typically <50)
-- ✅ Effect dependencies: Correctly specified in all hooks
+**Status:** ✅ **MOSTLY COMPLIANT** - One overflow pattern fix needed
 
 ---
 
-## CRITICAL ISSUES SUMMARY
+## 📊 OVERALL FRONTEND COMPLIANCE SUMMARY
 
-### Priority 1: MUST FIX (Blocks Production)
+### Compliance Scores by Component
 
-1. **Missing `max-h-[85vh]` on modals** (Section 1.1)
-   - **File:** PredictionModal.jsx, CompletionModal.jsx
-   - **Impact:** Modals could overflow on small screens
-   - **Fix:** Add `max-h-[85vh]` to inner modal div
+| Component                | Pass | Fail | Score | Status              |
+| ------------------------ | ---- | ---- | ----- | ------------------- |
+| **PredictionModal**      | 10   | 5    | 67%   | ⚠️ Minor Issues     |
+| **CompletionModal**      | 11   | 6    | 65%   | ⚠️ Minor Issues     |
+| **App.jsx**              | 16   | 1    | 94%   | ✅ Mostly Compliant |
+| **ArrayView**            | 1    | 0    | 100%  | ✅ Pass             |
+| **CallStackView**        | 1    | 0    | 100%  | ✅ Pass             |
+| **useKeyboardShortcuts** | 3    | 0    | 100%  | ✅ Pass             |
 
-2. **Wrong modal width for CompletionModal** (Section 1.1)
-   - **File:** CompletionModal.jsx:124
-   - **Current:** `max-w-lg` (512px)
-   - **Required:** `max-w-2xl` (672px)
-   - **Impact:** Complex results may be cramped
+### Overall Totals
 
-3. **Wrong visualization panel flex ratio** (Section 1.2)
-   - **File:** App.jsx:270
-   - **Current:** `flex-1` (equal split)
-   - **Required:** `flex-[3]` (66.67% width)
-   - **Impact:** Panel proportions don't match design specs
+**Total Checks:** 51  
+**Passed:** 42  
+**Failed:** 12
 
-4. **Missing `#step-current` for Binary Search** (Section 1.3)
-   - **Impact:** Auto-scroll doesn't work for Binary Search algorithm
-   - **Solution:** Need to add `#step-current` ID to active element in right panel for Binary Search
-
-### Priority 2: Should Fix (Quality Issues)
-
-5. **Auto-scroll dependency mismatch** (Section 1.5)
-   - **File:** CallStackView.jsx:17
-   - **Current:** `[callStack, activeCallRef]`
-   - **Required:** `[currentStep]` per checklist
-   - **Impact:** Works but doesn't match spec (may break with future changes)
-
-6. **Missing unselected button opacity** (Section 2.2)
-   - **File:** PredictionModal.jsx:234
-   - **Impact:** Visual clarity when choice is selected
-   - **Fix:** Add `opacity-60` class to unselected buttons after selection
+**Overall Compliance:** **82.4%**
 
 ---
 
-## COMPLIANCE SCORE BREAKDOWN
+## 🔧 PRIORITY FIX LIST
 
-| Section | Category | Pass | Fail | Score | Status |
-|---------|----------|------|------|-------|--------|
-| 1.1 | Modal Standards | 8 | 2 | 80% | ⚠️ PARTIAL |
-| 1.2 | Panel Layout | 4 | 2 | 67% | ⚠️ PARTIAL |
-| 1.3 | HTML IDs | 6 | 1 | 86% | ⚠️ PARTIAL |
-| 1.4 | Keyboard Nav | 15 | 0 | 100% | ✅ PASS |
-| 1.5 | Auto-Scroll | 6 | 2 | 75% | ⚠️ PARTIAL |
-| 1.6 | Overflow Pattern | 5 | 0 | 100% | ✅ EXCELLENT |
-| **LOCKED TOTAL** | | **44** | **7** | **86%** | ⚠️ NEEDS WORK |
-| 2.1 | Viz Interface | 11 | 0 | 100% | ✅ PASS |
-| 2.2 | Prediction Q's | 7 | 1 | 88% | ✅ PASS |
-| 2.3 | Completion Modal | 7 | 0 | 100% | ✅ PASS |
-| **CONSTRAINED TOTAL** | | **25** | **1** | **96%** | ✅ PASS |
-| **OVERALL** | | **69** | **8** | **90%** | ⚠️ MINOR ISSUES |
+### Priority 1: CRITICAL (Breaks Visual Standard)
 
----
+1. **CompletionModal - Padding** (Line 86)
 
-## RECOMMENDATIONS
+   - Change `p-5` → `p-6`
 
-### Immediate Actions (This Session)
+2. **CompletionModal - Title Size** (Line 99)
+   - Change `text-xl` → `text-2xl`
 
-1. **Fix modal size constraints** (15 min)
-   - Add `max-h-[85vh]` to both modals
-   - Change CompletionModal to `max-w-2xl`
+### Priority 2: HIGH (Spacing Inconsistencies)
 
-2. **Fix panel flex ratio** (5 min)
-   - Change `flex-1` to `flex-[3]` in App.jsx:270
+3. **PredictionModal - Question Header Margin** (Line 185)
 
-3. **Document Binary Search auto-scroll limitation** (5 min)
-   - Add TODO comment explaining missing `#step-current` for Binary Search
+   - Change `mb-4` → `mb-6`
 
-### Next Session Actions
+4. **PredictionModal - Hint Box Margin** (Line 193)
 
-4. **Implement Binary Search auto-scroll**
-   - Add `#step-current` ID to active pointer/state display
-   - Test that right panel scrolls correctly
+   - Change `mb-4` → `mb-6`
 
-5. **Fix auto-scroll dependency**
-   - Change CallStackView dependency to `[currentStep]`
-   - Verify still works correctly
+5. **PredictionModal - Hint Box Padding** (Line 193)
 
-6. **Add unselected button opacity**
-   - Update PredictionModal button styling
+   - Change `p-3` → `p-4`
 
-### Long-term Improvements
+6. **PredictionModal - Choices Grid Margin** (Line 227)
 
-- Consider extracting modal wrapper as reusable component (DRY principle)
-- Add visual regression tests for panel proportions
-- Document the exemplary ArrayView overflow fix in Tenant Guide
+   - Change `mb-4` → `mb-6`
+
+7. **CompletionModal - Header Icon Margin** (Line 90)
+
+   - Change `mb-2` → `mb-3`
+
+8. **CompletionModal - Header Section Margin** (Line 88)
+
+   - Change `mb-3` → `mb-4`
+
+9. **CompletionModal - Stats Sections** (Multiple lines)
+
+   - Change `mb-3` → `mb-4` for all stats sections
+
+10. **CompletionModal - Actions Padding** (Line 213)
+    - Change `pt-3` → `pt-4`
+
+### Priority 3: MEDIUM (Overflow Pattern)
+
+11. **App.jsx - Visualization Overflow** (Line 237)
+    - Wrap visualization component with items-start + mx-auto pattern
 
 ---
 
-## CONCLUSION
+## ✅ CONCLUSION
 
-The frontend implementation is **90% compliant** with the Tenant Guide standards. The codebase shows excellent architectural decisions, particularly:
+The frontend codebase is **82.4% compliant** with the Tenant Guide and visual mockup standards. The issues are primarily:
 
-1. **ArrayView's overflow pattern** - This is production-ready and should be the reference implementation
-2. **Keyboard shortcuts system** - Excellent separation of concerns and semantic derivation
-3. **Completion modal's algorithm detection** - Perfect algorithm-agnostic design
+1. **Modal spacing mismatches** - Consistent pattern of using smaller margins than mockup specifies
+2. **One typography violation** - CompletionModal title too small
+3. **One overflow pattern missing** - Main visualization area
 
-The 6 critical issues identified are all **straightforward fixes** requiring ~30 minutes total. None involve major refactoring.
+**Good News:**
 
-**Approval Status:** ⚠️ **CONDITIONAL PASS**
-- Fix Priority 1 issues before production deployment
-- Priority 2 issues acceptable for MVP but should be addressed
+- All structural requirements met (IDs, panel ratios, keyboard shortcuts)
+- Auto-scroll working correctly
+- Algorithm-agnostic patterns implemented properly
+- Semantic color coding working
+- Choice limits respected
 
-**Next Step:** Apply fixes from this audit, then proceed to QA & Integration Checklist (Phase 3).
-
----
-
-**Audit Completed:** Session 20  
-**Sign-off Required:** Team review of Priority 1 fixes
+**Next Session Goal:** Apply all 11 fixes to achieve 100% compliance.
