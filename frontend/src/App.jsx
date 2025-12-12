@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Loader, AlertCircle } from "lucide-react";
 
 // Import the components
+import AlgorithmSwitcher from "./components/AlgorithmSwitcher";
 import ControlBar from "./components/ControlBar";
 import CompletionModal from "./components/CompletionModal";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -30,8 +31,7 @@ const AlgorithmTracePlayer = () => {
     error,
     currentAlgorithm,
     availableAlgorithms,
-    loadExampleIntervalTrace,
-    loadExampleBinarySearchTrace,
+    switchAlgorithm,
   } = useTraceLoader();
 
   // 2. Navigation Hook (requires prediction reset function)
@@ -121,7 +121,7 @@ const AlgorithmTracePlayer = () => {
           </h2>
           <p className="text-gray-300 mb-6">{error}</p>
           <button
-            onClick={loadExampleIntervalTrace}
+            onClick={() => switchAlgorithm("interval-coverage")}
             className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-6 py-2 rounded-lg transition"
           >
             Retry Connection
@@ -168,29 +168,6 @@ const AlgorithmTracePlayer = () => {
 
   const isIntervalCoverage = currentAlgorithm === "interval-coverage";
 
-  const algorithmButtons =
-    availableAlgorithms.length > 0
-      ? availableAlgorithms.map((alg) => ({
-          name: alg.name,
-          display_name: alg.display_name,
-          handler:
-            alg.name === "binary-search"
-              ? loadExampleBinarySearchTrace
-              : loadExampleIntervalTrace,
-        }))
-      : [
-          {
-            name: "interval-coverage",
-            display_name: "Interval Coverage",
-            handler: loadExampleIntervalTrace,
-          },
-          {
-            name: "binary-search",
-            display_name: "Binary Search",
-            handler: loadExampleBinarySearchTrace,
-          },
-        ];
-
   // Create a generic props object and conditionally add algorithm-specific props
   const mainVisualizationProps = {
     step: step,
@@ -221,20 +198,14 @@ const AlgorithmTracePlayer = () => {
                 Step {currentStep + 1} of {totalSteps || 0}
               </p>
             </div>
-            <div className="flex items-center gap-2 pl-4 border-l border-slate-600">
-              {algorithmButtons.map((alg) => (
-                <button
-                  key={alg.name}
-                  onClick={alg.handler}
-                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                    currentAlgorithm === alg.name
-                      ? "bg-blue-600 text-white"
-                      : "bg-slate-700 text-slate-300 hover:bg-slate-600"
-                  }`}
-                >
-                  {alg.display_name}
-                </button>
-              ))}
+            {/* PHASE 2: Algorithm Switcher Dropdown */}
+            <div className="pl-4 border-l border-slate-600">
+              <AlgorithmSwitcher
+                currentAlgorithm={currentAlgorithm}
+                availableAlgorithms={availableAlgorithms}
+                onAlgorithmSwitch={switchAlgorithm}
+                loading={loading}
+              />
             </div>
           </div>
           <div className="flex items-center gap-2">
