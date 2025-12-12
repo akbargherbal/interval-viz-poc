@@ -120,9 +120,6 @@ def generate_trace_unified():
                 "available_algorithms": [alg['name'] for alg in registry.list_algorithms()]
             }), 400
 
-        if not algorithm_input:
-            return jsonify({"error": "Missing required field: 'input'"}), 400
-
         # Check if algorithm exists
         if algorithm_name not in registry:
             available = [alg['name'] for alg in registry.list_algorithms()]
@@ -130,6 +127,9 @@ def generate_trace_unified():
                 "error": f"Unknown algorithm: '{algorithm_name}'",
                 "available_algorithms": available
             }), 404
+
+        if algorithm_input is None:
+            return jsonify({"error": "Missing required field: 'input'"}), 400
 
         # Get tracer class and instantiate
         tracer_class = registry.get(algorithm_name)

@@ -212,11 +212,11 @@ const PredictionModal = ({ predictionData, onAnswer, onSkip }) => {
   const { question, choices, hint, explanation } = predictionData;
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 select-none">
+    <div id="prediction-modal" className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 select-none">
       <div className="bg-slate-800 rounded-2xl shadow-2xl border-2 border-blue-500 max-w-lg w-full p-6">
         {/* Header - FIX 1: Changed mb-4 to mb-6 */}
         <div className="mb-6">
-          <h3 className="text-2xl font-bold text-white mb-2">{question}</h3>
+          <h3 className="text-2xl font-bold text-white mb-2">TEST: {question}</h3>
           <p className="text-slate-400 text-sm">
             {predictionData.step_description || "Make your prediction"}
           </p>
