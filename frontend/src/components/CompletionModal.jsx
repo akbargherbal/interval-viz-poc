@@ -97,21 +97,21 @@ const CompletionModal = ({ trace, step, onReset, predictionStats }) => {
 
     return (
       <>
-        {/* Stats Section - FIX 7: Changed mb-3 to mb-4 */}
+        {/* Stats Section */}
         <div className="bg-slate-900/50 rounded-lg p-3 mb-4">
           <div className="grid grid-cols-3 gap-3 text-center">
             <div>
-              <div className="text-slate-400 text-xs mb-0.5">Initial</div>
+              <div className="text-slate-400 text-xs">Initial</div>
               <div className="text-xl font-bold text-white">{inputSize}</div>
             </div>
             <div>
-              <div className="text-slate-400 text-xs mb-0.5">Kept</div>
+              <div className="text-slate-400 text-xs">Kept</div>
               <div className="text-xl font-bold text-emerald-400">
                 {keptCount}
               </div>
             </div>
             <div>
-              <div className="text-slate-400 text-xs mb-0.5">Removed</div>
+              <div className="text-slate-400 text-xs">Removed</div>
               <div className="text-xl font-bold text-red-400">
                 {removedCount}
               </div>
@@ -209,11 +209,9 @@ const CompletionModal = ({ trace, step, onReset, predictionStats }) => {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      {/* FIX 6: CRITICAL - Changed p-5 to p-6 */}
       <div className={`bg-slate-800 rounded-2xl shadow-2xl border-2 ${theme.border} max-w-lg w-full p-6`}>
-        {/* Header Section with Outcome-Driven Theming - FIX 8: Changed mb-3 to mb-4 */}
+        {/* Header Section with Outcome-Driven Theming */}
         <div className="text-center mb-4">
-          {/* FIX 9: Changed mb-2 to mb-3 */}
           <div className={`inline-flex items-center justify-center w-12 h-12 ${theme.icon} rounded-full mb-3`}>
             <svg
               className="w-8 h-8 text-white"
@@ -229,7 +227,6 @@ const CompletionModal = ({ trace, step, onReset, predictionStats }) => {
               />
             </svg>
           </div>
-          {/* FIX 10: CRITICAL - Changed text-xl to text-2xl */}
           <h2 className="text-2xl font-bold text-white">{theme.title}</h2>
           <p className="text-slate-400 text-sm mt-1">
             {theme.subtitle}
@@ -239,10 +236,10 @@ const CompletionModal = ({ trace, step, onReset, predictionStats }) => {
         {/* Algorithm-Specific Results */}
         {renderAlgorithmResults()}
 
-        {/* Prediction Accuracy Section (works for all algorithms) - FIX 11: Changed mb-3 to mb-4 */}
+        {/* Prediction Accuracy Section (works for all algorithms) */}
         {predictionStats?.total > 0 && (
           <div className="bg-slate-900/50 rounded-lg p-3 mb-4 border-2 border-blue-500/50">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between mb-2">
               <h3 className="text-white font-bold text-sm">
                 Prediction Accuracy
               </h3>
@@ -291,12 +288,12 @@ const CompletionModal = ({ trace, step, onReset, predictionStats }) => {
 
         {/* No Prediction Data Message */}
         {predictionStats?.total === 0 && (
-          <div className="text-center text-slate-500 text-xs italic py-2">
+          <div className="text-center text-slate-500 text-xs italic py-4">
             Prediction mode was not used.
           </div>
         )}
 
-        {/* Actions - Two-Button Layout per Mockup - FIX 12: Changed pt-3 to pt-4 */}
+        {/* Actions - Two-Button Layout per Mockup */}
         <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-700">
           <button
             onClick={() => window.history.back()}
