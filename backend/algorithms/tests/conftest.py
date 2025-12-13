@@ -6,6 +6,8 @@ This module provides common fixtures used across all test modules:
 - Mock tracer implementations for testing base_tracer
 - Registry management fixtures
 - Sample data generators
+
+Version 2.0: Updated all mock tracers to implement generate_narrative() (Session 38)
 """
 
 import pytest
@@ -20,18 +22,18 @@ from algorithms.base_tracer import AlgorithmTracer, TraceStep
 class MinimalTracer(AlgorithmTracer):
     """
     Minimal concrete implementation of AlgorithmTracer for testing.
-    
+
     This implements only the required abstract methods with simple behavior.
     Used to test base_tracer functionality without algorithm complexity.
     """
-    
+
     def execute(self, input_data: Any) -> dict:
         """Execute a simple algorithm that just counts."""
         self.metadata = {
             "algorithm": "minimal-test",
             "visualization_type": "test"
         }
-        
+
         count = input_data.get("count", 3)
         for i in range(count):
             self._add_step(
@@ -39,33 +41,48 @@ class MinimalTracer(AlgorithmTracer):
                 data={"value": i},
                 description=f"Counting: {i}"
             )
-        
+
         return self._build_trace_result({"final_count": count})
-    
+
     def get_prediction_points(self) -> List[Dict[str, Any]]:
         """Return empty prediction points for testing."""
         return []
+
+    def generate_narrative(self, trace_result: dict) -> str:
+        """Generate minimal test narrative."""
+        steps = trace_result['trace']['steps']
+        result = trace_result['result']
+        
+        narrative = "# Minimal Test Narrative\n\n"
+        narrative += f"**Algorithm:** {self.metadata['algorithm']}\n"
+        narrative += f"**Result:** {result}\n\n"
+        
+        for step in steps:
+            narrative += f"## Step {step['step']}: {step['description']}\n"
+            narrative += f"**Value:** {step['data']['value']}\n\n"
+        
+        return narrative
 
 
 class VizEnrichmentTracer(AlgorithmTracer):
     """
     Tracer that tests automatic visualization enrichment.
-    
+
     Overrides _get_visualization_state() to test the automatic
     enrichment feature of _add_step().
     """
-    
+
     def __init__(self):
         super().__init__()
         self.current_state = "initial"
-    
+
     def execute(self, input_data: Any) -> dict:
         """Execute with automatic state enrichment."""
         self.metadata = {
             "algorithm": "viz-enrichment-test",
             "visualization_type": "test"
         }
-        
+
         # Step 1: Initial state
         self.current_state = "step1"
         self._add_step(
@@ -73,7 +90,7 @@ class VizEnrichmentTracer(AlgorithmTracer):
             data={"manual_data": "value1"},
             description="First step"
         )
-        
+
         # Step 2: Changed state
         self.current_state = "step2"
         self._add_step(
@@ -81,9 +98,9 @@ class VizEnrichmentTracer(AlgorithmTracer):
             data={"manual_data": "value2"},
             description="Second step"
         )
-        
+
         return self._build_trace_result({"result": "done"})
-    
+
     def get_prediction_points(self) -> List[Dict[str, Any]]:
         """Return sample prediction point."""
         return [
@@ -94,7 +111,7 @@ class VizEnrichmentTracer(AlgorithmTracer):
                 "correct_answer": "A"
             }
         ]
-    
+
     def _get_visualization_state(self) -> dict:
         """Return current state for automatic enrichment."""
         return {
@@ -102,28 +119,49 @@ class VizEnrichmentTracer(AlgorithmTracer):
             "extra": "auto_enriched"
         }
 
+    def generate_narrative(self, trace_result: dict) -> str:
+        """Generate narrative showing visualization enrichment."""
+        steps = trace_result['trace']['steps']
+        
+        narrative = "# Visualization Enrichment Test Narrative\n\n"
+        narrative += "**Testing:** Automatic visualization state enrichment\n\n"
+        
+        for step in steps:
+            narrative += f"## Step {step['step']}: {step['description']}\n"
+            narrative += f"**Manual Data:** {step['data']['manual_data']}\n"
+            
+            # Show the enriched visualization state
+            viz = step['data'].get('visualization', {})
+            if viz:
+                narrative += f"**Auto-Enriched State:** {viz['state']}\n"
+                narrative += f"**Extra Field:** {viz['extra']}\n"
+            
+            narrative += "\n"
+        
+        return narrative
+
 
 class PredictionTracer(AlgorithmTracer):
     """
     Tracer that generates multiple prediction points for testing.
     """
-    
+
     def execute(self, input_data: Any) -> dict:
         """Execute with multiple steps for prediction testing."""
         self.metadata = {
             "algorithm": "prediction-test",
             "visualization_type": "test"
         }
-        
+
         for i in range(5):
             self._add_step(
                 step_type="PREDICT_STEP",
                 data={"step": i},
                 description=f"Step {i}"
             )
-        
+
         return self._build_trace_result({"result": "complete"})
-    
+
     def get_prediction_points(self) -> List[Dict[str, Any]]:
         """Return multiple prediction points."""
         return [
@@ -142,33 +180,87 @@ class PredictionTracer(AlgorithmTracer):
             }
         ]
 
+    def generate_narrative(self, trace_result: dict) -> str:
+        """Generate narrative with prediction points highlighted."""
+        steps = trace_result['trace']['steps']
+        predictions = trace_result['metadata'].get('prediction_points', [])
+        
+        narrative = "# Prediction Test Narrative\n\n"
+        narrative += f"**Total Steps:** {len(steps)}\n"
+        narrative += f"**Prediction Points:** {len(predictions)}\n\n"
+        
+        for step in steps:
+            step_num = step['step']
+            narrative += f"## Step {step_num}: {step['description']}\n"
+            
+            # Check if this step has a prediction
+            prediction = next((p for p in predictions if p['step_index'] == step_num), None)
+            if prediction:
+                narrative += f"\n🔮 **PREDICTION POINT**\n"
+                narrative += f"**Question:** {prediction['question']}\n"
+                narrative += f"**Choices:** {', '.join(prediction['choices'])}\n"
+                if 'hint' in prediction:
+                    narrative += f"**Hint:** {prediction['hint']}\n"
+                narrative += f"**Correct Answer:** {prediction['correct_answer']}\n"
+            
+            narrative += "\n"
+        
+        return narrative
+
 
 class MaxStepsTracer(AlgorithmTracer):
     """
     Tracer that can exceed MAX_STEPS for testing the limit.
     """
-    
+
     def execute(self, input_data: Any) -> dict:
         """Execute with configurable step count."""
         self.metadata = {
             "algorithm": "max-steps-test",
             "visualization_type": "test"
         }
-        
+
         step_count = input_data.get("steps", 5)
-        
+
         for i in range(step_count):
             self._add_step(
                 step_type="STEP",
                 data={"i": i},
                 description=f"Step {i}"
             )
-        
+
         return self._build_trace_result({"steps_executed": step_count})
-    
+
     def get_prediction_points(self) -> List[Dict[str, Any]]:
         """No predictions needed for this test."""
         return []
+
+    def generate_narrative(self, trace_result: dict) -> str:
+        """Generate narrative for max steps test."""
+        steps = trace_result['trace']['steps']
+        result = trace_result['result']
+        
+        narrative = "# Max Steps Test Narrative\n\n"
+        narrative += f"**Steps Executed:** {result['steps_executed']}\n"
+        narrative += f"**Steps Recorded:** {len(steps)}\n\n"
+        
+        # Only show first and last few steps to keep narrative manageable
+        if len(steps) > 10:
+            narrative += "## First 5 Steps\n"
+            for step in steps[:5]:
+                narrative += f"- Step {step['step']}: {step['description']}\n"
+            
+            narrative += f"\n... ({len(steps) - 10} steps omitted) ...\n\n"
+            
+            narrative += "## Last 5 Steps\n"
+            for step in steps[-5:]:
+                narrative += f"- Step {step['step']}: {step['description']}\n"
+        else:
+            for step in steps:
+                narrative += f"## Step {step['step']}: {step['description']}\n"
+        
+        narrative += "\n"
+        return narrative
 
 
 # =============================================================================
@@ -219,7 +311,7 @@ def sample_trace_step():
 def clean_registry():
     """
     Provide a clean registry instance.
-    
+
     Note: This will be expanded in Session 27 when we test registry.py
     For now, it's a placeholder for consistency.
     """

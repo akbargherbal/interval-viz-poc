@@ -26,7 +26,7 @@
     <div class="max-w-6xl mx-auto mb-8 bg-slate-800/50 border border-blue-500/30 rounded-lg p-6">
         <h2 class="text-xl font-bold text-blue-400 mb-3">🔒 LOCKED Requirements (Tenant Guide 1.1 + 2.3)</h2>
         <ul class="space-y-2 text-slate-300">
-            <li>✅ <strong>Max Height:</strong> max-h-[85vh] - No scrolling allowed</li>
+            <li>✅ <strong>Height:</strong> No constraint - Content fits naturally (≤3 choices prevents overflow)</li>
             <li>✅ <strong>Max Width:</strong> max-w-lg (512px) for prediction modals</li>
             <li>✅ <strong>Choice Limit:</strong> 2-3 choices maximum (HARD LIMIT)</li>
             <li>✅ <strong>Button Colors:</strong> Different visual weights for Primary/Secondary actions</li>
@@ -337,8 +337,9 @@
                 <div>
                     <p class="font-semibold text-white mb-2">Modal Size (LOCKED - Section 1.1):</p>
                     <code class="bg-slate-900 px-3 py-1 rounded text-sm text-blue-300">
-                        className="max-w-lg w-full max-h-[85vh]"
+                        className="max-w-lg w-full p-6"
                     </code>
+                    <p class="text-slate-400 text-xs mt-2">No height constraint - content fits naturally with ≤3 choices limit</p>
                 </div>
                 <div>
                     <p class="font-semibold text-white mb-2">Grid Layout for Choices:</p>
@@ -385,8 +386,8 @@
     <!-- Footer -->
     <div class="max-w-6xl mx-auto mt-12 pt-8 border-t border-slate-700">
         <p class="text-slate-500 text-sm text-center">
-            Prediction Modal Visual Standards v1.0 | Tenant Guide Section 1.1 + 2.3<br>
-            Created: Session 16 | Last Updated: December 11, 2025
+            Prediction Modal Visual Standards v1.1 | Tenant Guide Section 1.1 + 2.3<br>
+            Created: Session 16 | Last Updated: December 13, 2025 (Corrected height constraint documentation)
         </p>
     </div>
 
