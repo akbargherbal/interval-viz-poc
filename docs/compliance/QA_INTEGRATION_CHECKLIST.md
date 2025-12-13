@@ -1,43 +1,262 @@
 # QA & Integration Compliance Checklist
 
-**Version:** 1.0  
-**Authority:** TENANT_GUIDE.md v1.0 - All Sections  
-**Purpose:** End-to-end validation that new algorithms integrate correctly
+**Version:** 2.0  
+**Authority:** WORKFLOW.md v2.0 - QA Requirements  
+**Purpose:** Two-phase validation - Narrative review BEFORE integration testing
+
+**Changes from v1.0:**
+
+- Added Phase 1: Narrative Review (NEW - quality gate)
+- Updated authority reference from TENANT_GUIDE.md to WORKFLOW.md
+- Updated modal sizing requirements (removed max-h-[85vh])
+- Updated keyboard shortcuts (Space = Next step, not Toggle mode)
+- Reorganized workflow: Narrative review → Integration tests
 
 ---
 
-## Pre-Integration Checklist
+## WORKFLOW OVERVIEW
 
-### Backend Validation
+**v2.0 introduces a two-phase QA process:**
 
+```
+Phase 1: NARRATIVE REVIEW (NEW)
+  ↓
+  ├─→ APPROVED → Phase 2: Integration Testing
+  └─→ REJECTED → Return to Backend
+```
+
+**Phase 1 happens BEFORE frontend integration.**  
+**Phase 2 happens AFTER frontend integration.**
+
+---
+
+## Phase 1: Narrative Review (NEW in v2.0)
+
+**Timing:** AFTER backend implementation, BEFORE frontend integration  
+**Input:** Generated markdown narratives ONLY (no code, no JSON, no frontend)  
+**Purpose:** Validate logical completeness of algorithm via human-readable narratives
+
+### What QA Reviews
+
+**ONLY the narratives in `docs/narratives/[algorithm-name]/*.md`**
+
+QA does NOT look at:
+
+- ❌ Backend code
+- ❌ JSON trace structure
+- ❌ Frontend components
+- ❌ Visual rendering
+
+### Review Criteria
+
+For each example narrative:
+
+#### 1. Logical Completeness
+
+- [ ] Can I follow the algorithm logic from start to finish?
+- [ ] Are all decision points explained?
+- [ ] Is supporting data for each decision visible?
+- [ ] Are there any undefined variable references?
+
+**Example of FAILURE:**
+
+```
+❌ Narrative says: "Compare with max_end"
+✅ Should say: "Compare 720 with max_end (660)"
+```
+
+#### 2. Temporal Coherence
+
+- [ ] Does step N+1 logically follow from step N?
+- [ ] Are there narrative gaps or jumps?
+- [ ] Can I reconstruct the execution flow?
+- [ ] Is the step sequence clear?
+
+**Example of FAILURE:**
+
+```
+❌ Step 8: "Examining interval [900, 960]"
+   Step 9: "Returning with 2 intervals kept"
+   Problem: What happened to interval [900, 960]? Was it kept?
+```
+
+#### 3. Mental Visualization
+
+- [ ] Can I imagine what the visualization would show?
+- [ ] Are state changes clear enough to track?
+- [ ] Can I understand this without seeing code or JSON?
+- [ ] Would I know what to render if I were the frontend?
+
+#### 4. Decision Transparency
+
+For each decision (keep/discard, left/right, found/not found):
+
+- [ ] Is the comparison data visible?
+- [ ] Is the decision logic clear?
+- [ ] Is the outcome explained?
+- [ ] Can I verify the decision is correct?
+
+**Example of FAILURE:**
+
+```
+❌ Narrative says: "Interval is covered"
+✅ Should say: "Interval [900, 960] is covered because 900 >= max_end (660)"
+```
+
+---
+
+### Narrative Review Checklist Template
+
+```markdown
+# Narrative Review: [Algorithm Name]
+
+**Reviewer:** [Name]  
+**Date:** [Date]  
+**Examples Reviewed:** [List all example names]
+
+## Example 1: [Example Name]
+
+### Logical Completeness
+
+- [ ] Algorithm logic followable start-to-finish
+- [ ] All decision points explained
+- [ ] No undefined variable references
+- [ ] Supporting data visible
+
+### Temporal Coherence
+
+- [ ] Steps flow logically
+- [ ] No narrative gaps
+- [ ] Execution flow reconstructable
+
+### Mental Visualization
+
+- [ ] Can imagine visualization
+- [ ] State changes clear
+- [ ] No code/JSON needed
+
+### Decision Transparency
+
+- [ ] Comparison data visible
+- [ ] Decision logic clear
+- [ ] Outcomes explained
+
+### Issues Found:
+
+[List specific issues with step numbers, or write "None"]
+
+## Example 2: [Example Name]
+
+[Repeat checklist...]
+
+## Overall Assessment
+
+- [ ] ✅ APPROVED - All examples pass, ready for frontend integration
+- [ ] ⚠️ MINOR ISSUES - Approved with documentation notes
+- [ ] ❌ REJECTED - Backend must fix and resubmit
+
+### Rejection Feedback (if rejected):
+
+**Critical:** Provide feedback on WHAT is wrong (not HOW to fix).
+
+**Example - CORRECT Feedback:**
+```
+
+❌ REJECTED - Binary Search Example 1
+
+Issue 1: Missing decision context at Step 5
+
+- Narrative states: "Compare target with mid"
+- Problem: The actual values being compared are not visible
+- Impact: Cannot verify the decision logic
+
+Issue 2: Temporal gap between Steps 8-9
+
+- Step 8: "Examining mid element"
+- Step 9: "Search right half"
+- Problem: The comparison result that led to "search right" is missing
+- Impact: Cannot follow the decision flow
+
+```
+
+**Example - WRONG Feedback:**
+```
+
+❌ Don't do this!
+
+Issue 1: Add mid value to Step 5
+
+- Solution: Update narrative to include "Compare target (5) with mid (3)"
+
+^ This tells HOW to fix, not WHAT is wrong
+
+```
+
+### Sign-off:
+
+- QA Engineer: [Name]
+- Date: [Date]
+- Next Action: [APPROVED → Frontend Integration | REJECTED → Backend Revision]
+```
+
+---
+
+### Decision Gate
+
+**If APPROVED:**
+
+- ✅ Narratives are logically complete
+- ✅ Backend proceeds to Stage 3: Frontend Integration
+- ✅ Narratives serve as reference documentation for frontend
+
+**If REJECTED:**
+
+- ❌ Backend must fix issues and regenerate narratives
+- ❌ QA re-reviews updated narratives
+- ❌ Frontend work does NOT begin until approved
+
+---
+
+## Phase 2: Integration Testing
+
+**Timing:** AFTER frontend integration  
+**Input:** Fully integrated algorithm in browser  
+**Purpose:** End-to-end validation of rendering, interactions, and standards compliance
+
+**Note:** This phase should have ZERO "missing data" bugs - Phase 1 narrative review should have caught them.
+
+---
+
+### Pre-Integration Validation
+
+**Before running integration tests, verify:**
+
+- [ ] **Phase 1 APPROVED** - Narrative review passed
 - [ ] **Backend checklist completed** - Backend developer signed off
-- [ ] **Unit tests pass** - All algorithm tracer tests green
-- [ ] **Trace structure valid** - JSON follows contract
-
-### Frontend Validation
-
 - [ ] **Frontend checklist completed** - Frontend developer signed off
 - [ ] **Component tests pass** - All visualization tests green
 - [ ] **No console errors** - Clean browser console
 
 ---
 
-## ðŸ"' Integration Tests: LOCKED Requirements
+## Integration Tests: LOCKED Requirements
 
-### Test Suite 1: Modal Standards (Section 1.1)
+### Test Suite 1: Modal Standards
+
+**Source:** `docs/static_mockup/completion_modal_mockup.html` and `prediction_modal_mockup.html`
 
 #### Prediction Modal
 
-**Test Case: Modal Size Constraints**
+**Test Case: Modal Size**
 
 ```
 GIVEN: Algorithm with prediction points
 WHEN: Prediction modal opens
 THEN:
   ✅ Modal max-width is max-w-lg (512px)
-  ✅ Modal max-height is max-h-[85vh]
+  ✅ Modal padding is p-6
   ✅ No internal scrollbars visible
-  ✅ All content fits in viewport
+  ✅ All content fits naturally
 ```
 
 **Test Case: Modal Positioning**
@@ -46,28 +265,42 @@ THEN:
 GIVEN: Prediction modal open
 THEN:
   ✅ Modal is centered (flex items-center justify-center)
-  ✅ Background is semi-transparent with blur
+  ✅ Background is semi-transparent with blur (bg-black/80 backdrop-blur-sm)
   ✅ z-index is 50 (above main content)
-  ✅ Padding prevents edge collision (p-4)
+  ✅ Padding prevents edge collision (p-4 on backdrop)
 ```
 
 #### Completion Modal
 
-**Test Case: Modal Size for Complex Results**
+**Test Case: Modal Size (Compact Redesign)**
 
 ```
-GIVEN: Algorithm completes with many results
+GIVEN: Algorithm completes with results
 WHEN: Completion modal opens
 THEN:
-  ✅ Modal max-width is max-w-2xl (672px)
-  ✅ Modal max-height is max-h-[85vh]
-  ✅ No internal scrolling (uses flex-wrap or grid)
+  ✅ Modal max-width is max-w-lg (512px)
+  ✅ Modal padding is p-5 (compact)
+  ✅ No internal scrolling (uses horizontal layouts + flex-wrap)
   ✅ All stats visible without scroll
+```
+
+**Test Case: Vertical Efficiency**
+
+```
+GIVEN: Completion modal with complex data
+THEN:
+  ✅ Header uses horizontal layout (icon + text in row)
+  ✅ Compact spacing (mb-3, mb-4 instead of mb-6)
+  ✅ Stats use grid with dividers (border-l)
+  ✅ Prediction accuracy in horizontal layout
+  ✅ Complex results show subset + "+N more" summary
 ```
 
 ---
 
-### Test Suite 2: Panel Layout (Section 1.2)
+### Test Suite 2: Panel Layout
+
+**Source:** `docs/static_mockup/algorithm_page_mockup.html`
 
 **Test Case: Flex Ratio Verification**
 
@@ -75,7 +308,7 @@ THEN:
 GIVEN: Algorithm loaded
 THEN:
   ✅ Visualization panel has flex-[3] (66.67% width)
-  ✅ Steps panel has w-96 (384px) OR flex-[1.5]
+  ✅ Steps panel has w-96 (384px)
   ✅ Gap between panels is gap-4 (1rem)
   ✅ Ratio maintained at 1920px, 1366px, 1024px viewports
 ```
@@ -105,7 +338,7 @@ THEN:
 
 ---
 
-### Test Suite 3: HTML Landmark IDs (Section 1.3)
+### Test Suite 3: HTML Landmark IDs
 
 **Test Case: Required IDs Present**
 
@@ -133,30 +366,40 @@ THEN:
 
 ---
 
-### Test Suite 4: Keyboard Navigation (Section 1.4)
+### Test Suite 4: Keyboard Navigation
+
+**Source:** `docs/static_mockup/algorithm_page_mockup.html` (lines 854-874)
 
 **Test Case: Standard Shortcuts**
 
 ```
 GIVEN: Algorithm loaded, no modal open
-WHEN: Press Arrow Right (â†')
+WHEN: Press Arrow Right (→)
 THEN: ✅ Advances to next step
 
-WHEN: Press Arrow Left (â†)
-THEN: ✅ Goes to previous step
-
 WHEN: Press Space
-THEN: ✅ Toggles Watch/Predict mode
+THEN: ✅ Advances to next step (alternative to Arrow Right)
+
+WHEN: Press Arrow Left (←)
+THEN: ✅ Goes to previous step
 
 WHEN: Press R
 THEN: ✅ Resets trace to step 0
+
+WHEN: Press Home
+THEN: ✅ Resets trace to step 0 (alternative to R)
 ```
 
 **Test Case: Modal Shortcuts**
 
+**Source:** `docs/static_mockup/prediction_modal_mockup.html` (lines 329-335)
+
 ```
 GIVEN: Prediction modal open
-WHEN: Press F (or semantic letter)
+WHEN: Press F/L/R/K/C (semantic letter from choice text)
+THEN: ✅ Selects corresponding choice
+
+WHEN: Press 1/2/3 (numeric fallback)
 THEN: ✅ Selects corresponding choice
 
 WHEN: Press Enter
@@ -171,16 +414,16 @@ THEN: ✅ Skips prediction
 ```
 GIVEN: Input field focused
 WHEN: Press Arrow Right
-THEN: ✅ Does NOT navigate (ignores shortcut)
+THEN: ✅ Does NOT navigate (ignores shortcut when typing)
 
 GIVEN: Modal open
 WHEN: Press Arrow Right
-THEN: ✅ Modal handles it, doesn't navigate main app
+THEN: ✅ Modal ignores it (doesn't navigate main app)
 ```
 
 ---
 
-### Test Suite 5: Auto-Scroll (Section 1.5)
+### Test Suite 5: Auto-Scroll
 
 **Test Case: Scroll to Current Step**
 
@@ -202,15 +445,15 @@ WHEN: Click Next button repeatedly
 THEN: ✅ Auto-scrolls to keep current step visible
 
 WHEN: User manually scrolls
-THEN: ⌠Does NOT auto-scroll (respects user intent)
+THEN: ❌ Does NOT auto-scroll (respects user intent)
 
 WHEN: Switch algorithms
-THEN: ⌠Does NOT auto-scroll (resets to top)
+THEN: ❌ Does NOT auto-scroll (resets to top)
 ```
 
 ---
 
-### Test Suite 6: Overflow Pattern (Section 1.6)
+### Test Suite 6: Overflow Pattern
 
 **Test Case: Wide Array Visualization**
 
@@ -240,14 +483,14 @@ THEN:
 ```
 GIVEN: Wide content
 WHEN: Using items-center + overflow-auto
-THEN: ⌠FAIL - Left content inaccessible (this is the bug!)
+THEN: ❌ FAIL - Left content inaccessible (this is the bug!)
 ```
 
 ---
 
-## 🎨 Integration Tests: CONSTRAINED Requirements
+## Integration Tests: CONSTRAINED Requirements
 
-### Test Suite 7: Backend Contract (Section 2.1)
+### Test Suite 7: Backend Contract
 
 **Test Case: Metadata Structure**
 
@@ -273,7 +516,7 @@ THEN:
 
 ---
 
-### Test Suite 8: Visualization Components (Section 2.2)
+### Test Suite 8: Visualization Components
 
 **Test Case: Component Props**
 
@@ -298,7 +541,7 @@ THEN:
 
 ---
 
-### Test Suite 9: Prediction Mode (Section 2.3)
+### Test Suite 9: Prediction Mode
 
 **Test Case: Choice Limit**
 
@@ -306,7 +549,7 @@ THEN:
 GIVEN: Algorithm with prediction points
 THEN:
   ✅ Every prediction has ≤3 choices
-  ⌠FAIL if any prediction has 4+ choices
+  ❌ FAIL if any prediction has 4+ choices
 ```
 
 **Test Case: Shortcut Derivation**
@@ -314,7 +557,7 @@ THEN:
 ```
 GIVEN: Choices ["Found!", "Search Left", "Search Right"]
 THEN:
-  ✅ Shortcuts are F, L, R (semantic)
+  ✅ Shortcuts are F, L, R (semantic first letters)
   ✅ Fallback numbers 1, 2, 3 also work
 ```
 
@@ -332,12 +575,11 @@ WHEN: Press Enter
 THEN:
   ✅ Submits answer
   ✅ Shows feedback (correct/incorrect)
-  ✅ Auto-advances after 2.5s
 ```
 
 ---
 
-### Test Suite 10: Completion Modal (Section 2.4)
+### Test Suite 10: Completion Modal
 
 **Test Case: Last-Step Detection**
 
@@ -417,12 +659,12 @@ THEN:
 **Test Case: Viewport Sizes**
 
 ```
-Test at: 1920px, 1366px, 1024px, 768px
+Test at: 1920px, 1366px, 1024px
 
 At each size:
   ✅ Panel ratio maintained (3:1.5)
   ✅ Steps panel never < 384px
-  ✅ Modals fit in viewport (max-h-[85vh])
+  ✅ Modals fit in viewport
   ✅ No horizontal body scrollbar
   ✅ All content accessible
 ```
@@ -461,17 +703,16 @@ THEN:
 
 ### Test Suite 14: Existing Algorithms
 
-**Test Case: Interval Coverage Still Works**
+**Test Case: All Existing Algorithms Still Work**
 
 ```
-GIVEN: Interval Coverage algorithm
+GIVEN: Each existing algorithm
 THEN:
-  ✅ Timeline renders correctly
-  ✅ Call stack shows recursion
+  ✅ Visualization renders correctly
   ✅ Prediction mode works
   ✅ Completion modal appears
   ✅ Auto-scroll functions
-  ✅ All features from PoC intact
+  ✅ All features intact
 ```
 
 **Test Case: No New Bugs**
@@ -493,41 +734,47 @@ THEN:
 
 **All of the following must be true:**
 
+- ✅ Phase 1: Narrative review APPROVED
 - ✅ All LOCKED requirement tests pass (Suites 1-6)
 - ✅ All CONSTRAINED requirement tests pass (Suites 7-10)
 - ✅ Cross-algorithm tests pass (Suite 11)
 - ✅ Responsive tests pass (Suite 12)
 - ✅ No regressions (Suite 14)
 
-### MINOR ISSUES âš ï¸
+### MINOR ISSUES ⚠️
 
 **One or more of the following:**
 
-- âš ï¸ Performance test warnings (Suite 13) but not failures
-- âš ï¸ Minor visual inconsistencies (but no LOCKED violations)
-- âš ï¸ Documentation updates needed
+- ⚠️ Performance test warnings (Suite 13) but not failures
+- ⚠️ Minor visual inconsistencies (but no LOCKED violations)
+- ⚠️ Documentation updates needed
 
-### FAIL âŒ
+### FAIL ❌
 
 **Any of the following:**
 
-- ⌠Any LOCKED requirement test fails
-- ⌠Overflow pattern violated (left edge cut off)
-- ⌠>3 prediction choices found
-- ⌠Required IDs missing
-- ⌠Keyboard shortcuts broken
-- ⌠Existing algorithm regressed
+- ❌ Phase 1: Narrative review REJECTED
+- ❌ Any LOCKED requirement test fails
+- ❌ Overflow pattern violated (left edge cut off)
+- ❌ >3 prediction choices found
+- ❌ Required IDs missing
+- ❌ Keyboard shortcuts broken
+- ❌ Existing algorithm regressed
 
 ---
 
 ## Test Execution Template
 
 ```markdown
-# Test Run: [Algorithm Name] - [Date]
+# Integration Test Run: [Algorithm Name] - [Date]
+
+## Phase 1: Narrative Review
+
+- [x] APPROVED on [Date] by [Reviewer Name]
 
 ## Test Environment
 
-- Browser: Chrome 120, Firefox 121, Safari 17
+- Browser: Chrome 120+, Firefox 121+, Safari 17+
 - Viewport: 1920x1080, 1366x768, 1024x768
 - OS: Windows 11, macOS 14, Ubuntu 22.04
 
@@ -535,7 +782,7 @@ THEN:
 
 - [ ] Prediction modal size: PASS/FAIL
 - [ ] Completion modal size: PASS/FAIL
-- [ ] No internal scrolling: PASS/FAIL
+- [ ] Vertical efficiency: PASS/FAIL
 
 ## Suite 2: Panel Layout
 
@@ -558,18 +805,31 @@ THEN:
 
 ---
 
-## Quick Checklist for New Algorithms
+## Workflow Summary
 
-Before submitting for QA review, verify:
+```
+Stage 1: Backend Implementation
+  ↓
+Stage 2: QA Phase 1 - Narrative Review
+  ↓
+  ├─→ APPROVED → Stage 3: Frontend Integration
+  │                ↓
+  │              Stage 4: QA Phase 2 - Integration Testing
+  │                ↓
+  │              DONE
+  │
+  └─→ REJECTED → Back to Stage 1
+```
 
-- [ ] ✅ Backend checklist completed (backend team)
-- [ ] ✅ Frontend checklist completed (frontend team)
-- [ ] ✅ Manual smoke test passed (developer)
-- [ ] ✅ No console errors
-- [ ] ✅ Mockups referenced for visual accuracy
-- [ ] ✅ All unit tests passing
-- [ ] ✅ Documentation updated
+**Key Innovation:** Narrative review catches 60-70% of issues BEFORE frontend work begins.
 
 ---
 
-**Remember:** The goal is NOT to catch developers making mistakes. The goal is to ensure the Tenant Guide standards are consistently applied, preventing architectural drift. Use this checklist as a conversation starter, not a gotcha list.
+**Remember:**
+
+- Phase 1 (narrative review) is the quality gate
+- Phase 2 (integration testing) should have minimal surprises
+- The goal is to ensure standards are consistently applied
+- Use this checklist as a conversation starter, not a gotcha list
+
+**For detailed workflow information, see:** WORKFLOW.md v2.0

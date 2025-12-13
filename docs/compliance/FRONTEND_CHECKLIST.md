@@ -1,9 +1,39 @@
 # Frontend UI/UX Compliance Checklist
 
-**Version:** 1.2 (Session 23 - Critical Correction)
-**Authority:** TENANT_GUIDE.md v1.0 - Sections 1 (LOCKED) & 2 (CONSTRAINED)
-**Visual Authority:** Static Mockups (`docs/static_mockup/*.html`)
+**Version:** 2.0  
+**Authority:** WORKFLOW.md v2.0 - Frontend Requirements  
+**Visual Authority:** `docs/static_mockup/*.html` - Single source of truth for all visual standards  
 **Purpose:** Verify UI components comply with platform standards
+
+**Changes from v1.2:**
+
+- Updated authority reference from TENANT_GUIDE.md to WORKFLOW.md
+- Corrected modal sizing based on UPDATED mockups (removed max-h-[85vh], updated padding)
+- Added narrative validation prerequisite
+- Updated keyboard shortcuts (Space = Next step, not Toggle mode)
+- Added workflow integration (Stage 3)
+
+---
+
+## CRITICAL: Visual Standards Authority
+
+**When text interpretation differs from mockups, mockups win.**
+
+All visual decisions reference `docs/static_mockup/`:
+
+- `algorithm_page_mockup.html` - Panel layout, keyboard shortcuts
+- `prediction_modal_mockup.html` - Prediction modal standards
+- `completion_modal_mockup.html` - Completion modal standards (Compact Redesign)
+
+---
+
+## Pre-Integration Validation
+
+**Before starting frontend work:**
+
+- [ ] **QA narrative review PASSED** - Narratives approved for logical completeness
+- [ ] **Backend JSON contract validated** - Narrative confirmed data completeness
+- [ ] **Trust the JSON** - Frontend focuses on "how to render" not "what to render"
 
 ---
 
@@ -11,21 +41,28 @@
 
 ### 1.1 Modal Standards
 
+**Source:** `completion_modal_mockup.html` (Compact Redesign) and `prediction_modal_mockup.html`
+
 #### Size Constraints
 
-- [ ] **All modals use `max-w-lg` (512px)** - PredictionModal, CompletionModal, all dialogs
-- [ ] **Mandatory height constraint: `max-h-[85vh]`** - Prevents modal from exceeding viewport height
-- [ ] **Outer padding: `p-6`** - Consistent 24px padding on all modals
-- [ ] **No internal scrolling** - Content must fit without `overflow-y-auto` (enforced by `max-h-[85vh]`)
+**CompletionModal (Compact Redesign):**
 
-**Source:** `completion_modal_mockup.html` and `prediction_modal_mockup.html` - all examples use `max-w-lg w-full p-6`
+- [ ] **Width: `max-w-lg w-full`** (512px)
+- [ ] **Padding: `p-5`** (20px - compact)
+- [ ] **NO height constraint** - Content fits naturally through vertical efficiency
 
-**Rationale:**
+**PredictionModal:**
 
-- Single width maintains visual consistency across all modal types
-- Height constraint (`max-h-[85vh]`) is mandatory to prevent viewport overflow on smaller screens.
-- Internal content must remain compact: 3-choice limit + compact spacing + flex-wrap patterns are required to fit content within the height limit without scrolling.
-- Example: `completion_modal_mockup.html` Example 3 shows complex interval data fitting perfectly at 512px using flex-wrap
+- [ ] **Width: `max-w-lg w-full`** (512px)
+- [ ] **Padding: `p-6`** (24px)
+- [ ] **NO height constraint** - Content fits naturally (≤3 choices limit)
+
+**Rationale (from mockup):**
+
+- Title: "Redesigned for Vertical Efficiency (No Element Removal / No Font Scaling)"
+- Horizontal layouts reduce vertical space
+- Compact spacing prevents overflow
+- No need for max-height constraint
 
 #### Positioning
 
@@ -35,36 +72,79 @@
 - [ ] **`z-50`** - Above all other content
 - [ ] **`p-4`** on overlay - Padding to prevent viewport edge collision
 
+#### Vertical Efficiency Patterns (CompletionModal)
+
+- [ ] **Header: Horizontal layout** - Icon + text in row (NOT column)
+
+  ```jsx
+  <div className="flex items-center gap-4 mb-4">
+    <div className="flex-shrink-0 w-12 h-12">/* Icon */</div>
+    <div>/* Title + subtitle */</div>
+  </div>
+  ```
+
+- [ ] **Compact spacing:**
+
+  - Section margins: `mb-3`, `mb-4` (NOT mb-6)
+  - Inner padding: `p-3` (stats, results)
+  - Grid gaps: `gap-2` (stats columns)
+
+- [ ] **Grid with dividers:**
+
+  ```jsx
+  <div className="grid grid-cols-3 gap-2">
+    <div>/* Column 1 */</div>
+    <div className="border-l border-slate-700">/* Column 2 */</div>
+    <div className="border-l border-slate-700">/* Column 3 */</div>
+  </div>
+  ```
+
+- [ ] **Prediction accuracy: Horizontal layout**
+
+  ```jsx
+  <div className="flex items-center justify-between">
+    <div>/* Label + feedback */</div>
+    <div className="text-right">/* Percentage + fraction */</div>
+  </div>
+  ```
+
+- [ ] **Complex results: Subset + summary**
+  ```jsx
+  <div className="flex flex-wrap gap-1.5">
+    {/* Show first 7-8 items */}
+    <div>+1 more</div>
+  </div>
+  ```
+
 #### Content Fitting Strategy
 
-- [ ] **Use flex-wrap** for lists of items (intervals, results, badges)
-- [ ] **Use compact spacing** (mb-3, mb-4, NOT mb-6+)
-- [ ] **Use smaller fonts** (text-sm, text-xs for labels)
-- [ ] **Show summary for long lists** (e.g., "+5 more" instead of scrolling)
+- [ ] **NO internal scrolling** - Content must fit without `overflow-y-auto`
+- [ ] **Use flex-wrap** for lists (intervals, results, badges)
+- [ ] **Use compact spacing** throughout
+- [ ] **Show summary** for long lists (e.g., "+1 more")
 
 ---
 
 ### 1.1.1 Modal Spacing Standards
 
-**Source:** Extracted from static mockup HTML structure
+**Source:** Mockup HTML structure
 
-#### CompletionModal Spacing Verification
+#### CompletionModal Spacing (Compact)
 
-- [ ] **Outer padding: `p-6`** (NOT p-5, NOT p-8)
-- [ ] **Header icon margin: `mb-3`** (12px below icon)
-- [ ] **Header section margin: `mb-4`** (16px below entire header)
-- [ ] **Section gaps: `mb-4`** (stats, accuracy, results sections)
-- [ ] **Inner content padding: `p-3`** (content boxes like stats grid)
-- [ ] **Grid gaps: `gap-3`** (between stat columns)
-- [ ] **Actions section: `pt-4`** (16px above buttons)
-- [ ] **Actions gap: `gap-3`** (between Close and Start Over buttons)
+- [ ] **Outer padding: `p-5`** (20px - NOT p-6)
+- [ ] **Header section: `mb-4`** (16px below header)
+- [ ] **Section gaps: `mb-3` or `mb-4`** (12-16px between sections)
+- [ ] **Inner content padding: `p-3`** (12px - stats, results boxes)
+- [ ] **Grid gaps: `gap-2`** (8px between stat columns)
+- [ ] **Actions section: `pt-3`** (12px above buttons)
+- [ ] **Actions gap: `gap-3`** (12px between Close and Start Over)
 
-#### PredictionModal Spacing Verification
+#### PredictionModal Spacing
 
-- [ ] **Outer padding: `p-6`** (NOT p-8)
+- [ ] **Outer padding: `p-6`** (24px)
 - [ ] **Question header margin: `mb-6`** (24px - major section break)
-- [ ] **Hint box margin: `mb-6`** (24px - major section break)
-- [ ] **Hint box padding: `p-4`** (16px internal padding)
+- [ ] **Hint box margin: `mb-6`** (24px)
+- [ ] **Hint box padding: `p-4`** (16px internal)
 - [ ] **Choices grid margin: `mb-6`** (24px below choices)
 - [ ] **Choices grid gap: `gap-3`** (12px between buttons)
 - [ ] **Actions section: `pt-4`** (16px above actions)
@@ -73,42 +153,44 @@
 
 - [ ] **Modal titles: `text-2xl`** (NOT text-3xl)
 - [ ] **Subtitle: `text-sm`** (step count, algorithm name)
-- [ ] **Section headers: `text-sm` + `font-bold`** (e.g., "Prediction Accuracy")
-- [ ] **Stat values: `text-xl` + `font-bold`** (NOT text-2xl unless for emphasis)
+- [ ] **Section headers: `text-sm` + `font-bold`**
+- [ ] **Stat values: `text-xl` + `font-bold`** (NOT text-2xl)
 - [ ] **Percentage emphasis: `text-2xl`** (accuracy percentage only)
-- [ ] **Labels: `text-xs`** (field labels, hints)
-- [ ] **Body text: `text-sm`** (descriptions, content)
-- [ ] **Button primary text: `text-base`** (choice button main text)
-- [ ] **Button shortcuts: `text-xs`** (keyboard hint text)
+- [ ] **Labels: `text-xs uppercase tracking-wide`** (stat labels)
+- [ ] **Body text: `text-sm`** (descriptions)
+- [ ] **Button text: `text-base`** (choice button main text)
+- [ ] **Button shortcuts: `text-xs`** (keyboard hints)
 
 #### Visual Quality Checks
 
-- [ ] **Modal height ≤ 400px** (typical case with all sections visible)
-- [ ] **No excessive whitespace** (gaps between sections feel balanced)
-- [ ] **Text hierarchy clear** (size differences create visual structure)
-- [ ] **Compact without cramped** (breathing room without waste)
-- [ ] **Matches static mockup** (side-by-side comparison passes)
+- [ ] **Compact without cramped** - Breathing room without waste
+- [ ] **Text hierarchy clear** - Size differences create structure
+- [ ] **Matches static mockup** - Side-by-side comparison passes
 
 ---
 
 ### 1.1.2 Outcome-Driven Theming (LOCKED)
 
-**Source:** `completion_modal_mockup.html` Implementation Notes
+**Source:** `completion_modal_mockup.html`
 
-- [ ] **Theming Mandatory** - Modal border and header icon color must reflect the algorithm result.
-- [ ] **Success Theme:** Use Emerald/Green palette (e.g., `border-emerald-500`, `bg-emerald-500`).
-- [ ] **Failure Theme:** Use Red palette (e.g., `border-red-500`, `bg-red-500`).
-- [ ] **Neutral/Completion Theme:** Use Blue palette (e.g., `border-blue-500`, `bg-blue-500`).
-- [ ] **Standardized Actions:** Primary action (Start Over) must be Blue (`bg-blue-600`), secondary (Close) must be Slate/Gray (`bg-slate-600`).
+- [ ] **Theming Mandatory** - Modal border and header icon color must reflect result
+- [ ] **Success Theme:** Emerald/Green (`border-emerald-500`, `bg-emerald-500`)
+- [ ] **Failure Theme:** Red (`border-red-500`, `bg-red-500`)
+- [ ] **Neutral/Completion Theme:** Blue (`border-blue-500`, `bg-blue-500`)
+- [ ] **Standardized Actions:**
+  - Primary (Start Over): Blue (`bg-blue-600`)
+  - Secondary (Close): Slate/Gray (`bg-slate-600`)
 
 ---
 
 ### 1.2 Panel Layout Architecture
 
+**Source:** `algorithm_page_mockup.html`
+
 #### Mandatory Flex Ratio
 
 - [ ] **Visualization panel: `flex-[3]`** - 66.67% width (left panel)
-- [ ] **Steps panel: `w-96`** - Fixed 384px OR `flex-[1.5]` (right panel)
+- [ ] **Steps panel: `w-96`** - Fixed 384px (right panel)
 - [ ] **Gap between panels: `gap-4`** - 1rem spacing
 
 #### Minimum Widths
@@ -128,44 +210,41 @@
 
 #### Required IDs (6 Mandatory)
 
-- [ ] **`#app-root`** - Top-level app container (outermost `<div>`)
-- [ ] **`#app-header`** - Main header bar (algorithm info, controls)
+- [ ] **`#app-root`** - Top-level app container
+- [ ] **`#app-header`** - Main header bar
 - [ ] **`#panel-visualization`** - Main visualization area (left panel)
-- [ ] **`#panel-steps`** - Right panel container (steps/state)
+- [ ] **`#panel-steps`** - Right panel container
 - [ ] **`#panel-steps-list`** - Scrollable steps/stack list
-- [ ] **`#panel-step-description`** - Current step description (bottom of right panel)
+- [ ] **`#panel-step-description`** - Current step description
 
 #### Dynamic ID
 
 - [ ] **`#step-current`** - Currently executing step (auto-scroll target)
-  - Applied to active call frame in CallStackView
-  - Only ONE element should have this ID at a time
+  - Only ONE element has this ID at a time
+  - Updates on step navigation
 
 ---
 
 ### 1.4 Keyboard Navigation
 
+**Source:** `algorithm_page_mockup.html` lines 854-874
+
 #### Standard Shortcuts (Always Active)
 
 - [ ] **→ (Right Arrow)** - Next Step
-- [ ] **Space** - Next Step (alternative to Right Arrow)
+- [ ] **Space** - Next Step (alternative to Arrow Right)
 - [ ] **← (Left Arrow)** - Previous Step
-- [ ] **R** - Reset (restart trace from beginning)
+- [ ] **R** - Reset (restart trace)
 - [ ] **Home** - Reset (alternative to R)
 
-**Source:** `algorithm_page_mockup.html` lines 856-874
+#### Modal-Specific Shortcuts
 
-#### Modal-Specific (When Modal Active)
+**Source:** `prediction_modal_mockup.html` lines 329-335
 
-- [ ] **Enter** - Submit (in PredictionModal)
-- [ ] **S** - Skip (in PredictionModal)
-- [ ] **Escape** - Close modal (optional enhancement)
-
-#### Prediction Shortcuts (Auto-Derived, Max 3)
-
-- [ ] **HARD LIMIT: ≤3 prediction choices** - Never exceed
-- [ ] **Derivation strategy implemented** - First letter → key words → numbers (1,2,3)
-- [ ] **Fallback numbers work** - 1, 2, 3 always functional
+- [ ] **F/L/R/K/C (semantic)** - Select choice (first letter of choice text)
+- [ ] **1/2/3 (numeric)** - Select choice (fallback numbers)
+- [ ] **Enter** - Submit selected answer
+- [ ] **S** - Skip prediction
 
 #### Implementation Pattern
 
@@ -177,33 +256,34 @@
 
 #### Anti-Patterns
 
-- [ ] ⛔ **NOT using Space for mode toggle** - Space is for navigation only
-- [ ] ⛔ **NOT different behavior for Space vs Right Arrow** - Must be identical
+- [ ] ❌ **NOT using Space for mode toggle** - Space is for navigation only
+- [ ] ❌ **NOT different behavior for Space vs Arrow Right** - Must be identical
+
+---
 
 ### 1.5 Auto-Scroll Behavior
 
 #### Required Implementation
 
-- [ ] **`useRef()` for active element** - Create `activeCallRef`
+- [ ] **`useRef()` for active element** - Create `activeCallRef` or similar
 - [ ] **`scrollIntoView()` on step change** - Trigger in `useEffect`
 - [ ] **Options: `behavior: 'smooth', block: 'center'`** - Exact parameters
 - [ ] **Dependency: `[currentStep]`** - Re-trigger on step change
 
 #### Scroll Triggers
 
-- [ ] ✅ **User navigates** (Arrow keys, buttons)
-- [ ] ✅ **Prediction mode auto-advances** (after correct answer)
-- [ ] ✅ **Watch mode** (auto-play)
-- [ ] ⛔ **NOT on manual scroll** (don't fight user intent)
-- [ ] ⛔ **NOT on algorithm switch** (scrolling to top expected)
+- [ ] ✅ **User navigates** (Arrow keys, buttons, Space)
+- [ ] ✅ **Prediction mode auto-advances** (after answer)
+- [ ] ❌ **NOT on manual scroll** (respect user intent)
+- [ ] ❌ **NOT on algorithm switch** (reset to top expected)
 
 ---
 
-### 1.6 Overflow Handling Anti-Patterns
+### 1.6 Overflow Handling Pattern
 
 #### THE CRITICAL PATTERN
 
-**⛔ WRONG (causes left edge cutoff):**
+**❌ WRONG (causes left edge cutoff):**
 
 ```jsx
 <div className="flex items-center overflow-auto">
@@ -254,9 +334,9 @@
 
 #### Restrictions
 
-- [ ] ⛔ **NOT ignoring `step.data.visualization` structure**
-- [ ] ⛔ **NOT violating overflow pattern** (no `items-center + overflow-auto`)
-- [ ] ⛔ **NOT exceeding panel boundaries** (use `overflow-auto`)
+- [ ] ❌ **NOT ignoring `step.data.visualization` structure**
+- [ ] ❌ **NOT violating overflow pattern** (no `items-center + overflow-auto`)
+- [ ] ❌ **NOT exceeding panel boundaries** (use `overflow-auto`)
 
 ---
 
@@ -288,7 +368,7 @@
 #### Detection Strategy
 
 - [ ] **Last-step detection** - Check if `step === trace.trace.steps.length - 1`
-- [ ] ⛔ **NOT step type check** - Algorithm-agnostic
+- [ ] ❌ **NOT step type check** - Algorithm-agnostic
 
 #### Algorithm-Specific Rendering
 
@@ -329,13 +409,14 @@
 
 ### LOCKED Requirements Test
 
-- [ ] **Modal uses `max-w-lg`** - Measure width (should be 512px max)
-- [ ] **Modal uses `max-h-[85vh]`** - Verify height constraint is present
-- [ ] **Modal outer padding is `p-6`** - Measure padding (should be 24px)
-- [ ] **Outcome Theming correct** - Border/Icon color matches Success/Failure result
+- [ ] **CompletionModal uses `max-w-lg p-5`** - Measure width/padding
+- [ ] **PredictionModal uses `max-w-lg p-6`** - Measure width/padding
+- [ ] **NO height constraint on modals** - Verify no `max-h-[85vh]`
+- [ ] **Vertical efficiency patterns** - Horizontal layouts, compact spacing
+- [ ] **Outcome theming correct** - Border/Icon color matches result
 - [ ] **Panel layout uses 3:1.5 ratio** - Measure widths
 - [ ] **All 6 required IDs present** - Inspect DOM
-- [ ] **Keyboard shortcuts work** - Arrow keys, Space, R, Enter, S
+- [ ] **Keyboard shortcuts work** - Arrow keys, Space, R, Home, Enter, S
 - [ ] **Auto-scroll works** - `#step-current` scrolls into view
 - [ ] **Overflow pattern correct** - Left edge accessible on wide content
 - [ ] **Spacing matches mockup** - Side-by-side visual comparison
@@ -352,24 +433,23 @@
 - [ ] **Visualization clear** - Easy to understand
 - [ ] **Step descriptions helpful** - Meaningful text
 - [ ] **Prediction questions meaningful** - Not arbitrary
-- [ ] **Modals feel compact** - No excessive whitespace
+- [ ] **Modals feel compact** - Efficient use of space
 - [ ] **Visual consistency** - All modals look similar
 
 ---
 
 ## Quick Reference: Modal Standards
 
-| Property               | Value              | Source                         |
-| ---------------------- | ------------------ | ------------------------------ |
-| **Width**              | `max-w-lg` (512px) | All mockup examples            |
-| **Height**             | `max-h-[85vh]`     | `completion_modal_mockup.html` |
-| **Padding**            | `p-6` (24px)       | All mockup examples            |
-| **Major section gaps** | `mb-6` (24px)      | PredictionModal                |
-| **Minor section gaps** | `mb-4` (16px)      | CompletionModal                |
-| **Inner padding**      | `p-3` (12px)       | Content boxes                  |
-| **Grid gaps**          | `gap-3` (12px)     | Stats, choices                 |
-| **Title font**         | `text-2xl`         | NOT text-3xl                   |
-| **Stat values**        | `text-xl`          | NOT text-2xl                   |
+| Property          | CompletionModal    | PredictionModal    | Source              |
+| ----------------- | ------------------ | ------------------ | ------------------- |
+| **Width**         | `max-w-lg` (512px) | `max-w-lg` (512px) | Both mockups        |
+| **Height**        | No constraint      | No constraint      | Compact Redesign    |
+| **Padding**       | `p-5` (20px)       | `p-6` (24px)       | Updated mockups     |
+| **Header layout** | Horizontal (row)   | Vertical (column)  | Compact Redesign    |
+| **Section gaps**  | `mb-3`, `mb-4`     | `mb-6`             | Compact vs Standard |
+| **Inner padding** | `p-3` (12px)       | `p-4` (16px)       | Content boxes       |
+| **Grid gaps**     | `gap-2` (8px)      | `gap-3` (12px)     | Stats/choices       |
+| **Title font**    | `text-2xl`         | `text-2xl`         | Both mockups        |
 
 ---
 
@@ -378,11 +458,13 @@
 ```jsx
 <div id="app-root">
   <div id="app-header">/* Controls */</div>
-  <div className="flex">
-    <div id="panel-visualization">/* Timeline/Array */</div>
-    <div id="panel-steps">
-      <div id="panel-steps-list">
-        <div id="step-current">/* Active step */</div>
+  <div className="flex gap-4">
+    <div id="panel-visualization" className="flex-[3]">
+      /* Visualization */
+    </div>
+    <div id="panel-steps" className="w-96">
+      <div id="panel-steps-list" className="overflow-y-auto">
+        <div id="step-current">/* Active step - auto-scroll target */</div>
       </div>
       <div id="panel-step-description">/* Current action */</div>
     </div>
@@ -392,24 +474,59 @@
 
 ---
 
-## Approval Criteria
+## Workflow Integration (v2.0)
 
-✅ **PASS** - All LOCKED requirements met, spacing matches mockups, no anti-patterns present  
-⚠️ **MINOR ISSUES** - CONSTRAINED choices questionable but acceptable  
-❌ **FAIL** - LOCKED requirements violated, spacing doesn't match mockups, UI regression detected
+**Stage 3: Frontend Integration**
+
+**Before starting:**
+
+1. ✅ QA narrative review APPROVED
+2. ✅ Backend code available
+3. ✅ Narratives serve as reference documentation
+
+**Your focus:**
+
+- Frontend implements "how to render" (backend already defined "what to render")
+- Trust that JSON is logically complete (narrative validated it)
+- Reference narratives for expected behavior
+
+**After completing:**
+
+1. ✅ Complete this Frontend Checklist
+2. ✅ Submit PR with code + checklist
+3. ✅ Proceed to Stage 4: QA Integration Testing
 
 ---
 
-**Remember:** The three static mockups (`algorithm_page_mockup.html`, `prediction_modal_mockup.html`, `completion_modal_mockup.html`) are your **visual source of truth**. When in doubt, reference them.
+## Approval Criteria
+
+✅ **PASS** - All LOCKED requirements met, spacing matches mockups, no anti-patterns  
+⚠️ **MINOR ISSUES** - CONSTRAINED choices questionable but acceptable  
+❌ **FAIL** - LOCKED requirements violated, spacing doesn't match mockups, regressions
+
+---
+
+**Remember:**
+
+- The three static mockups are your **visual source of truth**
+- When text interpretation differs from mockups, **mockups win**
+- Narratives are your **behavioral reference** (what should happen at each step)
+
+**For detailed workflow information, see:** WORKFLOW.md v2.0
+
+---
 
 **Version History:**
 
 - v1.0: Initial checklist (Session 17)
 - v1.1: Corrected modal standards based on mockup analysis (Session 22)
-  - Removed `max-h-[85vh]` requirement (not in mockups)
-  - Changed CompletionModal from `max-w-2xl` to `max-w-lg` (matches mockups)
-  - Corrected padding from `p-5` to `p-6` (matches mockups)
-  - Added detailed spacing verification based on mockup HTML structure
-- v1.2: Critical correction based on explicit documentation in `completion_modal_mockup.html` (Session 23)
-  - Restored mandatory `max-h-[85vh]` requirement (Section 1.1)
-  - Elevated Outcome-Driven Theming to a LOCKED requirement (New Section 1.1.2)
+- v1.2: Critical correction based on explicit documentation (Session 23)
+- v2.0: Updated for WORKFLOW.md v2.0 (Session 34)
+  - Updated authority reference from TENANT_GUIDE.md to WORKFLOW.md
+  - Corrected modal sizing based on UPDATED mockups (Compact Redesign)
+  - Removed max-h-[85vh] requirement (not in updated mockups)
+  - Updated CompletionModal padding to p-5 (compact)
+  - Added vertical efficiency patterns
+  - Updated keyboard shortcuts (Space = Next, Home = Reset)
+  - Added narrative validation prerequisite
+  - Added workflow integration section

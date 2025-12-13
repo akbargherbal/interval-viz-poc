@@ -1,8 +1,14 @@
 # Backend Algorithm Tracer Compliance Checklist
 
-**Version:** 1.0  
-**Authority:** TENANT_GUIDE.md v1.0 - Section 2.1 (Backend JSON Contract)  
+**Version:** 2.0  
+**Authority:** WORKFLOW.md v2.0 - Backend Requirements  
 **Purpose:** Verify new algorithm tracers comply with platform requirements
+
+**Changes from v1.0:**
+- Added narrative generation as LOCKED requirement
+- Updated authority reference from TENANT_GUIDE.md to WORKFLOW.md
+- Added narrative validation to testing checklist
+- Added narrative anti-patterns
 
 ---
 
@@ -30,6 +36,29 @@
 - [ ] **Implements `_get_visualization_state()`** - Returns dict with current visualization data
 - [ ] **Implements `execute(input_data)`** - Main algorithm logic, returns trace dict
 - [ ] **No modifications to `base_tracer.py`** - All customization via subclass methods
+
+### Narrative Generation (NEW in v2.0)
+
+- [ ] **Implements `generate_narrative(trace_result: dict) -> str`**
+  - Abstract method from `AlgorithmTracer` base class
+  - Converts own trace JSON to human-readable markdown
+  - Must be implemented (will raise NotImplementedError if not)
+
+- [ ] **Narrative generated for ALL registered examples**
+  - Every example in `registry.py` has corresponding narrative
+  - Files saved to `docs/narratives/[algorithm-name]/[example-name].md`
+  - Naming convention: `example_1_basic.md`, `example_2_edge_case.md`, etc.
+
+- [ ] **Narrative generation does NOT fail**
+  - No `KeyError` exceptions when accessing visualization data
+  - No missing field references
+  - Fails loudly if data incomplete (this is good - catches bugs!)
+
+- [ ] **Self-review completed before submission**
+  - [ ] Can I follow the algorithm logic from narrative alone?
+  - [ ] Are all decision points explained with visible data?
+  - [ ] Does temporal flow make sense (step N → step N+1)?
+  - [ ] Can I mentally visualize this without code/JSON?
 
 ---
 
@@ -90,7 +119,7 @@ If implementing prediction mode:
 
 ---
 
-## ⌠ANTI-PATTERNS (Never Do)
+## ANTI-PATTERNS (Never Do)
 
 ### Contract Violations
 
@@ -105,6 +134,24 @@ If implementing prediction mode:
 - [ ] ✅ **NOT hardcoding step types in base class**
 - [ ] ✅ **NOT bypassing `_add_step()` method**
 
+### Narrative Anti-Patterns (NEW in v2.0)
+
+- [ ] ✅ **NOT referencing undefined variables in narrative**
+  - Example ❌: "Compare with max_end" (but max_end value not shown)
+  - Example ✅: "Compare 720 with max_end (660)"
+
+- [ ] ✅ **NOT skipping decision outcomes**
+  - Example ❌: "Examining interval... [next step unrelated]"
+  - Example ✅: "Examining interval [900, 960] → KEPT (extends coverage)"
+
+- [ ] ✅ **NOT using centralized narrative generator**
+  - Each algorithm narrates ITSELF
+  - No shared generator with if/elif chains
+
+- [ ] ✅ **NOT creating narratives that require code to understand**
+  - Narrative must be self-contained
+  - All data referenced must be visible in narrative
+
 ---
 
 ## FREE CHOICES (Your Decision)
@@ -116,6 +163,7 @@ If implementing prediction mode:
 - [ ] **Additional metrics** - Add custom fields (comparisons, swaps, custom_metric)
 - [ ] **Visualization config** - Extend with algorithm-specific settings
 - [ ] **Execution stats** - Add to `metadata.execution_stats`
+- [ ] **Narrative formatting** - Markdown style choices (headers, emphasis, lists)
 
 ---
 
@@ -129,9 +177,16 @@ If implementing prediction mode:
 - [ ] **Prediction points valid** - If implemented, ≤3 choices each
 - [ ] **Handles edge cases** - Empty input, single element, etc.
 
+### Narrative Tests (NEW in v2.0)
+
+- [ ] **All examples generate narratives** - No exceptions raised
+- [ ] **Narratives reveal missing data** - Method fails loudly on incomplete visualization data
+- [ ] **Narratives are logically complete** - QA can follow algorithm logic
+- [ ] **Narratives demonstrate temporal coherence** - Step flow makes sense
+
 ### Integration Tests
 
-- [ ] **Flask endpoint works** - `/api/trace` accepts algorithm
+- [ ] **Flask endpoint works** - `/api/trace/unified` accepts algorithm
 - [ ] **Registry integration** - Algorithm registered correctly
 - [ ] **Frontend can load** - Trace visible in browser console
 - [ ] **No base class changes** - `base_tracer.py` unchanged
@@ -164,8 +219,84 @@ def validate_binary_search_trace():
         for pred in result['metadata']['prediction_points']:
             assert len(pred['choices']) <= 3, "HARD LIMIT VIOLATED"
 
+    # NEW: Narrative validation
+    narrative = tracer.generate_narrative(result)
+    assert isinstance(narrative, str), "Narrative must be string"
+    assert len(narrative) > 0, "Narrative cannot be empty"
+    assert "Step 0" in narrative, "Narrative must include step information"
+    
+    # Save narrative for QA review
+    output_path = f"docs/narratives/binary-search/basic_example.md"
+    with open(output_path, 'w') as f:
+        f.write(narrative)
+
     print("✅ Binary Search trace is compliant")
+    print(f"✅ Narrative saved to {output_path}")
 ```
+
+---
+
+## Narrative Generation Pattern Example
+
+```python
+class BinarySearchTracer(AlgorithmTracer):
+    def generate_narrative(self, trace_result: dict) -> str:
+        """
+        Convert trace JSON to human-readable markdown narrative.
+        
+        CRITICAL: This method must show ALL decision data.
+        If you reference a variable, SHOW its value.
+        """
+        narrative = "# Binary Search Execution Narrative\n\n"
+        narrative += f"**Input:** Array of {trace_result['metadata']['input_size']} elements\n"
+        narrative += f"**Target:** {self.target}\n\n"
+        
+        for step in trace_result['trace']['steps']:
+            step_num = step['step']
+            step_type = step['type']
+            description = step['description']
+            viz = step['data']['visualization']
+            
+            narrative += f"## Step {step_num}: {description}\n\n"
+            
+            # Show visualization state with ALL relevant data
+            array = viz['array']
+            pointers = viz['pointers']
+            
+            narrative += f"**Array State:**\n"
+            narrative += f"```\n"
+            for elem in array:
+                marker = ""
+                if elem['index'] == pointers['left']:
+                    marker += "L"
+                if elem['index'] == pointers['mid']:
+                    marker += "M"
+                if elem['index'] == pointers['right']:
+                    marker += "R"
+                narrative += f"[{elem['index']}]: {elem['value']} ({elem['state']}) {marker}\n"
+            narrative += f"```\n\n"
+            
+            # Show decision with VISIBLE data
+            if step_type == 'COMPARE':
+                mid_value = array[pointers['mid']]['value']
+                narrative += f"**Decision:** Compare target ({self.target}) with mid value ({mid_value})\n"
+                
+                if self.target == mid_value:
+                    narrative += f"**Result:** {self.target} == {mid_value} → FOUND at index {pointers['mid']}\n\n"
+                elif self.target < mid_value:
+                    narrative += f"**Result:** {self.target} < {mid_value} → Search LEFT half\n\n"
+                else:
+                    narrative += f"**Result:** {self.target} > {mid_value} → Search RIGHT half\n\n"
+        
+        return narrative
+```
+
+**Key Principles:**
+1. Show ALL data referenced in decisions
+2. Make comparisons explicit with actual values
+3. Explain outcomes clearly
+4. Use code blocks for complex state
+5. Fail loudly (KeyError) if data missing
 
 ---
 
@@ -182,10 +313,33 @@ def validate_binary_search_trace():
 
 ## Approval Criteria
 
-✅ **PASS** - All LOCKED requirements met, CONSTRAINED contract followed  
- **MINOR ISSUES** - Free choices questionable but acceptable  
-**FAIL** - LOCKED requirements violated, return to development
+✅ **PASS** - All LOCKED requirements met, CONSTRAINED contract followed, narratives generated  
+⚠️ **MINOR ISSUES** - Free choices questionable but acceptable  
+❌ **FAIL** - LOCKED requirements violated, return to development
+
+**NEW in v2.0:** Narratives must be generated and submitted with code. QA will review narratives before frontend integration.
 
 ---
 
-**Remember:** If your tracer requires changes to `base_tracer.py`, you've misunderstood the architecture. Stop and reassess.
+## Workflow Integration (v2.0)
+
+**Stage 1: Backend Implementation**
+
+1. ✅ Implement tracer class
+2. ✅ Implement `generate_narrative()` method
+3. ✅ Run unit tests
+4. ✅ Generate narratives for ALL registered examples
+5. ✅ Self-review narratives (use checklist above)
+6. ✅ Complete this checklist
+7. ✅ Submit PR with code + narratives + checklist
+
+**Next Stage:** QA Narrative Review (see QA_INTEGRATION_CHECKLIST.md)
+
+---
+
+**Remember:** 
+- If your tracer requires changes to `base_tracer.py`, you've misunderstood the architecture
+- If your narrative has undefined variable references, you've missed required visualization data
+- Narratives that fail to generate = bugs caught early (this is good!)
+
+**For detailed narrative implementation guidance, see:** WORKFLOW.md - Stage 1: Backend Implementation
