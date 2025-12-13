@@ -74,169 +74,173 @@ class BinarySearchTracer(AlgorithmTracer):
         if index < self.left or index > self.right:
             return 'excluded'
         return 'active_range'
+    
+    # jjjj
 
     def execute(self, input_data: Any) -> dict:
-        """
-        Execute binary search algorithm with trace generation.
+            """
+            Execute binary search algorithm with trace generation.
 
-        Args:
-            input_data: dict with keys:
-                - 'array': List of integers (must be sorted)
-                - 'target': Integer to search for
+            Args:
+                input_data: dict with keys:
+                    - 'array': List of integers (must be sorted)
+                    - 'target': Integer to search for
 
-        Returns:
-            Standardized trace result with:
-                - result: {'found': bool, 'index': int or None, 'comparisons': int}
-                - trace: Complete step-by-step execution
-                - metadata: Includes visualization_type='array'
+            Returns:
+                Standardized trace result with:
+                    - result: {'found': bool, 'index': int or None, 'comparisons': int}
+                    - trace: Complete step-by-step execution
+                    - metadata: Includes visualization_type='array'
 
-        Raises:
-            ValueError: If array is not sorted or input is invalid
-        """
-        # Validate input
-        if not isinstance(input_data, dict):
-            raise ValueError("Input must be a dictionary")
-        if 'array' not in input_data or 'target' not in input_data:
-            raise ValueError("Input must contain 'array' and 'target' keys")
+            Raises:
+                ValueError: If array is not sorted or input is invalid
+            """
+            # Validate input
+            if not isinstance(input_data, dict):
+                raise ValueError("Input must be a dictionary")
+            if 'array' not in input_data or 'target' not in input_data:
+                raise ValueError("Input must contain 'array' and 'target' keys")
 
-        self.array = input_data['array']
-        self.target = input_data['target']
+            self.array = input_data['array']
+            self.target = input_data['target']
 
-        if not self.array:
-            raise ValueError("Array cannot be empty")
+            if not self.array:
+                raise ValueError("Array cannot be empty")
 
-        # Validate array is sorted
-        if not all(self.array[i] <= self.array[i+1] for i in range(len(self.array)-1)):
-            raise ValueError("Array must be sorted in ascending order")
+            # Validate array is sorted
+            if not all(self.array[i] <= self.array[i+1] for i in range(len(self.array)-1)):
+                raise ValueError("Array must be sorted in ascending order")
 
-        # Initialize search
-        self.left = 0
-        self.right = len(self.array) - 1
-        self.mid = None
-        self.found_index = None
-        self.search_complete = False
-        comparisons = 0
+            # Initialize search
+            self.left = 0
+            self.right = len(self.array) - 1
+            self.mid = None
+            self.found_index = None
+            self.search_complete = False
+            comparisons = 0
 
-        # Set metadata for frontend
-        self.metadata = {
-            'algorithm': 'binary-search',
-            'display_name': 'Binary Search',  # ✅ COMPLIANCE FIX: Added required field
-            'visualization_type': 'array',
-            'visualization_config': {
-                'element_renderer': 'number',
-                'show_indices': True,
-                'pointer_colors': {
-                    'left': 'blue',
-                    'right': 'red',
-                    'mid': 'yellow',
-                    'target': 'green'
-                }
-            },
-            'input_size': len(self.array),
-            'target_value': self.target
-        }
-
-        # Initial state
-        self._add_step(
-            "INITIAL_STATE",
-            {
-                'target': self.target,
-                'array_size': len(self.array),
-                'search_range': f"[{self.left}, {self.right}]"
-            },
-            f"🔍 Searching for {self.target} in sorted array of {len(self.array)} elements"
-        )
-
-        # Binary search loop
-        while self.left <= self.right:
-            # Calculate mid
-            self.mid = (self.left + self.right) // 2
-            mid_value = self.array[self.mid]
-
-            self._add_step(
-                "CALCULATE_MID",
-                {
-                    'mid_index': self.mid,
-                    'mid_value': mid_value,
-                    'left': self.left,
-                    'right': self.right,
-                    'calculation': f"mid = ({self.left} + {self.right}) // 2 = {self.mid}"
+            # Set metadata for frontend
+            self.metadata = {
+                'algorithm': 'binary-search',
+                'display_name': 'Binary Search',
+                'visualization_type': 'array',
+                'visualization_config': {
+                    'element_renderer': 'number',
+                    'show_indices': True,
+                    'pointer_colors': {
+                        'left': 'blue',
+                        'right': 'red',
+                        'mid': 'yellow',
+                        'target': 'green'
+                    }
                 },
-                f"📍 Calculate middle: index {self.mid} (value = {mid_value})"
+                'input_size': len(self.array),
+                'target_value': self.target
+            }
+
+            # Initial state
+            self._add_step(
+                "INITIAL_STATE",
+                {
+                    'target': self.target,
+                    'array_size': len(self.array),
+                    'search_range': f"[{self.left}, {self.right}]"
+                },
+                f"🔍 Searching for {self.target} in sorted array of {len(self.array)} elements"
             )
 
-            # Compare mid with target
-            comparisons += 1
-
-            if mid_value == self.target:
-                # Target found!
-                self.found_index = self.mid
-                self.search_complete = True
+            # Binary search loop
+            while self.left <= self.right:
+                # Calculate mid
+                self.mid = (self.left + self.right) // 2
+                mid_value = self.array[self.mid]
 
                 self._add_step(
-                    "TARGET_FOUND",
+                    "CALCULATE_MID",
                     {
+                        'mid_index': self.mid,
+                        'mid_value': mid_value,
+                        'left': self.left,
+                        'right': self.right,
+                        'calculation': f"mid = ({self.left} + {self.right}) // 2 = {self.mid}"
+                    },
+                    f"📍 Calculate middle: index {self.mid} (value = {mid_value})"
+                )
+
+                # Compare mid with target
+                comparisons += 1
+
+                if mid_value == self.target:
+                    # Target found!
+                    self.found_index = self.mid
+                    self.search_complete = True
+
+                    self._add_step(
+                        "TARGET_FOUND",
+                        {
+                            'index': self.mid,
+                            'value': mid_value,
+                            'comparisons': comparisons
+                        },
+                        f"✅ Found target {self.target} at index {self.mid} (after {comparisons} comparisons)"
+                    )
+
+                    return self._build_trace_result({
+                        'found': True,
                         'index': self.mid,
-                        'value': mid_value,
                         'comparisons': comparisons
-                    },
-                    f"✅ Found target {self.target} at index {self.mid} (after {comparisons} comparisons)"
-                )
+                    })
 
-                return self._build_trace_result({
-                    'found': True,
-                    'index': self.mid,
-                    'comparisons': comparisons
-                })
+                elif mid_value < self.target:
+                    # Target is in right half
+                    self._add_step(
+                        "SEARCH_RIGHT",
+                        {
+                            'comparison': f"{mid_value} < {self.target}",
+                            'action': 'eliminate_left_half',
+                            'old_left': self.left,
+                            'new_left': self.mid + 1,
+                            'eliminated_elements': self.mid - self.left + 1
+                        },
+                        f"➡️ {mid_value} < {self.target}, search right half (eliminate {self.mid - self.left + 1} elements)"
+                    )
+                    self.left = self.mid + 1
 
-            elif mid_value < self.target:
-                # Target is in right half
-                self._add_step(
-                    "SEARCH_RIGHT",
-                    {
-                        'comparison': f"{mid_value} < {self.target}",
-                        'action': 'eliminate_left_half',
-                        'old_left': self.left,
-                        'new_left': self.mid + 1,
-                        'eliminated_elements': self.mid - self.left + 1
-                    },
-                    f"➡️ {mid_value} < {self.target}, search right half (eliminate {self.mid - self.left + 1} elements)"
-                )
-                self.left = self.mid + 1
+                else:  # mid_value > self.target
+                    # Target is in left half
+                    self._add_step(
+                        "SEARCH_LEFT",
+                        {
+                            'comparison': f"{mid_value} > {self.target}",
+                            'action': 'eliminate_right_half',
+                            'old_right': self.right,
+                            'new_right': self.mid - 1,
+                            'eliminated_elements': self.right - self.mid + 1
+                        },
+                        f"⬅️ {mid_value} > {self.target}, search left half (eliminate {self.right - self.mid + 1} elements)"
+                    )
+                    self.right = self.mid - 1
 
-            else:  # mid_value > self.target
-                # Target is in left half
-                self._add_step(
-                    "SEARCH_LEFT",
-                    {
-                        'comparison': f"{mid_value} > {self.target}",
-                        'action': 'eliminate_right_half',
-                        'old_right': self.right,
-                        'new_right': self.mid - 1,
-                        'eliminated_elements': self.right - self.mid + 1
-                    },
-                    f"⬅️ {mid_value} > {self.target}, search left half (eliminate {self.right - self.mid + 1} elements)"
-                )
-                self.right = self.mid - 1
+            # Target not found
+            self.search_complete = True
+            self.mid = None  # Reset mid so final visualization shows all excluded
 
-        # Target not found
-        self.search_complete = True
+            self._add_step(
+                "TARGET_NOT_FOUND",
+                {
+                    'comparisons': comparisons,
+                    'final_state': 'search_space_empty'
+                },
+                f"❌ Target {self.target} not found in array (after {comparisons} comparisons)"
+            )
 
-        self._add_step(
-            "TARGET_NOT_FOUND",
-            {
-                'comparisons': comparisons,
-                'final_state': 'search_space_empty'
-            },
-            f"❌ Target {self.target} not found in array (after {comparisons} comparisons)"
-        )
+            return self._build_trace_result({
+                'found': False,
+                'index': None,
+                'comparisons': comparisons
+            })
 
-        return self._build_trace_result({
-            'found': False,
-            'index': None,
-            'comparisons': comparisons
-        })
-
+    # jjjj
     def get_prediction_points(self) -> List[Dict[str, Any]]:
         """
         Identify prediction opportunities for active learning.
