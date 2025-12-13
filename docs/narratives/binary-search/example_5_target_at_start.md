@@ -64,10 +64,10 @@ Value:  10  20  30  40  50
 
 **Remaining Search Space:**
 ```
-Index:   0   1   3   4
-Value:  10  20  40  50
+Index:   0   1
+Value:  10  20
 ```
-*Search space reduced to **5 elements***
+*Search space reduced to **2 elements***
 
 ---
 

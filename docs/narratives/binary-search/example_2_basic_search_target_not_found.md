@@ -64,10 +64,10 @@ Value:   1   3   5   7   9  11  13  15
 
 **Remaining Search Space:**
 ```
-Index:   0   1   2   4   5   6   7
-Value:   1   3   5   9  11  13  15
+Index:   0   1   2
+Value:   1   3   5
 ```
-*Search space reduced to **8 elements***
+*Search space reduced to **3 elements***
 
 ---
 
@@ -108,10 +108,10 @@ Value:   1   3   5
 
 **Remaining Search Space:**
 ```
-Index:   0   2
-Value:   1   5
+Index:   2
+Value:   5
 ```
-*Search space reduced to **3 elements***
+*Search space reduced to **1 element***
 
 ---
 
@@ -149,13 +149,6 @@ Value:   5
 **Updated Pointers:**
 - New left pointer: 3 (was 2)
 - Right pointer: 2 (unchanged)
-
-**Remaining Search Space:**
-```
-Index: 
-Value: 
-```
-*Search space reduced to **1 elements***
 
 ---
 

@@ -64,10 +64,10 @@ Value:   4  11  12  14  22  23  33  34  39  48  51  59  63  69  70  71  74  79  
 
 **Remaining Search Space:**
 ```
-Index:   0   1   2   3   4   5   6   7   8  10  11  12  13  14  15  16  17  18  19
-Value:   4  11  12  14  22  23  33  34  39  51  59  63  69  70  71  74  79  91  98
+Index:  10  11  12  13  14  15  16  17  18  19
+Value:  51  59  63  69  70  71  74  79  91  98
 ```
-*Search space reduced to **20 elements***
+*Search space reduced to **10 elements***
 
 ---
 
@@ -108,10 +108,10 @@ Value:  51  59  63  69  70  71  74  79  91  98
 
 **Remaining Search Space:**
 ```
-Index:  10  11  12  13  15  16  17  18  19
-Value:  51  59  63  69  71  74  79  91  98
+Index:  10  11  12  13
+Value:  51  59  63  69
 ```
-*Search space reduced to **10 elements***
+*Search space reduced to **4 elements***
 
 ---
 
