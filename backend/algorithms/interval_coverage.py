@@ -40,6 +40,9 @@ class IntervalCoverageTracer(AlgorithmTracer):
         self.next_call_id = 0
         self.original_intervals = []
         self.interval_states = {}
+        self.current_max_end = float('-inf') 
+
+
 
     def execute(self, input_data: dict) -> dict:
         """
@@ -145,13 +148,11 @@ class IntervalCoverageTracer(AlgorithmTracer):
     def _get_visualization_state(self) -> dict:
         """
         Hook: Return current visualization state for automatic enrichment.
-
-        This is called by _add_step() to enrich each step with the current
-        visual state of all intervals and the call stack.
         """
         return {
             'all_intervals': self._get_all_intervals_with_state(),
-            'call_stack_state': self._get_call_stack_state()
+            'call_stack_state': self._get_call_stack_state(),
+            'max_end': self._serialize_value(self.current_max_end)  # ✅ ADD THIS LINE
         }
 
     def get_prediction_points(self) -> List[Dict[str, Any]]:
@@ -300,6 +301,7 @@ class IntervalCoverageTracer(AlgorithmTracer):
         Note: No longer manually enriches data in _add_step() calls because
         _get_visualization_state() handles it automatically.
         """
+        self.current_max_end = max_end 
         if not intervals:
             call_id = self.next_call_id
             self.next_call_id += 1
@@ -415,6 +417,7 @@ class IntervalCoverageTracer(AlgorithmTracer):
                 f"Coverage extended: max_end updated from {old_display} → {new_max_end} (now we can skip intervals ending ≤ {new_max_end})"
             )
 
+            self.current_max_end = new_max_end
             rest = self._filter_recursive(remaining, new_max_end)
             result = [current] + rest
         else:
