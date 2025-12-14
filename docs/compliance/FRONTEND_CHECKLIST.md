@@ -1,9 +1,17 @@
 # Frontend UI/UX Compliance Checklist
 
-**Version:** 2.1  
+**Version:** 2.2  
 **Authority:** WORKFLOW.md v2.1 - Frontend Requirements  
 **Visual Authority:** `docs/static_mockup/*.html` - Single source of truth for all visual standards  
 **Purpose:** Verify UI components comply with platform standards
+
+**Changes from v2.1:**
+
+- Added Section 2.2: Algorithm State Component Registration (Session 43)
+- Documented state registry requirements (mirrors visualization registry pattern)
+- Added naming convention for state components (`{Algorithm}State.jsx`)
+- Added directory organization requirement (`algorithm-states/` vs `visualizations/`)
+- Cross-referenced ADR-001 for architectural decision rationale
 
 **Changes from v2.0:**
 
@@ -382,7 +390,160 @@ This means you can trust that:
 
 ---
 
-### 2.2 Prediction Questions
+### 2.2 Algorithm State Component Registration (NEW - Session 43)
+
+**Purpose:** Ensure algorithm-specific state components follow registry architecture
+
+**Architectural Context:** Completes the registry pattern proven for visualization components (LEFT panel) by extending it to state components (RIGHT panel). See `docs/ADR/ADR-001-registry-based-architecture.md` for decision rationale.
+
+#### Required Registration
+
+- [ ] **Component registered in `stateRegistry.js`** - Maps algorithm name to state component
+- [ ] **Component placed in `algorithm-states/` directory** - Clear separation from reusable visualizations
+- [ ] **Component follows naming convention** - `{Algorithm}State.jsx` (e.g., `BinarySearchState.jsx`, `IntervalCoverageState.jsx`)
+
+#### Component Structure Requirements
+
+- [ ] **Accepts `step` prop** - Current step data (same as visualization components)
+- [ ] **Extracts algorithm-specific state** - From `step?.data?.visualization`
+- [ ] **Graceful fallback** - Handles missing/undefined step data
+- [ ] **PropTypes validation** - Documents expected props
+
+**Example Structure:**
+
+```jsx
+// algorithm-states/BinarySearchState.jsx
+import React from 'react';
+import PropTypes from 'prop-types';
+
+const BinarySearchState = ({ step }) => {
+  // Extract algorithm-specific state from step data
+  const viz = step?.data?.visualization;
+  const pointers = viz?.pointers || {};
+  
+  if (!viz) {
+    return <div className="text-slate-400 text-sm">No state data available</div>;
+  }
+  
+  return (
+    <div className="space-y-4">
+      <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
+        Algorithm State
+      </h3>
+      <div className="space-y-2 text-sm">
+        <div className="flex justify-between">
+          <span className="text-slate-400">Left:</span>
+          <span className="text-white font-medium font-mono">{pointers.left ?? 'N/A'}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-slate-400">Right:</span>
+          <span className="text-white font-medium font-mono">{pointers.right ?? 'N/A'}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-slate-400">Mid:</span>
+          <span className="text-white font-medium font-mono">{pointers.mid ?? 'N/A'}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+BinarySearchState.propTypes = {
+  step: PropTypes.object.isRequired,
+};
+
+export default BinarySearchState;
+```
+
+#### Registry Entry Requirements
+
+- [ ] **Component imported in `stateRegistry.js`** - Correct import path
+- [ ] **Algorithm name matches backend** - Key matches `metadata.algorithm` from trace
+- [ ] **Fallback component defined** - For unknown/unregistered algorithms
+
+**Example Registry:**
+
+```javascript
+// utils/stateRegistry.js
+import IntervalCoverageState from '../components/algorithm-states/IntervalCoverageState';
+import BinarySearchState from '../components/algorithm-states/BinarySearchState';
+
+const STATE_REGISTRY = {
+  'interval-coverage': IntervalCoverageState,
+  'binary-search': BinarySearchState,
+  // Add new algorithms here
+};
+
+export const getStateComponent = (algorithmName) => {
+  const component = STATE_REGISTRY[algorithmName];
+  
+  if (!component) {
+    console.warn(`No state component registered for: ${algorithmName}`);
+    // Return minimal fallback component
+    return () => (
+      <div className="text-gray-400 text-sm">
+        No state visualization for this algorithm
+      </div>
+    );
+  }
+  
+  return component;
+};
+
+export const isStateComponentRegistered = (algorithmName) => {
+  return algorithmName in STATE_REGISTRY;
+};
+```
+
+#### Verification Checklist
+
+- [ ] **Component imports successfully** - No circular dependencies or import errors
+- [ ] **Registry lookup works** - `getStateComponent('algorithm-name')` returns correct component
+- [ ] **Fallback handles unknown algorithms** - Returns default component gracefully (no crashes)
+- [ ] **No hardcoded algorithm checks in App.jsx** - All state component routing through registry
+- [ ] **Component renders in browser** - Visual verification in development
+
+#### Directory Structure Requirement
+
+```
+frontend/src/components/
+├── algorithm-states/           ← Algorithm-specific state components
+│   ├── BinarySearchState.jsx
+│   ├── IntervalCoverageState.jsx
+│   └── index.js                ← Export all state components
+└── visualizations/             ← Reusable visualization components
+    ├── ArrayView.jsx
+    ├── TimelineView.jsx
+    └── index.js
+```
+
+**Key Distinction:**
+- `algorithm-states/` - One component per algorithm, not reusable
+- `visualizations/` - Reusable across algorithms (ArrayView can display any array)
+
+#### Why This Requirement Exists
+
+**Architectural Consistency:** Mirrors proven `visualizationRegistry.js` pattern for LEFT panel. Both panels now use symmetric registry-based architecture, achieving true zero-config algorithm addition.
+
+**Before (inconsistent):**
+- LEFT panel: Registry-based ✅
+- RIGHT panel: Hardcoded conditionals ❌
+
+**After (consistent):**
+- LEFT panel: Registry-based ✅
+- RIGHT panel: Registry-based ✅
+
+**Benefits:**
+1. **Zero App.jsx changes** when adding new algorithms
+2. **Symmetric architecture** across both panels
+3. **Self-documenting** - registry is source of truth
+4. **Scalable** - supports 100+ algorithms without code sprawl
+
+**Reference:** See `docs/ADR/ADR-001-registry-based-architecture.md` and `docs/ADR/ADR-002-component-organization-principles.md` for full architectural decision documentation.
+
+---
+
+### 2.3 Prediction Questions
 
 #### HARD LIMIT: Maximum 3 Choices
 
@@ -405,7 +566,7 @@ This means you can trust that:
 
 ---
 
-### 2.3 Completion Modal
+### 2.4 Completion Modal
 
 #### Detection Strategy
 
@@ -466,6 +627,10 @@ This means you can trust that:
 ### CONSTRAINED Requirements Test
 
 - [ ] **Visualization component accepts props** - step, config
+- [ ] **State component registered** - Registry lookup succeeds (NEW - Session 43)
+- [ ] **State component in correct directory** - `algorithm-states/` folder (NEW - Session 43)
+- [ ] **State component naming correct** - `{Algorithm}State.jsx` format (NEW - Session 43)
+- [ ] **No hardcoded state routing** - App.jsx uses registry (NEW - Session 43)
 - [ ] **Prediction questions ≤3 choices** - Count buttons
 - [ ] **Completion modal uses last-step detection** - Check logic
 
@@ -477,6 +642,7 @@ This means you can trust that:
 - [ ] **Prediction questions meaningful** - Not arbitrary
 - [ ] **Modals feel compact** - Efficient use of space
 - [ ] **Visual consistency** - All modals look similar
+- [ ] **Algorithm switching works** - State components update correctly (NEW - Session 43)
 
 ---
 
@@ -516,6 +682,40 @@ This means you can trust that:
 
 ---
 
+## Quick Reference: State Registry Pattern (NEW - Session 43)
+
+```javascript
+// 1. Create state component
+// frontend/src/components/algorithm-states/MyAlgorithmState.jsx
+import React from 'react';
+import PropTypes from 'prop-types';
+
+const MyAlgorithmState = ({ step }) => {
+  const viz = step?.data?.visualization;
+  return <div>{/* Algorithm-specific state display */}</div>;
+};
+
+MyAlgorithmState.propTypes = {
+  step: PropTypes.object.isRequired,
+};
+
+export default MyAlgorithmState;
+
+// 2. Register in stateRegistry.js
+import MyAlgorithmState from '../components/algorithm-states/MyAlgorithmState';
+
+const STATE_REGISTRY = {
+  'my-algorithm': MyAlgorithmState,
+  // ... other algorithms
+};
+
+// 3. App.jsx uses registry (no hardcoded checks)
+const StateComponent = getStateComponent(currentAlgorithm);
+return <StateComponent step={step} />;
+```
+
+---
+
 ## Workflow Integration (v2.1)
 
 **Stage 3: Frontend Integration**
@@ -533,6 +733,8 @@ This means you can trust that:
 - Trust that JSON is logically complete (narrative validated it)
 - Trust that JSON is arithmetically correct (FAA validated it) (NEW in v2.1)
 - Reference narratives for expected behavior and algorithm understanding
+- **Register state component in `stateRegistry.js`** (NEW in v2.2 - Session 43)
+- **Place component in `algorithm-states/` directory** (NEW in v2.2 - Session 43)
 
 **After completing:**
 
@@ -544,9 +746,9 @@ This means you can trust that:
 
 ## Approval Criteria
 
-✅ **PASS** - All LOCKED requirements met, spacing matches mockups, no anti-patterns  
+✅ **PASS** - All LOCKED requirements met, spacing matches mockups, no anti-patterns, state component registered  
 ⚠️ **MINOR ISSUES** - CONSTRAINED choices questionable but acceptable  
-❌ **FAIL** - LOCKED requirements violated, spacing doesn't match mockups, regressions
+❌ **FAIL** - LOCKED requirements violated, spacing doesn't match mockups, regressions, state component not registered
 
 ---
 
@@ -556,8 +758,11 @@ This means you can trust that:
 - When text interpretation differs from mockups, **mockups win**
 - Narratives are your **behavioral reference** (what should happen at each step)
 - Narratives have been **FAA-verified** for arithmetic correctness (NEW in v2.1)
+- **State components must be registered** in `stateRegistry.js` (NEW in v2.2 - Session 43)
+- **Component organization matters**: `algorithm-states/` vs `visualizations/` (NEW in v2.2 - Session 43)
 
-**For detailed workflow information, see:** WORKFLOW.md v2.1
+**For detailed workflow information, see:** WORKFLOW.md v2.1  
+**For architectural decisions, see:** docs/ADR/ADR-001-registry-based-architecture.md
 
 ---
 
@@ -581,3 +786,11 @@ This means you can trust that:
   - Clarified narrative quality guarantees (FAA + QA approved)
   - Updated workflow integration to include FAA
   - Updated authority reference to WORKFLOW.md v2.1
+- v2.2: Registry Architecture Completion (Session 43)
+  - Added Section 2.2: Algorithm State Component Registration
+  - Documented state registry requirements (mirrors visualization registry)
+  - Added naming convention requirement: `{Algorithm}State.jsx`
+  - Added directory organization requirement: `algorithm-states/` vs `visualizations/`
+  - Added state component verification to testing checklist
+  - Cross-referenced ADR-001 for architectural rationale
+  - Completed symmetric registry architecture for both LEFT and RIGHT panels
