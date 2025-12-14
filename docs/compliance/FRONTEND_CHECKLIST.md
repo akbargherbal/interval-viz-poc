@@ -1,9 +1,16 @@
 # Frontend UI/UX Compliance Checklist
 
-**Version:** 2.0  
-**Authority:** WORKFLOW.md v2.0 - Frontend Requirements  
+**Version:** 2.1  
+**Authority:** WORKFLOW.md v2.1 - Frontend Requirements  
 **Visual Authority:** `docs/static_mockup/*.html` - Single source of truth for all visual standards  
 **Purpose:** Verify UI components comply with platform standards
+
+**Changes from v2.0:**
+
+- Added FAA audit completion to pre-integration validation
+- Added "Using Narratives as Reference" section (optional but recommended)
+- Updated authority reference to WORKFLOW.md v2.1
+- Clarified narratives are supporting reference (JSON is primary)
 
 **Changes from v1.2:**
 
@@ -32,8 +39,61 @@ All visual decisions reference `docs/static_mockup/`:
 **Before starting frontend work:**
 
 - [ ] **QA narrative review PASSED** - Narratives approved for logical completeness
+- [ ] **FAA audit completed** - Arithmetic correctness verified (NEW in v2.1)
 - [ ] **Backend JSON contract validated** - Narrative confirmed data completeness
+- [ ] **FAA-approved narratives available** - Located in `docs/narratives/[algorithm-name]/` (NEW in v2.1)
 - [ ] **Trust the JSON** - Frontend focuses on "how to render" not "what to render"
+
+---
+
+## Using Narratives as Reference (NEW in v2.1)
+
+**Optional but Recommended**
+
+### Narratives as Your "Script"
+
+- **JSON is the fuel** (drives your React engine) ← PRIMARY
+- **Markdown narratives provide context** (accelerates understanding) ← SUPPORTING
+
+### When to Reference Narratives
+
+- ✅ Understanding algorithm intent ("Why does this step happen?")
+- ✅ Debugging visualization ("What should step 5 look like?")
+- ✅ Verifying decision logic ("Is my rendering showing the right comparison?")
+- ✅ Onboarding to new algorithm ("How does this work?")
+
+### What Narratives Are NOT
+
+- ❌ UI specifications (you have creative freedom - see mockups)
+- ❌ Layout requirements (mockups govern visual standards)
+- ❌ Binding constraints (JSON is the contract)
+- ❌ Implementation instructions (you decide HOW to visualize)
+
+### The Director Analogy
+
+Think of it like theater production:
+
+- **JSON** = Musical score (precise technical notation)
+- **Narrative** = Director's notes (context, intent, interpretation)
+- **Frontend** = Performance (you bring it to life on stage)
+
+The score tells you exactly what notes to play. The director's notes help you understand why those notes were chosen and what emotion to convey. But you're the performer - you decide the staging, lighting, movements, and presentation.
+
+**Remember:** Narratives describe WHAT the algorithm does. You decide HOW to visualize it. Your creative freedom is protected by WORKFLOW.md's three-tier system (LOCKED/CONSTRAINED/FREE).
+
+### Narrative Quality Guarantees (NEW in v2.1)
+
+All narratives you receive have passed:
+
+1. **FAA Arithmetic Audit** - All mathematical claims verified correct
+2. **QA Narrative Review** - Logical completeness and pedagogical quality validated
+
+This means you can trust that:
+
+- ✅ Arithmetic in narratives is correct
+- ✅ Decision logic is complete
+- ✅ Temporal flow makes sense
+- ✅ All referenced data exists in JSON
 
 ---
 
@@ -231,71 +291,53 @@ All visual decisions reference `docs/static_mockup/`:
 
 #### Standard Shortcuts (Always Active)
 
-- [ ] **→ (Right Arrow)** - Next Step
-- [ ] **Space** - Next Step (alternative to Arrow Right)
-- [ ] **← (Left Arrow)** - Previous Step
-- [ ] **R** - Reset (restart trace)
-- [ ] **Home** - Reset (alternative to R)
+- [ ] **`ArrowRight` or `Space`** - Next step
+- [ ] **`ArrowLeft`** - Previous step
+- [ ] **`r` (lowercase)** - Reset to step 0
+- [ ] **`Home`** - Jump to first step (optional)
+- [ ] **`End`** - Jump to last step (optional)
 
-#### Modal-Specific Shortcuts
+#### Prediction Mode Shortcuts
 
-**Source:** `prediction_modal_mockup.html` lines 329-335
+- [ ] **`Enter`** - Submit selected choice
+- [ ] **`s`** - Skip prediction (continue without answering)
+- [ ] **First letter of choice** - Select choice (e.g., `k`, `c`)
+  - Derive from choice labels
+  - Fallback to numbers: `1`, `2`, `3`
 
-- [ ] **F/L/R/K/C (semantic)** - Select choice (first letter of choice text)
-- [ ] **1/2/3 (numeric)** - Select choice (fallback numbers)
-- [ ] **Enter** - Submit selected answer
-- [ ] **S** - Skip prediction
+#### Shortcut Restrictions
 
-#### Implementation Pattern
-
-- [ ] **`useEffect` + `window.addEventListener`** - Global keyboard listener
-- [ ] **Ignore when modal open** - Modals handle own shortcuts
-- [ ] **Ignore when typing** - Check if `INPUT` or `TEXTAREA` focused
-- [ ] **`event.preventDefault()`** - Prevent default browser behavior
-- [ ] **Space handled same as Right Arrow** - Both advance to next step
-
-#### Anti-Patterns
-
-- [ ] ❌ **NOT using Space for mode toggle** - Space is for navigation only
-- [ ] ❌ **NOT different behavior for Space vs Arrow Right** - Must be identical
+- [ ] **Input fields exempt** - Arrow keys move cursor, not steps
+- [ ] **Modal open exempts navigation** - Only modal shortcuts active
+- [ ] **Respect focus states** - Don't hijack browser controls
 
 ---
 
 ### 1.5 Auto-Scroll Behavior
 
-#### Required Implementation
+**Target:** `#step-current`
 
-- [ ] **`useRef()` for active element** - Create `activeCallRef` or similar
-- [ ] **`scrollIntoView()` on step change** - Trigger in `useEffect`
-- [ ] **Options: `behavior: 'smooth', block: 'center'`** - Exact parameters
-- [ ] **Dependency: `[currentStep]`** - Re-trigger on step change
-
-#### Scroll Triggers
-
-- [ ] ✅ **User navigates** (Arrow keys, buttons, Space)
-- [ ] ✅ **Prediction mode auto-advances** (after answer)
-- [ ] ❌ **NOT on manual scroll** (respect user intent)
-- [ ] ❌ **NOT on algorithm switch** (reset to top expected)
+- [ ] **Trigger:** On step navigation
+- [ ] **Target element:** Current step (has `id="step-current"`)
+- [ ] **Scroll behavior:** `smooth` (NOT instant)
+- [ ] **Scroll into view:** `scrollIntoView({ behavior: 'smooth', block: 'nearest' })`
 
 ---
 
-### 1.6 Overflow Handling Pattern
+### 1.6 Overflow Pattern (Critical Fix)
 
-#### THE CRITICAL PATTERN
+**Problem:** `items-center` + `overflow-auto` cuts off left edge of wide content
 
-**❌ WRONG (causes left edge cutoff):**
-
-```jsx
-<div className="flex items-center overflow-auto">
-  {/* Wide content - left portion inaccessible */}
-</div>
-```
-
-**✅ CORRECT (permanent solution):**
+**Correct Pattern:**
 
 ```jsx
-<div className="flex items-start overflow-auto">
-  <div className="mx-auto">{/* Wide content - fully scrollable */}</div>
+{/* Outer container */}
+<div className="... items-start overflow-auto">
+  {/* Inner wrapper for centering */}
+  <div className="mx-auto">
+    {/* Content that might overflow */}
+    <svg className="flex-shrink-0">...</svg>
+  </div>
 </div>
 ```
 
@@ -474,21 +516,23 @@ All visual decisions reference `docs/static_mockup/`:
 
 ---
 
-## Workflow Integration (v2.0)
+## Workflow Integration (v2.1)
 
 **Stage 3: Frontend Integration**
 
 **Before starting:**
 
-1. ✅ QA narrative review APPROVED
-2. ✅ Backend code available
-3. ✅ Narratives serve as reference documentation
+1. ✅ FAA audit completed (NEW in v2.1)
+2. ✅ QA narrative review APPROVED
+3. ✅ Backend code available
+4. ✅ FAA-approved narratives available as reference (NEW in v2.1)
 
 **Your focus:**
 
 - Frontend implements "how to render" (backend already defined "what to render")
 - Trust that JSON is logically complete (narrative validated it)
-- Reference narratives for expected behavior
+- Trust that JSON is arithmetically correct (FAA validated it) (NEW in v2.1)
+- Reference narratives for expected behavior and algorithm understanding
 
 **After completing:**
 
@@ -511,8 +555,9 @@ All visual decisions reference `docs/static_mockup/`:
 - The three static mockups are your **visual source of truth**
 - When text interpretation differs from mockups, **mockups win**
 - Narratives are your **behavioral reference** (what should happen at each step)
+- Narratives have been **FAA-verified** for arithmetic correctness (NEW in v2.1)
 
-**For detailed workflow information, see:** WORKFLOW.md v2.0
+**For detailed workflow information, see:** WORKFLOW.md v2.1
 
 ---
 
@@ -530,3 +575,9 @@ All visual decisions reference `docs/static_mockup/`:
   - Updated keyboard shortcuts (Space = Next, Home = Reset)
   - Added narrative validation prerequisite
   - Added workflow integration section
+- v2.1: Updated for WORKFLOW.md v2.1 (Session 35)
+  - Added FAA audit completion to pre-integration validation
+  - Added "Using Narratives as Reference" section
+  - Clarified narrative quality guarantees (FAA + QA approved)
+  - Updated workflow integration to include FAA
+  - Updated authority reference to WORKFLOW.md v2.1

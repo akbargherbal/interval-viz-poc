@@ -1,8 +1,14 @@
 # Backend Algorithm Tracer Compliance Checklist
 
-**Version:** 2.0  
-**Authority:** WORKFLOW.md v2.0 - Backend Requirements  
+**Version:** 2.1  
+**Authority:** WORKFLOW.md v2.1 - Backend Requirements  
 **Purpose:** Verify new algorithm tracers comply with platform requirements
+
+**Changes from v2.0:**
+- Added FAA (Forensic Arithmetic Audit) as mandatory gate
+- Updated workflow integration to include FAA audit steps
+- Added FAA audit requirement to narrative generation section
+- Updated authority reference to WORKFLOW.md v2.1
 
 **Changes from v1.0:**
 - Added narrative generation as LOCKED requirement
@@ -54,11 +60,18 @@
   - No missing field references
   - Fails loudly if data incomplete (this is good - catches bugs!)
 
-- [ ] **Self-review completed before submission**
+- [ ] **Narrative passes FAA arithmetic audit (NEW in v2.1)**
+  - Submit narratives to FAA review using `FAA_PERSONA.md`
+  - Address all arithmetic errors flagged by FAA
+  - Resubmit until FAA approves (blocking requirement)
+  - See Stage 1.5 in WORKFLOW.md for details
+
+- [ ] **Self-review completed before FAA submission**
   - [ ] Can I follow the algorithm logic from narrative alone?
   - [ ] Are all decision points explained with visible data?
   - [ ] Does temporal flow make sense (step N → step N+1)?
   - [ ] Can I mentally visualize this without code/JSON?
+  - [ ] Are all arithmetic claims correct? (FAA will verify)
 
 ---
 
@@ -152,6 +165,11 @@ If implementing prediction mode:
   - Narrative must be self-contained
   - All data referenced must be visible in narrative
 
+- [ ] ✅ **NOT including arithmetic errors in narratives (NEW in v2.1)**
+  - Example ❌: "20 - 10 = 20 elements remain"
+  - Example ✅: "20 - 10 = 10 elements remain"
+  - FAA will catch these before QA review
+
 ---
 
 ## FREE CHOICES (Your Decision)
@@ -183,6 +201,12 @@ If implementing prediction mode:
 - [ ] **Narratives reveal missing data** - Method fails loudly on incomplete visualization data
 - [ ] **Narratives are logically complete** - QA can follow algorithm logic
 - [ ] **Narratives demonstrate temporal coherence** - Step flow makes sense
+
+### FAA Audit (NEW in v2.1)
+
+- [ ] **Narratives pass arithmetic verification** - All quantitative claims verified correct
+- [ ] **FAA approval obtained** - No arithmetic errors detected
+- [ ] **Arithmetic errors fixed if found** - Regenerate and resubmit until FAA passes
 
 ### Integration Tests
 
@@ -225,13 +249,14 @@ def validate_binary_search_trace():
     assert len(narrative) > 0, "Narrative cannot be empty"
     assert "Step 0" in narrative, "Narrative must include step information"
     
-    # Save narrative for QA review
+    # Save narrative for FAA audit (NEW in v2.1)
     output_path = f"docs/narratives/binary-search/basic_example.md"
     with open(output_path, 'w') as f:
         f.write(narrative)
 
     print("✅ Binary Search trace is compliant")
     print(f"✅ Narrative saved to {output_path}")
+    print("⏳ Next: Submit to FAA audit using FAA_PERSONA.md")
 ```
 
 ---
@@ -246,6 +271,7 @@ class BinarySearchTracer(AlgorithmTracer):
         
         CRITICAL: This method must show ALL decision data.
         If you reference a variable, SHOW its value.
+        All arithmetic must be correct (FAA will verify).
         """
         narrative = "# Binary Search Execution Narrative\n\n"
         narrative += f"**Input:** Array of {trace_result['metadata']['input_size']} elements\n"
@@ -297,6 +323,7 @@ class BinarySearchTracer(AlgorithmTracer):
 3. Explain outcomes clearly
 4. Use code blocks for complex state
 5. Fail loudly (KeyError) if data missing
+6. **Ensure all arithmetic is correct (FAA will verify) ← NEW in v2.1**
 
 ---
 
@@ -313,15 +340,15 @@ class BinarySearchTracer(AlgorithmTracer):
 
 ## Approval Criteria
 
-✅ **PASS** - All LOCKED requirements met, CONSTRAINED contract followed, narratives generated  
+✅ **PASS** - All LOCKED requirements met, CONSTRAINED contract followed, narratives generated, FAA approved  
 ⚠️ **MINOR ISSUES** - Free choices questionable but acceptable  
 ❌ **FAIL** - LOCKED requirements violated, return to development
 
-**NEW in v2.0:** Narratives must be generated and submitted with code. QA will review narratives before frontend integration.
+**NEW in v2.1:** Narratives must pass FAA arithmetic audit before QA review.
 
 ---
 
-## Workflow Integration (v2.0)
+## Workflow Integration (v2.1)
 
 **Stage 1: Backend Implementation**
 
@@ -329,17 +356,51 @@ class BinarySearchTracer(AlgorithmTracer):
 2. ✅ Implement `generate_narrative()` method
 3. ✅ Run unit tests
 4. ✅ Generate narratives for ALL registered examples
-5. ✅ Self-review narratives (use checklist above)
-6. ✅ Complete this checklist
-7. ✅ Submit PR with code + narratives + checklist
+5. ✅ **Submit narratives to FAA audit (using `FAA_PERSONA.md`)**
+6. ✅ **Fix arithmetic errors, regenerate until FAA passes**
+7. ✅ Self-review narratives (use checklist above)
+8. ✅ Complete this checklist
+9. ✅ Submit PR with code + FAA-approved narratives + checklist
 
 **Next Stage:** QA Narrative Review (see QA_INTEGRATION_CHECKLIST.md)
+
+**Note:** QA assumes arithmetic has been verified by FAA. QA focuses on logical completeness and pedagogical quality.
+
+---
+
+## FAA Audit Process (NEW in v2.1)
+
+**When:** After generating narratives, before QA submission  
+**Reference:** `docs/compliance/FAA_PERSONA.md`  
+**Expected Time:** 10-15 minutes initial audit, 5 minutes re-audit
+
+**Process:**
+1. Submit all generated narratives to FAA review
+2. FAA verifies every quantitative claim with calculation
+3. If errors found: Fix and regenerate, resubmit to FAA
+4. If no errors: FAA approves, proceed to checklist completion
+5. Submit PR with FAA-approved narratives
+
+**What FAA Checks:**
+- ✅ Arithmetic correctness (20 - 10 = 10, not 20)
+- ✅ State transition math (variables update correctly)
+- ✅ Quantitative claims consistency
+- ✅ Visualization-text alignment
+
+**What FAA Does NOT Check:**
+- ❌ Pedagogical quality
+- ❌ Narrative completeness
+- ❌ Writing style
+
+**Cost-Benefit:** 2 hours of FAA back-and-forth beats 2 days of integration debugging.
 
 ---
 
 **Remember:** 
 - If your tracer requires changes to `base_tracer.py`, you've misunderstood the architecture
 - If your narrative has undefined variable references, you've missed required visualization data
+- If your narrative has arithmetic errors, FAA will catch them (this is good!)
 - Narratives that fail to generate = bugs caught early (this is good!)
 
-**For detailed narrative implementation guidance, see:** WORKFLOW.md - Stage 1: Backend Implementation
+**For detailed narrative implementation guidance, see:** WORKFLOW.md - Stage 1: Backend Implementation  
+**For FAA audit guidance, see:** WORKFLOW.md - Stage 1.5: Forensic Arithmetic Audit

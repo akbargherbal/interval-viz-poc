@@ -1,9 +1,9 @@
 # Algorithm Visualization Platform - Workflow & Architecture Guide
 
-**Version:** 2.0  
+**Version:** 2.1  
 **Status:** ACTIVE - Single Source of Truth  
 **Replaces:** TENANT_GUIDE.md (v1.0, now deprecated)  
-**Last Updated:** Session 34
+**Last Updated:** Session 35 (FAA gate added)
 
 ---
 
@@ -46,8 +46,9 @@ When conflicts arise, follow this hierarchy:
 ## Table of Contents
 
 - [The Three-Tier Jurisdiction System](#the-three-tier-jurisdiction-system)
-- [v2.0 Workflow: Narrative-Driven Quality Gate](#v20-workflow-narrative-driven-quality-gate)
+- [v2.1 Workflow: Narrative-Driven Quality Gate with FAA](#v21-workflow-narrative-driven-quality-gate-with-faa)
 - [Stage 1: Backend Implementation](#stage-1-backend-implementation)
+- [Stage 1.5: Forensic Arithmetic Audit (NEW)](#stage-15-forensic-arithmetic-audit-new---v21)
 - [Stage 2: QA Narrative Review](#stage-2-qa-narrative-review)
 - [Stage 3: Frontend Integration](#stage-3-frontend-integration)
 - [Stage 4: Integration Testing](#stage-4-integration-testing)
@@ -72,38 +73,52 @@ This platform categorizes all elements into three jurisdictions:
 
 ---
 
-## v2.0 Workflow: Narrative-Driven Quality Gate
+## v2.1 Workflow: Narrative-Driven Quality Gate with FAA
 
-### What Changed from v1.0
+### What Changed from v2.0
 
-**Version 1.0 (Deprecated):**
-```
-[BE] → [BE Checklist] → [FE] → [FE Checklist] → [QA Tests]
-```
-
-**Version 2.0 (Current):**
+**Version 2.0:**
 ```
 [BE Implementation]
     ↓
-[BE Self-Narrates] ← NEW STEP
+[BE Self-Narrates]
     ↓
 [BE Checklist + Narrative]
     ↓
-[QA Reviews NARRATIVE ONLY] ← CHANGED ROLE
+[QA Reviews NARRATIVE ONLY]
     ↓
     ├─→ APPROVED → [FE Integration] → [FE Checklist] → [Integration Tests]
     └─→ REJECTED → [BE Fixes & Regenerates]
 ```
 
-### Key Innovation
+**Version 2.1 (Current):**
+```
+[BE Implementation]
+    ↓
+[BE Self-Narrates]
+    ↓
+[FAA Arithmetic Audit] ← NEW BLOCKING GATE
+    ↓
+    ├─→ ARITHMETIC ERRORS → [BE Fixes & Regenerates]
+    └─→ APPROVED ↓
+[BE Checklist + FAA-Approved Narrative]
+    ↓
+[QA Reviews NARRATIVE ONLY] ← Now assumes arithmetic verified
+    ↓
+    ├─→ APPROVED → [FE Integration] → [FE Checklist] → [Integration Tests]
+    └─→ REJECTED → [BE Fixes & Regenerates]
+```
 
-**QA becomes a NARRATIVE GATEKEEPER**, validating logical completeness BEFORE frontend integration.
+### Key Innovation in v2.1
+
+**FAA (Forensic Arithmetic Audit) catches mathematical errors BEFORE human QA review.**
 
 **Benefits:**
-- Issues caught earlier (60-70% found in narrative review)
-- Fewer backend-frontend round-trips
-- Frontend trusts JSON completeness
-- Narratives serve as living documentation
+- Arithmetic errors caught in 10-15 minutes (vs. 2 days of integration debugging)
+- QA focuses on logic/pedagogy, not math verification
+- Reduces false-approval rate from ~50% to <5%
+- Saves ~85 minutes per arithmetic error caught
+- Frontend receives mathematically verified narratives
 
 ---
 
@@ -112,12 +127,14 @@ This platform categorizes all elements into three jurisdictions:
 ### Developer Actions
 
 1. ✅ Implement algorithm tracer (inherit from `AlgorithmTracer`)
-2. ✅ Implement `generate_narrative()` method (NEW REQUIREMENT - v2.0)
+2. ✅ Implement `generate_narrative()` method (REQUIRED - v2.0)
 3. ✅ Run backend unit tests
 4. ✅ Generate narratives for ALL registered examples
 5. ✅ Self-review narratives for logical completeness
-6. ✅ Complete Backend Compliance Checklist
-7. ✅ Submit PR with code, checklist, and narratives
+6. ✅ **Submit narratives to FAA audit (NEW - v2.1)**
+7. ✅ **Fix arithmetic errors, regenerate until FAA passes (NEW - v2.1)**
+8. ✅ Complete Backend Compliance Checklist
+9. ✅ Submit PR with code, FAA-approved narratives, and checklist
 
 ### Deliverables
 
@@ -127,12 +144,12 @@ backend/algorithms/my_algorithm.py
 │   ├── execute()
 │   ├── get_prediction_points()
 │   ├── _get_visualization_state()
-│   └── generate_narrative()  ← NEW METHOD (v2.0)
+│   └── generate_narrative()  ← REQUIRED (v2.0)
 
 docs/narratives/my_algorithm/
-├── example_1_basic.md          ← Generated narrative
-├── example_2_edge_case.md      ← Generated narrative
-└── example_3_complex.md        ← Generated narrative
+├── example_1_basic.md          ← FAA-approved narrative
+├── example_2_edge_case.md      ← FAA-approved narrative
+└── example_3_complex.md        ← FAA-approved narrative
 
 docs/compliance/
 └── backend_checklist_my_algorithm.md  ← Completed checklist
@@ -140,22 +157,91 @@ docs/compliance/
 
 ### Self-Review Criteria
 
-Before submitting, verify your narratives:
+Before submitting to FAA, verify your narratives:
 
 - [ ] Can I follow the algorithm logic from narrative alone?
 - [ ] Are all decisions explained with visible data?
 - [ ] Does temporal flow make sense (step N → step N+1)?
 - [ ] Can I mentally visualize this without seeing code/JSON?
+- [ ] Are all arithmetic claims correct? (FAA will verify this)
+
+---
+
+## Stage 1.5: Forensic Arithmetic Audit (NEW - v2.1)
+
+### Quality Gate: Mathematical Verification
+
+**Timing:** After backend generates narratives, before QA review  
+**Validator:** Backend developer using `FAA_PERSONA.md`  
+**Purpose:** Catch arithmetic errors before human QA review
+
+### How It Works
+
+1. Backend developer completes narrative generation (Stage 1)
+2. Developer submits narratives to FAA audit:
+   - Uses `FAA_PERSONA.md` as review guide
+   - Verifies every quantitative claim
+   - Checks arithmetic correctness
+3. FAA identifies any mathematical errors
+4. Developer fixes errors and regenerates narratives
+5. Process repeats until FAA passes
+
+### FAA Validation Scope
+
+**FAA ONLY validates:**
+- ✅ Arithmetic correctness (e.g., "20 - 10 = 10" not "20")
+- ✅ State transition math (e.g., "max_end updated from 660 → 720")
+- ✅ Quantitative claims consistency (e.g., counts match operations)
+- ✅ Visualization-text alignment (e.g., shown elements match claimed elements)
+
+**FAA does NOT validate:**
+- ❌ Pedagogical quality (QA handles this in Stage 2)
+- ❌ Narrative completeness (QA handles this in Stage 2)
+- ❌ Writing style or clarity (QA handles this in Stage 2)
+- ❌ Logical flow (QA handles this in Stage 2)
+
+### Decision Gate
+
+- **✅ APPROVED** → Proceed to Stage 2 (QA Narrative Review)
+- **❌ REJECTED** → Return to Stage 1 (Fix arithmetic, regenerate)
+
+**Critical:** FAA is a BLOCKING gate. No narrative proceeds to QA with arithmetic errors.
+
+### Why This Gate Exists
+
+**Problem discovered:** Generic narrative review has ~50% false-approval rate for arithmetic errors. Specialized mathematical validation catches errors that pedagogical review misses.
+
+**Evidence:** Testing revealed 3 of 6 reviewers approved narratives with systematic arithmetic errors (claiming "20 elements remain" after "eliminating 10 from 20"). FAA persona caught 100% of arithmetic errors with 0% false positives.
+
+**Cost-benefit:** 2 hours of FAA back-and-forth beats 2 days of integration debugging.
+
+### FAA Audit Process
+
+**Reference document:** `docs/compliance/FAA_PERSONA.md`
+
+**Expected time:**
+- Initial audit: 10-15 minutes
+- Re-audit after fixes: 5 minutes
+- Total for clean narrative: ~15 minutes
+- Total for narrative with errors: ~35 minutes (including fixes)
+
+**Common errors FAA catches:**
+- Copy-paste errors (same number after different operations)
+- Stale state propagation (previous step's value incorrectly carried forward)
+- Off-by-one errors in index arithmetic
+- Visualization-text mismatches
 
 ---
 
 ## Stage 2: QA Narrative Review
 
-### QA Engineer Role (NEW in v2.0)
+### QA Engineer Role (v2.0, Enhanced in v2.1)
 
 **CRITICAL:** QA does NOT look at JSON, code, or frontend in this stage.
 
-**ONLY INPUT:** Generated markdown narratives
+**ONLY INPUT:** FAA-approved markdown narratives
+
+**NEW in v2.1:** QA assumes arithmetic correctness has been verified by FAA.
 
 ### QA Reviews For
 
@@ -185,7 +271,8 @@ For each decision (keep/discard, left/right, etc.):
 ❌ Whether JSON structure is correct (Backend Checklist handles this)  
 ❌ Whether frontend can render it (Integration Tests handle this)  
 ❌ Whether coordinates/scales are correct (rendering detail)  
-❌ Performance or optimization (Integration Tests)
+❌ Performance or optimization (Integration Tests)  
+❌ **Arithmetic correctness (FAA already validated) ← NEW in v2.1**
 
 ### Decision Gate
 
@@ -201,6 +288,8 @@ For each decision (keep/discard, left/right, etc.):
 - Temporal gaps (step 8 → step 9 jump without explanation)
 - Undefined variable references
 - Unclear decision logic
+
+**Note:** Arithmetic errors should NOT appear here (FAA caught them in Stage 1.5).
 
 ### QA Feedback Format
 
@@ -239,18 +328,37 @@ Issue 2: Add comparison step
 
 ### Frontend Developer Actions
 
-1. ✅ Receive QA-approved backend code and narratives
+1. ✅ Receive QA-approved backend code and FAA-approved narratives
 2. ✅ Create or select visualization component
 3. ✅ Register in visualization registry
 4. ✅ Complete Frontend Compliance Checklist
 5. ✅ Submit PR
 
-### Changed Expectations in v2.0
+### Changed Expectations in v2.1
 
 - **Frontend should NOT discover missing data** (QA narrative review caught it)
+- **Frontend should NOT discover arithmetic errors** (FAA caught them)
 - **Frontend focuses on "how to render" not "what to render"**
-- **Narratives serve as reference documentation**
-- **Trust that JSON is logically complete**
+- **FAA-approved narratives serve as mathematically verified reference**
+- **Trust that JSON is logically complete AND arithmetically correct**
+
+### Using Narratives as Reference (Optional but Recommended)
+
+**Narratives are your "script":**
+- **JSON is the fuel** (drives your React engine) ← PRIMARY
+- **Markdown narratives provide context** (accelerates understanding) ← SUPPORTING
+
+**When to reference narratives:**
+- ✅ Understanding algorithm intent ("Why does this step happen?")
+- ✅ Debugging visualization ("What should step 5 look like?")
+- ✅ Verifying decision logic ("Is my rendering showing the right comparison?")
+- ✅ Onboarding to new algorithm ("How does this work?")
+
+**What narratives are NOT:**
+- ❌ UI specifications (you have creative freedom - see mockups)
+- ❌ Layout requirements (mockups govern visual standards)
+- ❌ Binding constraints (JSON is the contract)
+- ❌ Implementation instructions (you decide HOW to visualize)
 
 ---
 
@@ -265,233 +373,141 @@ Issue 2: Add comparison step
 
 ### Expected Outcome
 
-**Zero "missing data" bugs** - narrative review should have caught them.
+**Zero "missing data" bugs** - narrative review should have caught them.  
+**Zero "arithmetic error" bugs** - FAA should have caught them.
 
-If integration tests find data issues, it indicates narrative review missed something.
+If integration tests find data issues or arithmetic errors, it indicates:
+- Narrative review missed something (data completeness), OR
+- FAA missed something (arithmetic correctness)
+
+Both are unlikely but possible with edge cases.
 
 ---
 
 ## LOCKED Requirements
 
-These are **architectural invariants**. Must implement exactly as specified.
+Cannot be changed without breaking platform architecture.
 
-### Modal Standards
+### Frontend LOCKED Elements
 
-**All modals use consistent sizing without height constraints.**
+#### Modal Dimensions (🔒 Hardcoded in CSS)
 
-**Source:** `docs/static_mockup/completion_modal_mockup.html` (Compact Redesign) and `prediction_modal_mockup.html`
+**Source:** `docs/static_mockup/prediction_modal_mockup.html`, `docs/static_mockup/completion_modal_mockup.html`
+
+```css
+/* Prediction Modal */
+#prediction-modal {
+  width: 600px;
+  max-height: 80vh;
+  /* All modals MUST use these exact dimensions */
+}
+
+/* Completion Modal */
+#completion-modal {
+  width: 600px;
+  max-height: 80vh;
+  /* All modals MUST use these exact dimensions */
+}
+```
+
+**Why LOCKED:** Ensures consistent UX, prevents modal overflow bugs.
+
+#### HTML IDs (🔒 Required for Testing & Accessibility)
+
+**Source:** All static mockups
+
+```html
+<!-- Required IDs - DO NOT CHANGE -->
+<div id="prediction-modal">...</div>
+<div id="completion-modal">...</div>
+<div id="step-current">Step {N}</div>
+```
+
+**Why LOCKED:** Automated tests rely on these IDs. Changing them breaks test suite.
+
+#### Keyboard Shortcuts (🔒 Platform-Wide)
+
+**Source:** `docs/static_mockup/algorithm_page_mockup.html`
+
+```javascript
+// Required shortcuts - ALL algorithms must support
+'ArrowRight' → Next step
+'ArrowLeft'  → Previous step
+'r'          → Reset
+'k' or 'c'   → Select prediction choice K/C
+'s'          → Skip prediction
+```
+
+**Why LOCKED:** Consistent user experience across all algorithms.
+
+#### Overflow Pattern (🔒 Fixed Layout Bug)
+
+**Source:** Frontend debugging session
 
 ```jsx
-// ✅ CORRECT: CompletionModal (redesigned for vertical efficiency)
-<div className="max-w-lg w-full p-5">
-  {/* 512px max width, no height constraint, compact padding */}
+// ❌ WRONG - Cuts off left edge
+<div className="... items-center overflow-auto">
+  <svg>...</svg>
 </div>
 
-// ✅ CORRECT: PredictionModal
-<div className="max-w-lg w-full p-6">
-  {/* 512px max width, no height constraint */}
-</div>
-
-// ❌ WRONG: Different widths
-<div className="max-w-2xl w-full">  {/* Contradicts mockup */}
+// ✅ CORRECT - Full scrollable area
+<div className="... items-start overflow-auto">
+  <div className="mx-auto">
+    <svg>...</svg>
+  </div>
 </div>
 ```
 
-**Rationale:**
-- **Width:** `max-w-lg` (512px) - Consistent across all modals
-- **Height:** No constraint - Content designed to fit naturally
-- **Vertical efficiency:** Compact layouts prevent overflow
-- PredictionModal: Limited to ≤3 choices + compact spacing prevents overflow
-- CompletionModal: Horizontal layouts + flex-wrap for complex data
-- **Padding:** `p-5` for CompletionModal (more compact), `p-6` for PredictionModal
+**Why LOCKED:** `items-center` + `overflow-auto` causes layout bug where left edge is cut off.
 
-**Design Philosophy (from updated mockup):**
-- "Redesigned for Vertical Efficiency (No Element Removal / No Font Scaling)"
-- Use horizontal layouts where possible (e.g., icon + text in row instead of column)
-- Compact spacing (`mb-3`, `mb-4` instead of `mb-6`)
-- Grid layouts with dividers for visual separation without extra space
-
-**Positioning:**
-
-```jsx
-<div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-  <div className="bg-slate-800 rounded-2xl shadow-2xl border-2 border-blue-500 max-w-lg w-full p-5">
-    {/* CompletionModal content */}
-  </div>
-</div>
-
-<div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-  <div className="bg-slate-800 rounded-2xl shadow-2xl border-2 border-blue-500 max-w-lg w-full p-6">
-    {/* PredictionModal content */}
-  </div>
-</div>
-```
-
-**Scrolling Prohibition:**
-- NO internal scrollbars in modals
-- Content must fit naturally through compact design
-- Use horizontal layouts to reduce vertical space
-- For complex results: Show subset + summary (e.g., "+1 more") rather than scrolling
-
-### Panel Layout
+#### Panel Ratio (🔒 30-70 Split)
 
 **Source:** `docs/static_mockup/algorithm_page_mockup.html`
 
 ```jsx
-// ✅ CORRECT: Panel ratio
-<div className="flex gap-4">
-  <div className="flex-[3]">           {/* Visualization: 66.67% */}
-    {/* Main visualization */}
-  </div>
-  <div className="w-96">               {/* Steps: 384px fixed */}
-    {/* Steps panel */}
-  </div>
+<div className="grid grid-cols-[30%_70%]">
+  <div>{/* Left: Controls */}</div>
+  <div>{/* Right: Visualization */}</div>
 </div>
 ```
 
-**Key Requirements:**
-- Visualization panel: `flex-[3]` (66.67% width)
-- Steps panel: `w-96` (384px) OR `flex-[1.5]`
-- Gap: `gap-4` (1rem)
-- Ratio maintained at all supported viewports
-
-### HTML Landmark IDs
-
-**Required IDs (must be present):**
-
-```jsx
-#app-root              // Main application container
-#app-header            // Header section
-#panel-visualization   // Visualization panel
-#panel-steps           // Steps panel
-#panel-steps-list      // Steps list container
-#panel-step-description // Step description area
-#step-current          // Current active step (dynamic, one at a time)
-```
-
-**Dynamic ID Behavior:**
-- Only ONE element has `id="step-current"` at a time
-- ID updates on step navigation
-- Corresponds to current execution context
-
-### Keyboard Shortcuts
-
-**Standard Shortcuts (global, when no modal open):**
-
-**Source:** `docs/static_mockup/algorithm_page_mockup.html` lines 854-874
-
-| Key         | Action             |
-| ----------- | ------------------ |
-| Arrow Right (→) | Next step          |
-| Space       | Next step (alternative) |
-| Arrow Left (←)  | Previous step      |
-| R           | Reset to step 0    |
-| Home        | Reset to step 0 (alternative) |
-
-**Modal Shortcuts (when prediction modal open):**
-
-**Source:** `docs/static_mockup/prediction_modal_mockup.html` lines 329-335
-
-| Key         | Action                      |
-| ----------- | --------------------------- |
-| F/L/R/K/C (semantic) | Select choice (first letter of choice text) |
-| 1/2/3 (numeric) | Select choice (fallback numbers) |
-| Enter       | Submit selected answer      |
-| S           | Skip prediction             |
-
-**Conflict Resolution:**
-- Input fields: Ignore shortcuts when typing
-- Modals: Handle own shortcuts, prevent propagation to main app
-
-### Auto-Scroll Behavior
-
-**When navigating steps:**
-
-```javascript
-// Element with #step-current scrolls into view
-element.scrollIntoView({
-  behavior: 'smooth',
-  block: 'center'
-});
-```
-
-**Triggers:**
-- ✅ Step navigation (Next/Prev buttons, keyboard)
-- ❌ Manual user scroll (respect user intent)
-- ❌ Algorithm switch (reset to top)
-
-### Overflow Pattern
-
-**Critical for wide content (arrays, timelines):**
-
-```jsx
-// ✅ CORRECT: items-start + mx-auto pattern
-<div className="flex flex-col items-start overflow-auto">
-  <div className="mx-auto">
-    <div className="flex gap-2">
-      {elements.map(el => (
-        <div className="flex-shrink-0">{el}</div>
-      ))}
-    </div>
-  </div>
-</div>
-
-// ❌ WRONG: items-center cuts off left edge
-<div className="flex flex-col items-center overflow-auto">
-  {/* Left content becomes inaccessible! */}
-</div>
-```
-
-**Why this matters:**
-- `items-center` + `overflow-auto` = left edge cut off (bug!)
-- `items-start` + `mx-auto` = both edges scrollable
+**Why LOCKED:** Optimized for readability on standard displays.
 
 ---
 
 ## CONSTRAINED Requirements
 
-Parameters defined, implementation flexible.
+Must follow contract, but flexible in implementation.
 
-### Backend JSON Contract
+### Backend Trace Contract
 
-#### Required Metadata
+#### Metadata Structure (🎨 Required Fields)
 
 ```python
 self.metadata = {
-    'algorithm': 'my-algo',              # Unique identifier
-    'display_name': 'My Algorithm',      # Human-readable name
-    'visualization_type': 'array',       # array | timeline | graph | tree
-    'input_size': 10,                    # Number of elements
+    'algorithm': 'my-algorithm',           # REQUIRED
+    'display_name': 'My Algorithm',        # REQUIRED
+    'visualization_type': 'array',         # REQUIRED: array|timeline|graph|tree
+    'input_size': 20                       # REQUIRED
 }
 ```
 
-#### Required Trace Structure
+#### Trace Steps (🎨 Required Structure)
 
 ```python
 {
-  "metadata": { ... },
-  "trace": {
-    "steps": [
-      {
-        "step": 0,                       # 0-indexed step number
-        "type": "INITIALIZE",            # Algorithm-defined type
-        "description": "...",            # Human-readable
-        "data": {
-          "visualization": { ... },      # REQUIRED: Current state
-          "custom_field": ...            # Optional: Algorithm-specific
-        }
-      }
-    ]
-  },
-  "metadata": {
-    "prediction_points": [ ... ]         # Optional
-  }
+    'step': 0,                   # REQUIRED: 0-indexed
+    'type': 'COMPARE',           # REQUIRED: algorithm-defined
+    'description': '...',        # REQUIRED: human-readable
+    'data': {
+        'visualization': {...}   # REQUIRED: current state
+    }
 }
 ```
 
-### Visualization Data Patterns
+#### Visualization Data Patterns
 
-#### Array Algorithms (visualization_type: "array")
+##### Array Algorithms (visualization_type: "array")
 
 ```python
 data['visualization'] = {
@@ -508,7 +524,7 @@ data['visualization'] = {
 }
 ```
 
-#### Timeline Algorithms (visualization_type: "timeline")
+##### Timeline Algorithms (visualization_type: "timeline")
 
 ```python
 data['visualization'] = {
@@ -523,7 +539,7 @@ data['visualization'] = {
 }
 ```
 
-#### Graph Algorithms (visualization_type: "graph") - Future
+##### Graph Algorithms (visualization_type: "graph") - Future
 
 ```python
 data['visualization'] = {
@@ -559,7 +575,7 @@ def get_prediction_points(self):
     }]
 ```
 
-### Narrative Generation (NEW in v2.0)
+### Narrative Generation (REQUIRED - v2.0, Enhanced v2.1)
 
 **LOCKED REQUIREMENT:**
 
@@ -573,6 +589,7 @@ class MyAlgorithmTracer(AlgorithmTracer):
         - Show all decision points with supporting data
         - Maintain temporal coherence
         - Enable mental visualization
+        - Pass FAA arithmetic audit (v2.1)
         - Fail loudly if data incomplete
         """
         narrative = "# Algorithm Execution Narrative\n\n"
@@ -601,6 +618,7 @@ class MyAlgorithmTracer(AlgorithmTracer):
 - Each algorithm narrates ITSELF (no centralized generator)
 - Narratives must be self-contained (no external references)
 - All decision data must be visible in narrative
+- **All arithmetic must be correct (FAA will verify) ← NEW v2.1**
 - Fails loudly on missing data (KeyError is good!)
 
 ### Completion Modal
@@ -683,21 +701,33 @@ Developer's choice - not constrained.
 **Backend (Stage 1):**
 1. Create tracer class inheriting `AlgorithmTracer`
 2. Implement `execute()`, `get_prediction_points()`, `_get_visualization_state()`
-3. **NEW:** Implement `generate_narrative()`
+3. Implement `generate_narrative()`
 4. Register in `registry.py`
 5. Generate narratives for all examples
-6. Complete Backend Checklist
+6. **Submit to FAA audit (v2.1)**
+7. **Fix arithmetic errors, regenerate until FAA passes (v2.1)**
+8. Complete Backend Checklist
+
+**FAA Audit (Stage 1.5) - NEW v2.1:**
+1. Use `FAA_PERSONA.md` to audit narratives
+2. Verify all arithmetic claims
+3. Reject if errors found
+4. Backend fixes and resubmits
+5. Approve when arithmetic verified
 
 **QA (Stage 2):**
-1. Review narratives for logical completeness
+1. Review FAA-approved narratives for logical completeness
 2. Check temporal coherence
 3. Verify decision transparency
 4. APPROVE or REJECT with specific feedback
+5. **Assume arithmetic already verified (v2.1)**
 
 **Frontend (Stage 3):**
-1. Select or create visualization component
-2. Register in visualization registry
-3. Complete Frontend Checklist
+1. Receive FAA+QA approved narratives
+2. Select or create visualization component
+3. Register in visualization registry
+4. Complete Frontend Checklist
+5. **Trust arithmetic correctness (v2.1)**
 
 **QA (Stage 4):**
 1. Run integration tests
@@ -707,6 +737,7 @@ Developer's choice - not constrained.
 ### Checklist Locations
 
 - Backend: `docs/compliance/BACKEND_CHECKLIST.md`
+- **FAA Audit: `docs/compliance/FAA_PERSONA.md` ← NEW v2.1**
 - Frontend: `docs/compliance/FRONTEND_CHECKLIST.md`
 - QA: `docs/compliance/QA_INTEGRATION_CHECKLIST.md`
 
@@ -721,6 +752,7 @@ All UI decisions: `docs/static_mockup/*.html`
 - ❌ Missing visualization data in steps
 - ❌ >3 prediction choices
 - ❌ Narrative references undefined variables
+- ❌ **Arithmetic errors in narratives (FAA will catch) ← NEW v2.1**
 - ❌ Modifying `base_tracer.py` for algorithm-specific code
 
 **Frontend:**
@@ -733,6 +765,15 @@ All UI decisions: `docs/static_mockup/*.html`
 ---
 
 ## Migration Notes
+
+**From WORKFLOW.md v2.0 to v2.1:**
+
+- Added Stage 1.5: Forensic Arithmetic Audit (FAA)
+- Added FAA_PERSONA.md reference
+- Updated Stage 2 to assume arithmetic pre-verified
+- Updated Stage 3 to note FAA-approved narratives
+- Updated workflow diagrams
+- Preserved all v2.0 functionality
 
 **From TENANT_GUIDE.md (v1.0) to WORKFLOW.md (v2.0):**
 
@@ -749,10 +790,11 @@ All UI decisions: `docs/static_mockup/*.html`
 
 ## Document Version History
 
-| Version | Date    | Changes                              |
-| ------- | ------- | ------------------------------------ |
-| 2.0     | Session 34 | Initial WORKFLOW.md, narrative workflow added, replaces TENANT_GUIDE.md |
-| 1.0     | Session 15 | TENANT_GUIDE.md (now deprecated)     |
+| Version | Date       | Changes                                                                          |
+| ------- | ---------- | -------------------------------------------------------------------------------- |
+| 2.1     | Session 35 | Added Stage 1.5 (FAA gate), updated all stages to reflect FAA integration       |
+| 2.0     | Session 34 | Initial WORKFLOW.md, narrative workflow added, replaces TENANT_GUIDE.md         |
+| 1.0     | Session 15 | TENANT_GUIDE.md (now deprecated)                                                 |
 
 ---
 

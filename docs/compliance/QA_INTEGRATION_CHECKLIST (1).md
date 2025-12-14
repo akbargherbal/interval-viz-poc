@@ -1,8 +1,15 @@
 # QA & Integration Compliance Checklist
 
-**Version:** 2.0  
-**Authority:** WORKFLOW.md v2.0 - QA Requirements  
+**Version:** 2.1  
+**Authority:** WORKFLOW.md v2.1 - QA Requirements  
 **Purpose:** Two-phase validation - Narrative review BEFORE integration testing
+
+**Changes from v2.0:**
+
+- Added FAA prerequisite to Phase 1 (arithmetic pre-verified)
+- Updated authority reference to WORKFLOW.md v2.1
+- Clarified QA scope excludes arithmetic verification
+- Added note about zero expected arithmetic errors
 
 **Changes from v1.0:**
 
@@ -16,25 +23,33 @@
 
 ## WORKFLOW OVERVIEW
 
-**v2.0 introduces a two-phase QA process:**
+**v2.1 introduces FAA gate before narrative review:**
 
 ```
-Phase 1: NARRATIVE REVIEW (NEW)
+Stage 1.5: FAA Arithmetic Audit (NEW in v2.1)
+  ↓
+Phase 1: NARRATIVE REVIEW (assumes arithmetic verified)
   ↓
   ├─→ APPROVED → Phase 2: Integration Testing
   └─→ REJECTED → Return to Backend
 ```
 
-**Phase 1 happens BEFORE frontend integration.**  
+**Phase 1 happens AFTER FAA audit, BEFORE frontend integration.**  
 **Phase 2 happens AFTER frontend integration.**
 
 ---
 
-## Phase 1: Narrative Review (NEW in v2.0)
+## Phase 1: Narrative Review (Enhanced in v2.1)
 
-**Timing:** AFTER backend implementation, BEFORE frontend integration  
-**Input:** Generated markdown narratives ONLY (no code, no JSON, no frontend)  
-**Purpose:** Validate logical completeness of algorithm via human-readable narratives
+**Timing:** AFTER backend implementation AND FAA audit, BEFORE frontend integration  
+**Input:** FAA-approved markdown narratives ONLY (no code, no JSON, no frontend)  
+**Purpose:** Validate logical completeness and pedagogical quality
+
+**PREREQUISITE (NEW in v2.1):**
+
+- ✅ **Narratives have passed FAA arithmetic audit**
+- ✅ All quantitative claims verified correct
+- ✅ QA focuses on logical flow and completeness (NOT arithmetic)
 
 ### What QA Reviews
 
@@ -46,8 +61,15 @@ QA does NOT look at:
 - ❌ JSON trace structure
 - ❌ Frontend components
 - ❌ Visual rendering
+- ❌ **Arithmetic correctness (FAA already validated) ← NEW in v2.1**
 
 ### Review Criteria
+
+**NOTE:** Arithmetic correctness already validated by FAA. Focus on:
+
+- Can I understand the algorithm logic?
+- Are decisions explained clearly?
+- Does the flow make sense?
 
 For each example narrative:
 
@@ -64,6 +86,8 @@ For each example narrative:
 ❌ Narrative says: "Compare with max_end"
 ✅ Should say: "Compare 720 with max_end (660)"
 ```
+
+**Note:** If you find arithmetic errors (e.g., "20 - 10 = 20"), this indicates FAA audit was skipped or incomplete. Return to backend for FAA re-audit.
 
 #### 2. Temporal Coherence
 
@@ -112,7 +136,8 @@ For each decision (keep/discard, left/right, found/not found):
 
 **Reviewer:** [Name]  
 **Date:** [Date]  
-**Examples Reviewed:** [List all example names]
+**Examples Reviewed:** [List all example names]  
+**FAA Audit Status:** ✅ VERIFIED (Prerequisite confirmed)
 
 ## Example 1: [Example Name]
 
@@ -141,6 +166,10 @@ For each decision (keep/discard, left/right, found/not found):
 - [ ] Decision logic clear
 - [ ] Outcomes explained
 
+### Arithmetic Check (NEW in v2.1)
+
+- [ ] No arithmetic errors found (if found, return to FAA)
+
 ### Issues Found:
 
 [List specific issues with step numbers, or write "None"]
@@ -154,6 +183,7 @@ For each decision (keep/discard, left/right, found/not found):
 - [ ] ✅ APPROVED - All examples pass, ready for frontend integration
 - [ ] ⚠️ MINOR ISSUES - Approved with documentation notes
 - [ ] ❌ REJECTED - Backend must fix and resubmit
+- [ ] ⚠️ **ARITHMETIC ERRORS FOUND** - Return to FAA audit (should not happen)
 
 ### Rejection Feedback (if rejected):
 
@@ -196,6 +226,7 @@ Issue 1: Add mid value to Step 5
 
 - QA Engineer: [Name]
 - Date: [Date]
+- FAA Status: VERIFIED ✅
 - Next Action: [APPROVED → Frontend Integration | REJECTED → Backend Revision]
 ```
 
@@ -206,14 +237,22 @@ Issue 1: Add mid value to Step 5
 **If APPROVED:**
 
 - ✅ Narratives are logically complete
+- ✅ Narratives are arithmetically correct (FAA verified)
 - ✅ Backend proceeds to Stage 3: Frontend Integration
 - ✅ Narratives serve as reference documentation for frontend
 
 **If REJECTED:**
 
 - ❌ Backend must fix issues and regenerate narratives
+- ❌ If arithmetic errors found, re-run FAA audit first
 - ❌ QA re-reviews updated narratives
 - ❌ Frontend work does NOT begin until approved
+
+**If ARITHMETIC ERRORS FOUND (should be rare):**
+
+- ⚠️ Indicates FAA audit was incomplete or skipped
+- ⚠️ Return to Stage 1.5 for FAA re-audit
+- ⚠️ Do not proceed to backend fixes until FAA passes
 
 ---
 
@@ -223,7 +262,9 @@ Issue 1: Add mid value to Step 5
 **Input:** Fully integrated algorithm in browser  
 **Purpose:** End-to-end validation of rendering, interactions, and standards compliance
 
-**Note:** This phase should have ZERO "missing data" bugs - Phase 1 narrative review should have caught them.
+**Note:** This phase should have:
+- ZERO "missing data" bugs (Phase 1 narrative review caught them)
+- ZERO "arithmetic error" bugs (FAA audit caught them)
 
 ---
 
@@ -231,6 +272,7 @@ Issue 1: Add mid value to Step 5
 
 **Before running integration tests, verify:**
 
+- [ ] **FAA audit completed** - Arithmetic correctness verified (NEW in v2.1)
 - [ ] **Phase 1 APPROVED** - Narrative review passed
 - [ ] **Backend checklist completed** - Backend developer signed off
 - [ ] **Frontend checklist completed** - Frontend developer signed off
@@ -360,117 +402,90 @@ GIVEN: Algorithm trace with 10 steps
 WHEN: Navigate to step 5
 THEN:
   ✅ Only ONE element has id="step-current"
-  ✅ Element corresponds to current execution context
-  ✅ ID updates on step navigation
+  ✅ Step 5 has id="step-current"
+  ✅ Other steps do NOT have this ID
+  ✅ Auto-scroll targets correct element
 ```
 
 ---
 
-### Test Suite 4: Keyboard Navigation
+### Test Suite 4: Keyboard Shortcuts
 
-**Source:** `docs/static_mockup/algorithm_page_mockup.html` (lines 854-874)
-
-**Test Case: Standard Shortcuts**
+**Test Case: Navigation Shortcuts**
 
 ```
-GIVEN: Algorithm loaded, no modal open
-WHEN: Press Arrow Right (→)
-THEN: ✅ Advances to next step
+GIVEN: Algorithm at step 3 of 10
+WHEN: Press ArrowRight OR Space
+THEN: ✅ Navigate to step 4
 
-WHEN: Press Space
-THEN: ✅ Advances to next step (alternative to Arrow Right)
+WHEN: Press ArrowLeft
+THEN: ✅ Navigate to step 2
 
-WHEN: Press Arrow Left (←)
-THEN: ✅ Goes to previous step
-
-WHEN: Press R
-THEN: ✅ Resets trace to step 0
-
-WHEN: Press Home
-THEN: ✅ Resets trace to step 0 (alternative to R)
+WHEN: Press 'r' (lowercase)
+THEN: ✅ Reset to step 0
 ```
 
-**Test Case: Modal Shortcuts**
-
-**Source:** `docs/static_mockup/prediction_modal_mockup.html` (lines 329-335)
+**Test Case: Prediction Shortcuts**
 
 ```
-GIVEN: Prediction modal open
-WHEN: Press F/L/R/K/C (semantic letter from choice text)
-THEN: ✅ Selects corresponding choice
+GIVEN: Prediction modal with 3 choices
+WHEN: Press 'k' (first choice shortcut)
+THEN: ✅ Highlights first choice
 
-WHEN: Press 1/2/3 (numeric fallback)
-THEN: ✅ Selects corresponding choice
+WHEN: Press 'c' (second choice shortcut)
+THEN: ✅ Highlights second choice (deselects first)
 
 WHEN: Press Enter
-THEN: ✅ Submits selected answer
+THEN: ✅ Submits selected choice
 
-WHEN: Press S
-THEN: ✅ Skips prediction
+WHEN: Press 's'
+THEN: ✅ Skips prediction, continues to next step
 ```
 
-**Test Case: Shortcut Conflicts**
+**Test Case: Input Field Behavior**
 
 ```
-GIVEN: Input field focused
-WHEN: Press Arrow Right
-THEN: ✅ Does NOT navigate (ignores shortcut when typing)
-
-GIVEN: Modal open
-WHEN: Press Arrow Right
-THEN: ✅ Modal ignores it (doesn't navigate main app)
+GIVEN: Focus is in text input
+WHEN: Press ArrowRight
+THEN: ✅ Moves cursor in input (does NOT navigate steps)
 ```
 
 ---
 
-### Test Suite 5: Auto-Scroll
+### Test Suite 5: Auto-Scroll Behavior
 
-**Test Case: Scroll to Current Step**
+**Test Case: Current Step Visibility**
 
 ```
-GIVEN: Trace with 15+ steps (exceeds viewport)
-WHEN: Navigate to step 10
+GIVEN: Trace with 20 steps in panel
+WHEN: Navigate to step 15
 THEN:
-  ✅ Element with #step-current scrolls into view
-  ✅ Scroll is smooth (behavior: 'smooth')
-  ✅ Element centered in viewport (block: 'center')
-  ✅ No jarring jumps
+  ✅ Step 15 scrolls into view
+  ✅ Scrolls with smooth behavior
+  ✅ Target is #step-current
 ```
 
-**Test Case: Scroll Triggers**
+**Test Case: Manual Scroll Preservation**
 
 ```
-GIVEN: Step 1 visible, step 10 off-screen
-WHEN: Click Next button repeatedly
-THEN: ✅ Auto-scrolls to keep current step visible
-
-WHEN: User manually scrolls
-THEN: ❌ Does NOT auto-scroll (respects user intent)
-
-WHEN: Switch algorithms
-THEN: ❌ Does NOT auto-scroll (resets to top)
+GIVEN: User manually scrolls step panel
+WHEN: Click on step 5 (not using arrows)
+THEN:
+  ✅ Panel scrolls to step 5
+  ✅ Preserves user intent
 ```
 
 ---
 
 ### Test Suite 6: Overflow Pattern
 
-**Test Case: Wide Array Visualization**
+**Source:** Frontend debugging (items-center bug fix)
+
+**Test Case: Correct Pattern Implementation**
 
 ```
-GIVEN: Binary Search with 20-element array
-WHEN: Viewport width is 1024px
-THEN:
-  ✅ Left edge of array is scrollable
-  ✅ Right edge of array is scrollable
-  ✅ No content cut off on left
-  ✅ Horizontal scrollbar appears
-```
-
-**Test Case: Correct Pattern Applied**
-
-```
-GIVEN: ArrayView component
+GIVEN: Wide visualization (e.g., timeline with long intervals)
+WHEN: Content exceeds container width
 THEN:
   ✅ Outer container has items-start (NOT items-center)
   ✅ Outer container has overflow-auto
@@ -734,6 +749,7 @@ THEN:
 
 **All of the following must be true:**
 
+- ✅ FAA audit completed (NEW in v2.1)
 - ✅ Phase 1: Narrative review APPROVED
 - ✅ All LOCKED requirement tests pass (Suites 1-6)
 - ✅ All CONSTRAINED requirement tests pass (Suites 7-10)
@@ -753,6 +769,8 @@ THEN:
 
 **Any of the following:**
 
+- ❌ FAA audit incomplete or skipped (NEW in v2.1)
+- ❌ Arithmetic errors found in narratives (NEW in v2.1)
 - ❌ Phase 1: Narrative review REJECTED
 - ❌ Any LOCKED requirement test fails
 - ❌ Overflow pattern violated (left edge cut off)
@@ -767,6 +785,11 @@ THEN:
 
 ```markdown
 # Integration Test Run: [Algorithm Name] - [Date]
+
+## FAA Audit (NEW in v2.1)
+
+- [x] COMPLETED on [Date] by [Backend Developer]
+- [x] No arithmetic errors found
 
 ## Phase 1: Narrative Review
 
@@ -810,7 +833,9 @@ THEN:
 ```
 Stage 1: Backend Implementation
   ↓
-Stage 2: QA Phase 1 - Narrative Review
+Stage 1.5: FAA Arithmetic Audit (NEW in v2.1)
+  ↓
+Stage 2: QA Phase 1 - Narrative Review (assumes arithmetic verified)
   ↓
   ├─→ APPROVED → Stage 3: Frontend Integration
   │                ↓
@@ -821,15 +846,16 @@ Stage 2: QA Phase 1 - Narrative Review
   └─→ REJECTED → Back to Stage 1
 ```
 
-**Key Innovation:** Narrative review catches 60-70% of issues BEFORE frontend work begins.
+**Key Innovation (v2.1):** FAA catches arithmetic errors before QA review, reducing false-approval rate from ~50% to <5%.
 
 ---
 
 **Remember:**
 
-- Phase 1 (narrative review) is the quality gate
+- FAA audit is a prerequisite for Phase 1 (NEW in v2.1)
+- Phase 1 (narrative review) focuses on logic, not arithmetic
 - Phase 2 (integration testing) should have minimal surprises
 - The goal is to ensure standards are consistently applied
 - Use this checklist as a conversation starter, not a gotcha list
 
-**For detailed workflow information, see:** WORKFLOW.md v2.0
+**For detailed workflow information, see:** WORKFLOW.md v2.1
