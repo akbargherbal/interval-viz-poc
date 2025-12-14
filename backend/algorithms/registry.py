@@ -178,6 +178,7 @@ def register_algorithms():
     # Import algorithm tracers
     from .binary_search import BinarySearchTracer
     from .interval_coverage import IntervalCoverageTracer
+    from .two_pointer import TwoPointerTracer
 
     # -------------------------------------------------------------------------
     # Interval Coverage (PoC Algorithm - Now Refactored!)
@@ -327,6 +328,44 @@ def register_algorithms():
             }
         }
     )
+
+
+    
+    # -------------------------------------------------------------------------
+    # Two Pointer Pattern (NEW)
+    # -------------------------------------------------------------------------
+    registry.register(
+        name='two-pointer',
+        tracer_class=TwoPointerTracer,
+        display_name='Two Pointer Pattern',
+        description='Remove duplicates from a sorted array in-place using a slow and fast pointer technique.',
+        example_inputs=[
+            {
+                'name': 'Basic Duplicates',
+                'input': {'array': [1, 1, 2, 2, 3]}
+            },
+            {
+                'name': 'All Unique',
+                'input': {'array': [1, 2, 3, 4, 5]}
+            },
+            {
+                'name': 'All Duplicates',
+                'input': {'array': [1, 1, 1, 1, 1]}
+            }
+        ],
+        input_schema={
+            'type': 'object',
+            'required': ['array'],
+            'properties': {
+                'array': {
+                    'type': 'array',
+                    'items': {'type': 'integer'},
+                    'description': 'Sorted array of integers, may contain duplicates'
+                }
+            }
+        }
+    )
+
 
 
 # Auto-register algorithms on module import
