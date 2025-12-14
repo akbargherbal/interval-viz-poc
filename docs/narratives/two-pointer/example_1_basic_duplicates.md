@@ -38,21 +38,21 @@ State: U   E   P   P   P
 
 ---
 
-## Step 2: ⏭️ Duplicate found. Skip by moving fast pointer.
+## Step 2: ⏭️ Duplicate found. Moving fast pointer.
 
 **Array State:**
 ```
 Index: 0   1   2   3   4  
 Value: 1   1   2   2   3  
-State: U   E   P   P   P  
-       S   F
+State: U   D   E   P   P  
+       S       F
 ```
-**Pointers:** slow = `0`, fast = `1`
+**Pointers:** slow = `0`, fast = `2`
 **Unique Count so far:** `1`
 
 **Action:**
 - The values are the same, so this is a duplicate.
-- We only increment the `fast` pointer to look at the next element.
+- We increment the `fast` pointer to look at the next element.
 
 ---
 
@@ -74,43 +74,27 @@ State: U   D   E   P   P
 
 ---
 
-## Step 4: ✨ New unique element! Move slow pointer to index 1.
-
-**Array State:**
-```
-Index: 0   1   2   3   4  
-Value: 1   1   2   2   3  
-State: U   U   E   P   P  
-           S   F
-```
-**Pointers:** slow = `1`, fast = `2`
-**Unique Count so far:** `2`
-
-**Action:**
-- The values are different, so we found a new unique element.
-- First, increment the `slow` pointer to make space for the new value.
-
----
-
-## Step 5: 📝 Copy 2 to arr[1]. Move fast pointer.
+## Step 4: ✨ New unique element found. Placed 2 at index 1.
 
 **Array State:**
 ```
 Index: 0   1   2   3   4  
 Value: 1   2   2   2   3  
-State: U   U   E   P   P  
-           S   F
+State: U   U   D   E   P  
+           S       F
 ```
-**Pointers:** slow = `1`, fast = `2`
+**Pointers:** slow = `1`, fast = `3`
 **Unique Count so far:** `2`
 
 **Action:**
-- Copy the unique value (`2`) from `arr[2]` to the new slow position `arr[1]`.
-- Then, increment the `fast` pointer to continue scanning.
+- The values are different, so we found a new unique element.
+- The `slow` pointer is moved to index `1`.
+- The unique value (`2`) is copied to `arr[1]`.
+- The `fast` pointer is moved to continue scanning.
 
 ---
 
-## Step 6: ⚖️ Compare arr[fast] (2) with arr[slow] (2).
+## Step 5: ⚖️ Compare arr[fast] (2) with arr[slow] (2).
 
 **Array State:**
 ```
@@ -128,25 +112,25 @@ State: U   U   D   E   P
 
 ---
 
-## Step 7: ⏭️ Duplicate found. Skip by moving fast pointer.
+## Step 6: ⏭️ Duplicate found. Moving fast pointer.
 
 **Array State:**
 ```
 Index: 0   1   2   3   4  
 Value: 1   2   2   2   3  
-State: U   U   D   E   P  
-           S       F
+State: U   U   D   D   E  
+           S           F
 ```
-**Pointers:** slow = `1`, fast = `3`
+**Pointers:** slow = `1`, fast = `4`
 **Unique Count so far:** `2`
 
 **Action:**
 - The values are the same, so this is a duplicate.
-- We only increment the `fast` pointer to look at the next element.
+- We increment the `fast` pointer to look at the next element.
 
 ---
 
-## Step 8: ⚖️ Compare arr[fast] (3) with arr[slow] (2).
+## Step 7: ⚖️ Compare arr[fast] (3) with arr[slow] (2).
 
 **Array State:**
 ```
@@ -164,43 +148,27 @@ State: U   U   D   D   E
 
 ---
 
-## Step 9: ✨ New unique element! Move slow pointer to index 2.
-
-**Array State:**
-```
-Index: 0   1   2   3   4  
-Value: 1   2   2   2   3  
-State: U   U   U   D   E  
-               S       F
-```
-**Pointers:** slow = `2`, fast = `4`
-**Unique Count so far:** `3`
-
-**Action:**
-- The values are different, so we found a new unique element.
-- First, increment the `slow` pointer to make space for the new value.
-
----
-
-## Step 10: 📝 Copy 3 to arr[2]. Move fast pointer.
+## Step 8: ✨ New unique element found. Placed 3 at index 2.
 
 **Array State:**
 ```
 Index: 0   1   2   3   4  
 Value: 1   2   3   2   3  
-State: U   U   U   D   E  
-               S       F
+State: U   U   U   D   D  
+               S
 ```
-**Pointers:** slow = `2`, fast = `4`
+**Pointers:** slow = `2`, fast = `None`
 **Unique Count so far:** `3`
 
 **Action:**
-- Copy the unique value (`3`) from `arr[4]` to the new slow position `arr[2]`.
-- Then, increment the `fast` pointer to continue scanning.
+- The values are different, so we found a new unique element.
+- The `slow` pointer is moved to index `2`.
+- The unique value (`3`) is copied to `arr[2]`.
+- The `fast` pointer is moved to continue scanning.
 
 ---
 
-## Step 11: ✅ Complete! Found 3 unique elements.
+## Step 9: ✅ Complete! Found 3 unique elements.
 
 **Array State:**
 ```

@@ -38,21 +38,21 @@ State: U   E   P   P   P
 
 ---
 
-## Step 2: ⏭️ Duplicate found. Skip by moving fast pointer.
+## Step 2: ⏭️ Duplicate found. Moving fast pointer.
 
 **Array State:**
 ```
 Index: 0   1   2   3   4  
 Value: 1   1   1   1   1  
-State: U   E   P   P   P  
-       S   F
+State: U   D   E   P   P  
+       S       F
 ```
-**Pointers:** slow = `0`, fast = `1`
+**Pointers:** slow = `0`, fast = `2`
 **Unique Count so far:** `1`
 
 **Action:**
 - The values are the same, so this is a duplicate.
-- We only increment the `fast` pointer to look at the next element.
+- We increment the `fast` pointer to look at the next element.
 
 ---
 
@@ -74,21 +74,21 @@ State: U   D   E   P   P
 
 ---
 
-## Step 4: ⏭️ Duplicate found. Skip by moving fast pointer.
+## Step 4: ⏭️ Duplicate found. Moving fast pointer.
 
 **Array State:**
 ```
 Index: 0   1   2   3   4  
 Value: 1   1   1   1   1  
-State: U   D   E   P   P  
-       S       F
+State: U   D   D   E   P  
+       S           F
 ```
-**Pointers:** slow = `0`, fast = `2`
+**Pointers:** slow = `0`, fast = `3`
 **Unique Count so far:** `1`
 
 **Action:**
 - The values are the same, so this is a duplicate.
-- We only increment the `fast` pointer to look at the next element.
+- We increment the `fast` pointer to look at the next element.
 
 ---
 
@@ -110,21 +110,21 @@ State: U   D   D   E   P
 
 ---
 
-## Step 6: ⏭️ Duplicate found. Skip by moving fast pointer.
+## Step 6: ⏭️ Duplicate found. Moving fast pointer.
 
 **Array State:**
 ```
 Index: 0   1   2   3   4  
 Value: 1   1   1   1   1  
-State: U   D   D   E   P  
-       S           F
+State: U   D   D   D   E  
+       S               F
 ```
-**Pointers:** slow = `0`, fast = `3`
+**Pointers:** slow = `0`, fast = `4`
 **Unique Count so far:** `1`
 
 **Action:**
 - The values are the same, so this is a duplicate.
-- We only increment the `fast` pointer to look at the next element.
+- We increment the `fast` pointer to look at the next element.
 
 ---
 
@@ -146,21 +146,21 @@ State: U   D   D   D   E
 
 ---
 
-## Step 8: ⏭️ Duplicate found. Skip by moving fast pointer.
+## Step 8: ⏭️ Duplicate found. Moving fast pointer.
 
 **Array State:**
 ```
 Index: 0   1   2   3   4  
 Value: 1   1   1   1   1  
-State: U   D   D   D   E  
-       S               F
+State: U   D   D   D   D  
+       S
 ```
-**Pointers:** slow = `0`, fast = `4`
+**Pointers:** slow = `0`, fast = `None`
 **Unique Count so far:** `1`
 
 **Action:**
 - The values are the same, so this is a duplicate.
-- We only increment the `fast` pointer to look at the next element.
+- We increment the `fast` pointer to look at the next element.
 
 ---
 

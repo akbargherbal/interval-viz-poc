@@ -38,43 +38,27 @@ State: U   E   P   P   P
 
 ---
 
-## Step 2: ✨ New unique element! Move slow pointer to index 1.
+## Step 2: ✨ New unique element found. Placed 2 at index 1.
 
 **Array State:**
 ```
 Index: 0   1   2   3   4  
 Value: 1   2   3   4   5  
-State: U   U   P   P   P  
-           SF
+State: U   U   E   P   P  
+           S   F
 ```
-**Pointers:** slow = `1`, fast = `1`
+**Pointers:** slow = `1`, fast = `2`
 **Unique Count so far:** `2`
 
 **Action:**
 - The values are different, so we found a new unique element.
-- First, increment the `slow` pointer to make space for the new value.
+- The `slow` pointer is moved to index `1`.
+- The unique value (`2`) is copied to `arr[1]`.
+- The `fast` pointer is moved to continue scanning.
 
 ---
 
-## Step 3: 📝 Copy 2 to arr[1]. Move fast pointer.
-
-**Array State:**
-```
-Index: 0   1   2   3   4  
-Value: 1   2   3   4   5  
-State: U   U   P   P   P  
-           SF
-```
-**Pointers:** slow = `1`, fast = `1`
-**Unique Count so far:** `2`
-
-**Action:**
-- Copy the unique value (`2`) from `arr[1]` to the new slow position `arr[1]`.
-- Then, increment the `fast` pointer to continue scanning.
-
----
-
-## Step 4: ⚖️ Compare arr[fast] (3) with arr[slow] (2).
+## Step 3: ⚖️ Compare arr[fast] (3) with arr[slow] (2).
 
 **Array State:**
 ```
@@ -92,43 +76,27 @@ State: U   U   E   P   P
 
 ---
 
-## Step 5: ✨ New unique element! Move slow pointer to index 2.
+## Step 4: ✨ New unique element found. Placed 3 at index 2.
 
 **Array State:**
 ```
 Index: 0   1   2   3   4  
 Value: 1   2   3   4   5  
-State: U   U   U   P   P  
-               SF
+State: U   U   U   E   P  
+               S   F
 ```
-**Pointers:** slow = `2`, fast = `2`
+**Pointers:** slow = `2`, fast = `3`
 **Unique Count so far:** `3`
 
 **Action:**
 - The values are different, so we found a new unique element.
-- First, increment the `slow` pointer to make space for the new value.
+- The `slow` pointer is moved to index `2`.
+- The unique value (`3`) is copied to `arr[2]`.
+- The `fast` pointer is moved to continue scanning.
 
 ---
 
-## Step 6: 📝 Copy 3 to arr[2]. Move fast pointer.
-
-**Array State:**
-```
-Index: 0   1   2   3   4  
-Value: 1   2   3   4   5  
-State: U   U   U   P   P  
-               SF
-```
-**Pointers:** slow = `2`, fast = `2`
-**Unique Count so far:** `3`
-
-**Action:**
-- Copy the unique value (`3`) from `arr[2]` to the new slow position `arr[2]`.
-- Then, increment the `fast` pointer to continue scanning.
-
----
-
-## Step 7: ⚖️ Compare arr[fast] (4) with arr[slow] (3).
+## Step 5: ⚖️ Compare arr[fast] (4) with arr[slow] (3).
 
 **Array State:**
 ```
@@ -146,43 +114,27 @@ State: U   U   U   E   P
 
 ---
 
-## Step 8: ✨ New unique element! Move slow pointer to index 3.
+## Step 6: ✨ New unique element found. Placed 4 at index 3.
 
 **Array State:**
 ```
 Index: 0   1   2   3   4  
 Value: 1   2   3   4   5  
-State: U   U   U   U   P  
-                   SF
+State: U   U   U   U   E  
+                   S   F
 ```
-**Pointers:** slow = `3`, fast = `3`
+**Pointers:** slow = `3`, fast = `4`
 **Unique Count so far:** `4`
 
 **Action:**
 - The values are different, so we found a new unique element.
-- First, increment the `slow` pointer to make space for the new value.
+- The `slow` pointer is moved to index `3`.
+- The unique value (`4`) is copied to `arr[3]`.
+- The `fast` pointer is moved to continue scanning.
 
 ---
 
-## Step 9: 📝 Copy 4 to arr[3]. Move fast pointer.
-
-**Array State:**
-```
-Index: 0   1   2   3   4  
-Value: 1   2   3   4   5  
-State: U   U   U   U   P  
-                   SF
-```
-**Pointers:** slow = `3`, fast = `3`
-**Unique Count so far:** `4`
-
-**Action:**
-- Copy the unique value (`4`) from `arr[3]` to the new slow position `arr[3]`.
-- Then, increment the `fast` pointer to continue scanning.
-
----
-
-## Step 10: ⚖️ Compare arr[fast] (5) with arr[slow] (4).
+## Step 7: ⚖️ Compare arr[fast] (5) with arr[slow] (4).
 
 **Array State:**
 ```
@@ -200,43 +152,27 @@ State: U   U   U   U   E
 
 ---
 
-## Step 11: ✨ New unique element! Move slow pointer to index 4.
+## Step 8: ✨ New unique element found. Placed 5 at index 4.
 
 **Array State:**
 ```
 Index: 0   1   2   3   4  
 Value: 1   2   3   4   5  
 State: U   U   U   U   U  
-                       SF
+                       S
 ```
-**Pointers:** slow = `4`, fast = `4`
+**Pointers:** slow = `4`, fast = `None`
 **Unique Count so far:** `5`
 
 **Action:**
 - The values are different, so we found a new unique element.
-- First, increment the `slow` pointer to make space for the new value.
+- The `slow` pointer is moved to index `4`.
+- The unique value (`5`) is copied to `arr[4]`.
+- The `fast` pointer is moved to continue scanning.
 
 ---
 
-## Step 12: 📝 Copy 5 to arr[4]. Move fast pointer.
-
-**Array State:**
-```
-Index: 0   1   2   3   4  
-Value: 1   2   3   4   5  
-State: U   U   U   U   U  
-                       SF
-```
-**Pointers:** slow = `4`, fast = `4`
-**Unique Count so far:** `5`
-
-**Action:**
-- Copy the unique value (`5`) from `arr[4]` to the new slow position `arr[4]`.
-- Then, increment the `fast` pointer to continue scanning.
-
----
-
-## Step 13: ✅ Complete! Found 5 unique elements.
+## Step 9: ✅ Complete! Found 5 unique elements.
 
 **Array State:**
 ```
