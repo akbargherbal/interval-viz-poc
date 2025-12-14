@@ -77,28 +77,37 @@ def generate_trace_unified():
 
 ---
 
-### Dynamic Visualization Selection
+### Dynamic Component Selection
 
-**Backend declares visualization type; frontend selects component automatically:**
+**Backend declares visualization type; frontend selects components automatically for both panels:**
+
+**LEFT Panel (Visualization):** Registry selects visualization component based on `visualization_type`
+
+**RIGHT Panel (Algorithm State):** Registry selects state component based on `algorithm` name
 
 ```python
 # Backend declares visualization type
 self.metadata = {
     'algorithm': 'binary-search',
-    'visualization_type': 'array',  # ← Frontend reads this
+    'visualization_type': 'array',  # ← Frontend LEFT panel reads this
     'visualization_config': {...}
 }
 ```
 
 ```javascript
-// Frontend dynamically selects component
+// Frontend LEFT panel - dynamically selects visualization
 import { getVisualizationComponent } from "./utils/visualizationRegistry";
 
-const Component = getVisualizationComponent(
+const VisualizationComponent = getVisualizationComponent(
   trace.metadata.visualization_type // 'array' → ArrayView
 );
 
-return <Component step={step} config={config} />;
+// Frontend RIGHT panel - dynamically selects state component
+import { getStateComponent } from "./utils/stateRegistry";
+
+const StateComponent = getStateComponent(
+  currentAlgorithm // 'binary-search' → BinarySearchState
+);
 ```
 
 **Available Visualization Types:**
@@ -132,10 +141,14 @@ interval-viz-poc/
 │   │   │   ├── CompletionModal.jsx      # Success screen
 │   │   │   ├── PredictionModal.jsx      # Interactive predictions
 │   │   │   ├── KeyboardHints.jsx        # Shortcut guide
+│   │   │   ├── algorithm-states/        # ⭐ Algorithm-specific state components
+│   │   │   │   ├── BinarySearchState.jsx
+│   │   │   │   ├── IntervalCoverageState.jsx
+│   │   │   │   └── index.js
 │   │   │   └── visualizations/          # ⭐ Reusable viz components
 │   │   │       ├── ArrayView.jsx
 │   │   │       ├── TimelineView.jsx
-│   │   │       └── CallStackView.jsx
+│   │   │       └── index.js
 │   │   ├── hooks/                       # Business logic hooks
 │   │   │   ├── useTraceLoader.js
 │   │   │   ├── useTraceNavigation.js
@@ -143,7 +156,8 @@ interval-viz-poc/
 │   │   │   ├── useVisualHighlight.js
 │   │   │   └── useKeyboardShortcuts.js
 │   │   ├── utils/
-│   │   │   └── visualizationRegistry.js # ⭐ Dynamic component selection
+│   │   │   ├── stateRegistry.js         # ⭐ Dynamic state component selection
+│   │   │   └── visualizationRegistry.js # ⭐ Dynamic visualization selection
 │   │   ├── App.jsx
 │   │   └── index.js
 │   └── package.json
@@ -636,7 +650,8 @@ const VISUALIZATION_REGISTRY = {
 - **`PredictionModal`** - Interactive prediction prompts (ID: `#prediction-modal`)
 - **`CompletionModal`** - Success screen with stats (ID: `#completion-modal`)
 - **`KeyboardHints`** - Shortcut guide
-- **Visualizations**: `ArrayView`, `TimelineView`, `CallStackView`
+- **Visualizations** (LEFT panel): `ArrayView`, `TimelineView`
+- **Algorithm States** (RIGHT panel): `BinarySearchState`, `IntervalCoverageState`
 
 ---
 
@@ -736,7 +751,7 @@ python app.py
 
 ```
 🚀 Algorithm Trace Backend Starting...
-📍 Running on: http://localhost:5000
+🌐 Running on: http://localhost:5000
 📊 Registered Algorithms: 2
    - interval-coverage: Interval Coverage
    - binary-search: Binary Search
