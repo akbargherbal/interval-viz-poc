@@ -9,6 +9,7 @@
 
 import BinarySearchState from "../components/algorithm-states/BinarySearchState";
 import IntervalCoverageState from "../components/algorithm-states/IntervalCoverageState";
+import TwoPointerState from "../components/algorithm-states/TwoPointerState"; // <-- ADDED
 
 /**
  * Fallback component for algorithms without a registered state component
@@ -32,6 +33,7 @@ const DefaultStateComponent = ({ step }) => {
 const STATE_REGISTRY = {
   "binary-search": BinarySearchState,
   "interval-coverage": IntervalCoverageState,
+   "two-pointer": TwoPointerState, // <-- ADDED
 };
 
 /**
