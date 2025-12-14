@@ -29,6 +29,10 @@ class YourAlgorithmTracer(AlgorithmTracer):
         # Identify learning moments
         return [...]
 
+    def generate_narrative(self, trace_result):
+        # Convert trace to human-readable markdown (REQUIRED v2.0+)
+        return "# Algorithm Execution\n\n..."
+
 # backend/algorithms/registry.py
 registry.register(
     name='your-algorithm',
@@ -163,12 +167,15 @@ interval-viz-poc/
 │   └── package.json
 │
 ├── docs/
-│   ├── TENANT_GUIDE.md                  # ⭐ Constitutional framework
-│   └── compliance/                      # ⭐ Compliance checklists
-│       ├── BACKEND_CHECKLIST.md
-│       ├── FRONTEND_CHECKLIST.md
-│       ├── QA_INTEGRATION_CHECKLIST.md
-│       └── CHECKLIST_SYSTEM_OVERVIEW.md
+│   ├── compliance/                      # ⭐ Compliance checklists & workflow
+│   │   ├── WORKFLOW.md                  # ⭐ Single source of truth
+│   │   ├── BACKEND_CHECKLIST.md
+│   │   ├── FAA_PERSONA.md               # ⭐ Arithmetic audit guide (v2.1)
+│   │   ├── FRONTEND_CHECKLIST.md
+│   │   └── QA_INTEGRATION_CHECKLIST.md
+│   └── ADR/                             # Architecture decision records
+│       ├── ADR-001-registry-based-architecture.md
+│       └── ADR-002-component-organization-principles.md
 │
 └── README.md
 
@@ -190,6 +197,7 @@ This platform follows a **three-tier requirement system** that defines what can 
 - **API Contracts**: Trace structure, metadata fields
 - **Modal Behavior**: HTML IDs (`#prediction-modal`, `#completion-modal`), keyboard shortcuts, auto-scroll
 - **Panel Layout**: Overflow pattern (MUST use `items-start` + `mx-auto`, NOT `items-center`)
+- **Narrative Generation**: All algorithms MUST implement `generate_narrative()` (v2.0+)
 
 #### 2. CONSTRAINED Requirements ⚠️
 
@@ -209,11 +217,11 @@ This platform follows a **three-tier requirement system** that defines what can 
 
 ---
 
-### Three Compliance Checklists (CRITICAL)
+### Four Compliance Stages (CRITICAL)
 
-All new algorithms MUST pass these checklists:
+All new algorithms MUST pass these stages:
 
-#### 1. Backend Compliance (`docs/compliance/BACKEND_CHECKLIST.md`)
+#### Stage 1: Backend Implementation & Checklist (`docs/compliance/BACKEND_CHECKLIST.md`)
 
 **Validates:**
 
@@ -222,6 +230,7 @@ All new algorithms MUST pass these checklists:
 - ✅ Visualization data contracts (use `state` string, not `visual_state` dict)
 - ✅ Prediction points format (≤3 choices)
 - ✅ Base class compliance (`AlgorithmTracer` inheritance)
+- ✅ **Narrative generation implemented** (v2.0+)
 
 **Critical Anti-Patterns:**
 
@@ -229,10 +238,54 @@ All new algorithms MUST pass these checklists:
 - ❌ Using `visual_state` dict instead of `state` string
 - ❌ >3 choices in prediction questions
 - ❌ Hardcoding visualization logic in tracer
+- ❌ Missing `generate_narrative()` implementation
 
 ---
 
-#### 2. Frontend Compliance (`docs/compliance/FRONTEND_CHECKLIST.md`)
+#### Stage 1.5: FAA Audit (`docs/compliance/FAA_PERSONA.md`) - NEW in v2.1
+
+**Validates:**
+
+- ✅ Arithmetic correctness of all quantitative claims
+- ✅ State transition mathematics (e.g., "updated from X → Y")
+- ✅ Visualization-text alignment (counts match what's shown)
+- ✅ No copy-paste errors or stale state propagation
+
+**Critical:** This is a **BLOCKING gate**. Narratives with arithmetic errors cannot proceed to QA review. Catches math bugs in 10-15 minutes vs. 2 days of integration debugging.
+
+**FAA ONLY validates mathematics, NOT:**
+
+- ❌ Pedagogical quality (QA handles this in Stage 2)
+- ❌ Narrative completeness (QA handles this in Stage 2)
+- ❌ Writing style or clarity (QA handles this in Stage 2)
+
+**Common errors caught:**
+
+- Copy-paste errors (same number after different operations)
+- Stale state propagation (previous step's value incorrectly carried forward)
+- Off-by-one errors in index arithmetic
+- Visualization-text mismatches
+
+---
+
+#### Stage 2: QA Narrative Review
+
+**Validates:**
+
+- ✅ Logical completeness (can follow algorithm from narrative alone)
+- ✅ Temporal coherence (step N → N+1 makes sense)
+- ✅ Decision transparency (all comparison data visible)
+- ⚠️ **Assumes arithmetic already verified by FAA**
+
+**QA does NOT validate:**
+
+- ❌ Arithmetic correctness (FAA already handled)
+- ❌ Whether JSON structure is correct (Backend Checklist)
+- ❌ Whether frontend can render it (Integration Tests)
+
+---
+
+#### Stage 3: Frontend Integration (`docs/compliance/FRONTEND_CHECKLIST.md`)
 
 **Validates:**
 
@@ -260,7 +313,7 @@ All new algorithms MUST pass these checklists:
 
 ---
 
-#### 3. QA & Integration (`docs/compliance/QA_INTEGRATION_CHECKLIST.md`)
+#### Stage 4: Integration Testing (`docs/compliance/QA_INTEGRATION_CHECKLIST.md`)
 
 **14 Test Suites:**
 
@@ -268,7 +321,34 @@ All new algorithms MUST pass these checklists:
 - Suite 7-10: CONSTRAINED requirements (backend contract, predictions)
 - Suite 11-14: Integration tests (cross-algorithm, responsive, performance, regression)
 
-**Workflow:** Backend checklist → Frontend checklist → QA checklist → Production ✅
+**Expected Outcome (v2.1):**
+
+- Zero "missing data" bugs (narrative review caught them)
+- Zero "arithmetic error" bugs (FAA caught them)
+
+---
+
+**Complete Workflow:**
+
+```
+Backend Implementation
+    ↓
+Generate Narratives
+    ↓
+FAA Arithmetic Audit (BLOCKING) ← NEW in v2.1
+    ↓
+Backend Checklist
+    ↓
+QA Narrative Review (assumes math verified)
+    ↓
+Frontend Integration
+    ↓
+Frontend Checklist
+    ↓
+Integration Tests
+    ↓
+Production ✅
+```
 
 ---
 
@@ -305,22 +385,96 @@ class AlgorithmTracer(ABC):
     @abstractmethod
     def get_prediction_points(self) -> List[Dict[str, Any]]:
         """
-        Identify prediction moments for active learning.
+        Identify prediction moments in the trace for active learning.
+
+        Returns a list of prediction opportunities where students should
+        pause and predict the algorithm's next decision.
 
         CRITICAL: Maximum 3 choices per question.
 
         Returns: [
             {
-                "step_index": 5,
-                "question": "Will we search left or right?",
-                "choices": [  # ≤3 choices
-                    {"id": "left", "label": "Search Left"},
-                    {"id": "right", "label": "Search Right"}
-                ],
-                "hint": "Compare mid with target",
-                "correct_answer": "right"
+                "step_index": int,           # Which step to pause at
+                "question": str,             # Question to ask student
+                "choices": [str, ...],       # Possible answers (≤3)
+                "hint": str,                 # Optional hint
+                "correct_answer": str        # For validation
             }
         ]
+
+        Example for interval coverage:
+            {
+                "step_index": 5,
+                "question": "Will this interval be kept or covered?",
+                "choices": ["keep", "covered"],
+                "hint": "Compare interval.end with max_end",
+                "correct_answer": "keep"
+            }
+
+        Example for binary search:
+            {
+                "step_index": 3,
+                "question": "Will we search left or right of mid?",
+                "choices": ["search-left", "search-right", "found"],
+                "hint": "Compare mid value with target",
+                "correct_answer": "search-right"
+            }
+        """
+        pass
+
+    @abstractmethod
+    def generate_narrative(self, trace_result: dict) -> str:
+        """
+        Convert trace JSON to human-readable markdown narrative.
+
+        REQUIRED since v2.0 (WORKFLOW.md). This narrative is reviewed by QA
+        BEFORE frontend integration to catch missing data early.
+
+        CRITICAL REQUIREMENTS:
+        1. Show ALL decision data - if you reference a variable, SHOW its value
+        2. Make comparisons explicit with actual values
+        3. Explain decision outcomes clearly
+        4. Fail loudly (KeyError) if visualization data is incomplete
+        5. Narrative must be self-contained and logically complete
+
+        Args:
+            trace_result: Complete trace dictionary from execute()
+                         Contains: result, trace, metadata
+
+        Returns:
+            str: Markdown-formatted narrative showing all decision logic
+                 with supporting data visible at each step
+
+        Raises:
+            KeyError: If visualization data incomplete (fail loudly - catches bugs!)
+
+        Example Structure:
+            # [Algorithm Name] Execution Narrative
+
+            **Input:** [Describe input with key parameters]
+            **Goal:** [What we're trying to achieve]
+
+            ## Step 0: [Description]
+            **State:** [Show relevant visualization state]
+            **Decision:** [If applicable, show comparison with actual values]
+            **Result:** [Outcome of decision]
+
+            ## Step 1: ...
+
+            ## Final Result
+            **Output:** [Algorithm result]
+            **Performance:** [Key metrics if applicable]
+
+        Good Patterns:
+        - ✅ "Compare interval.start (600) with max_end (660) → 600 < 660"
+        - ✅ "Decision: Keep interval [600, 720] because it extends coverage"
+        - ✅ Show array/graph state at each decision point
+        - ✅ Temporal coherence: step N clearly leads to step N+1
+
+        Anti-Patterns to AVOID:
+        - ❌ Referencing undefined variables: "Compare with max_end" (but max_end not shown)
+        - ❌ Skipping decision outcomes: "Examining interval... [next step unrelated]"
+        - ❌ Narratives requiring code to understand
         """
         pass
 ```
@@ -456,7 +610,7 @@ class AlgorithmTracer(ABC):
 
 ## Adding a New Algorithm (CRITICAL WORKFLOW)
 
-**Time Investment:** 1-2 hours total
+**Time Investment:** ~2 hours total (including FAA audit)
 
 ### Step 1: Implement AlgorithmTracer (30-45 min)
 
@@ -523,6 +677,42 @@ class MergeSortTracer(AlgorithmTracer):
                 })
         return predictions
 
+    def generate_narrative(self, trace_result: dict) -> str:
+        """Generate human-readable markdown narrative (REQUIRED v2.0+)"""
+        narrative = "# Merge Sort Execution\n\n"
+
+        # Input summary
+        narrative += f"**Input Array:** {trace_result['result']}\n"
+        narrative += f"**Array Size:** {len(trace_result['result'])}\n\n"
+
+        # Step-by-step narrative
+        for step in trace_result['trace']['steps']:
+            narrative += f"## Step {step['step']}: {step['description']}\n\n"
+
+            # Show visualization state with ALL relevant data
+            if 'visualization' in step['data']:
+                viz = step['data']['visualization']
+
+                # Show current array state
+                if 'array' in viz:
+                    narrative += f"**Current Array:** {viz['array']}\n"
+
+                # Show decision logic if applicable
+                if step['type'] == 'MERGE_DECISION' and 'left_val' in step['data']:
+                    left = step['data']['left_val']
+                    right = step['data']['right_val']
+                    narrative += f"**Comparison:** {left} vs {right}\n"
+                    narrative += f"**Decision:** Select {min(left, right)} (smaller value)\n"
+
+            narrative += "\n"
+
+        # Final result
+        narrative += "## Final Result\n\n"
+        narrative += f"**Sorted Array:** {trace_result['result']}\n"
+        narrative += f"**Total Steps:** {trace_result['trace']['total_steps']}\n"
+
+        return narrative
+
     def _merge_sort_recursive(self, arr, left, right):
         # Implementation with _add_step() calls
         pass
@@ -556,7 +746,52 @@ def register_algorithms():
 
 ---
 
-### Step 3: Backend Compliance Checklist (10 min)
+### Step 3: Generate Narratives (10 min)
+
+Run your algorithm on all example inputs and generate markdown narratives:
+
+```bash
+cd backend
+python scripts/generate_narratives.py merge-sort
+```
+
+This creates files in `docs/narratives/merge-sort/`:
+
+- `example_1_basic_sort.md`
+- `example_2_large_array.md`
+- etc.
+
+---
+
+### Step 3.5: FAA Audit (10-15 min) - NEW in v2.1
+
+Run Forensic Arithmetic Audit on generated narratives:
+
+1. Use `docs/compliance/FAA_PERSONA.md` as audit guide
+2. Verify every quantitative claim with calculation
+3. Check arithmetic correctness (not pedagogy)
+4. Fix any errors and regenerate narratives
+5. Repeat until FAA passes
+
+**Critical:** This is a **BLOCKING gate**. No narrative proceeds with arithmetic errors.
+
+**Common errors caught:**
+
+- Copy-paste errors (same number after different operations)
+- Stale state propagation (old values not updated)
+- Visualization-text mismatches (text says 10, shows 8)
+- Off-by-one errors in index calculations
+
+**Expected time:**
+
+- Initial audit: 10-15 minutes
+- Re-audit after fixes: 5 minutes
+- Total for clean narrative: ~15 minutes
+- Total for narrative with errors: ~35 minutes (including fixes)
+
+---
+
+### Step 4: Backend Compliance Checklist (10 min)
 
 Complete `docs/compliance/BACKEND_CHECKLIST.md`:
 
@@ -568,12 +803,25 @@ Complete `docs/compliance/BACKEND_CHECKLIST.md`:
 - [ ] Prediction points have ≤3 choices
 - [ ] Inherits from `AlgorithmTracer`
 - [ ] Uses `_add_step()` and `_build_trace_result()`
+- [ ] **Implements `generate_narrative()` method** (v2.0+)
+- [ ] **Narratives pass FAA arithmetic audit** (v2.1)
 
 **Rule:** If >3 items fail, stop and fix before proceeding.
 
 ---
 
-### Step 4: Create/Reuse Visualization (0-30 min)
+### Step 5: QA Narrative Review (15 min)
+
+QA reviews FAA-approved narratives for:
+
+- Logical completeness
+- Temporal coherence
+- Decision transparency
+- **Assumes arithmetic already verified by FAA**
+
+---
+
+### Step 6: Create/Reuse Visualization (0-30 min)
 
 **Option A: Reuse (0 min)** - Recommended for array-based algorithms
 
@@ -601,7 +849,7 @@ const GraphView = ({ step, config = {} }) => {
 
 ---
 
-### Step 5: Register Visualization (5 min, if new)
+### Step 7: Register Visualization (5 min, if new)
 
 ```javascript
 // frontend/src/utils/visualizationRegistry.js
@@ -616,7 +864,7 @@ const VISUALIZATION_REGISTRY = {
 
 ---
 
-### Step 6: Frontend & QA Checklists (15 min)
+### Step 8: Frontend & QA Checklists (15 min)
 
 **Frontend Checklist (`docs/compliance/FRONTEND_CHECKLIST.md`):**
 
@@ -841,9 +1089,9 @@ npm run build  # Output: ./build/
 
 - **GitHub Issues:** Open with [Bug], [Feature], or [Question] tag
 - **Documentation:**
-  - `docs/TENANT_GUIDE.md` - Constitutional framework
-  - `docs/compliance/` - Compliance checklists
-  - `docs/compliance/CHECKLIST_SYSTEM_OVERVIEW.md` - Workflow guide
+  - `docs/compliance/WORKFLOW.md` - Single source of truth for workflow & architecture
+  - `docs/compliance/` - Compliance checklists (Backend, FAA, Frontend, QA)
+  - `docs/ADR/` - Architecture Decision Records
 
 ---
 
