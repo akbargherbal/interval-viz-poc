@@ -8,7 +8,7 @@ import CompletionModal from "./components/CompletionModal";
 import ErrorBoundary from "./components/ErrorBoundary";
 import KeyboardHints from "./components/KeyboardHints";
 import PredictionModal from "./components/PredictionModal";
-import CallStackView from "./components/visualizations/CallStackView"; // Direct import for right panel
+import IntervalCoverageState from "./components/visualizations/IntervalCoverageState"; // Direct import for right panel
 import BinarySearchState from "./components/visualizations/BinarySearchState"; // Binary Search state component
 
 // PHASE 3: Import visualization registry
@@ -286,7 +286,7 @@ const AlgorithmTracePlayer = () => {
             >
               <ErrorBoundary>
                 {isIntervalCoverage ? (
-                  <CallStackView
+                  <IntervalCoverageState
                     step={step}
                     activeCallRef={activeCallRef}
                     onIntervalHover={highlight.handleIntervalHover}

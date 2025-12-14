@@ -6,5 +6,5 @@
  */
 
 export { default as TimelineView } from './TimelineView';
-export { default as CallStackView } from './CallStackView';
+export { default as IntervalCoverageState } from './IntervalCoverageState';
 export { default as ArrayView } from './ArrayView'; // NEW - Phase 3

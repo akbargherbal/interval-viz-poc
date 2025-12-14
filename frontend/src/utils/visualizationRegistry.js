@@ -11,7 +11,6 @@
  */
 
 import TimelineView from "../components/visualizations/TimelineView";
-import CallStackView from "../components/visualizations/CallStackView";
 import ArrayView from "../components/visualizations/ArrayView";
 
 /**

@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { ChevronRight } from "lucide-react";
 import { getIntervalColor } from "../../constants/intervalColors";
 
-const CallStackView = ({ step, activeCallRef, onIntervalHover, currentStep }) => {
+const IntervalCoverageState = ({ step, activeCallRef, onIntervalHover, currentStep }) => {
   // FIXED: Updated to use new standardized path (step.data.visualization.call_stack_state)
   const callStack = step?.data?.visualization?.call_stack_state || [];
 
@@ -138,11 +138,11 @@ const CallStackView = ({ step, activeCallRef, onIntervalHover, currentStep }) =>
   );
 };
 
-CallStackView.propTypes = {
+IntervalCoverageState.propTypes = {
   step: PropTypes.object,
   activeCallRef: PropTypes.object,
   onIntervalHover: PropTypes.func.isRequired,
   currentStep: PropTypes.number,
 };
 
-export default React.memo(CallStackView);
+export default React.memo(IntervalCoverageState);
