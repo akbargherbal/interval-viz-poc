@@ -47,7 +47,8 @@ const AlgorithmTracePlayer = () => {
     prevStep,
     resetTrace,
     jumpToEnd,
-    isComplete,
+    showCompletionModal, // <-- Use the new state
+    closeCompletionModal, // <-- Use the new handler
   } = useTraceNavigation(trace, resetPredictionStatsRef.current);
 
   const activeCallRef = useRef(null);
@@ -93,7 +94,7 @@ const AlgorithmTracePlayer = () => {
     onPrev: prevStep,
     onReset: resetTrace,
     onJumpToEnd: jumpToEnd,
-    isComplete,
+    isComplete: showCompletionModal, // Use new state to manage shortcuts context
     modalOpen: prediction.showPrediction,
   });
 
@@ -245,10 +246,11 @@ const AlgorithmTracePlayer = () => {
           />
         )}
         <CompletionModal
+          isOpen={showCompletionModal} // <-- Control visibility with the new prop
           trace={trace}
           step={step}
           onReset={resetTrace}
-          onClose={prevStep}
+          onClose={closeCompletionModal} // <-- Pass the new close handler
           predictionStats={prediction.predictionStats}
         />
         <KeyboardHints />
