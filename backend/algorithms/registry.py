@@ -8,7 +8,8 @@ with metadata that drives the frontend UI and routing logic.
 
 Phase 2: Dynamic algorithm discovery and unified routing
 """
-
+import os
+from pathlib import Path
 from typing import Dict, Type, List, Any, Optional
 from .base_tracer import AlgorithmTracer
 import inspect
@@ -115,6 +116,38 @@ class AlgorithmRegistry:
         metadata = self._algorithms[name].copy()
         del metadata['tracer_class']
         return metadata
+
+    def get_info(self, algorithm_name: str) -> str:
+        """
+        Retrieve algorithm information markdown.
+        
+        Args:
+            algorithm_name: Algorithm identifier (e.g., 'binary-search')
+            
+        Returns:
+            str: Markdown content
+            
+        Raises:
+            ValueError: If algorithm not registered or info file missing
+        """
+        if algorithm_name not in self._algorithms:
+            raise ValueError(
+                f"Unknown algorithm: '{algorithm_name}'. "
+                f"Available: {list(self._algorithms.keys())}"
+            )
+        
+        # Construct path to info file relative to this file's location
+        # backend/algorithms/registry.py -> backend/ -> interval-viz-poc/
+        base_dir = Path(__file__).parent.parent.parent
+        info_path = base_dir / "docs" / "algorithm-info" / f"{algorithm_name}.md"
+        
+        if not info_path.exists():
+            raise ValueError(
+                f"Algorithm info file not found: {info_path}. "
+                f"Create docs/algorithm-info/{algorithm_name}.md"
+            )
+        
+        return info_path.read_text(encoding='utf-8')
 
     def list_algorithms(self) -> List[Dict[str, Any]]:
         """
@@ -330,7 +363,7 @@ def register_algorithms():
     )
 
 
-    
+
     # -------------------------------------------------------------------------
     # Two Pointer Pattern (NEW)
     # -------------------------------------------------------------------------

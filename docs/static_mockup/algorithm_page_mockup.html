@@ -5,10 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Algorithm Page Layout - Visual Standards</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script
-      defer
-      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
-    ></script>
+    <script defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js">
+    </script>
     <style>
       body {
         background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
@@ -52,6 +51,11 @@
         color: #e2e8f0; /* slate-200 */
         box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
       }
+      
+      /* NEW: Custom max height for modals (85vh) */
+      .max-h-85vh {
+        max-height: 85vh;
+      }
     </style>
   </head>
   <body
@@ -61,9 +65,10 @@
     mode: 'watch',
     step: 3,
     totalSteps: 8,
-    showHelp: false
+    showHelp: false,
+    showAlgorithmInfo: false // NEW: State for Algorithm Info Modal
 }"
-    @keydown.escape="showHelp = false"
+    @keydown.escape="showHelp = false; showAlgorithmInfo = false"
   >
     <!-- 
     ================================================================
@@ -442,25 +447,30 @@
               Array Visualization
             </h2>
 
-            <!-- Target Display (Algorithm-Specific) -->
-            <div
-              class="px-3 py-1.5 bg-emerald-900/30 border border-emerald-600/50 rounded-lg flex items-center gap-2"
+            <!-- Algorithm Info Trigger (Replaces Target Display) -->
+            <!-- Instruction: Replace `Target: 67` display with info symbol/modal trigger -->
+            <button
+              id="algorithm-info-trigger"
+              @click="showAlgorithmInfo = true"
+              class="p-2 bg-slate-700 hover:bg-slate-600 rounded-full transition-colors group"
+              title="Algorithm Details"
             >
+              <!-- Info Icon (Changed from ? to i) -->
               <svg
-                class="w-4 h-4 text-emerald-400"
-                fill="currentColor"
-                viewBox="0 0 20 20"
+                class="w-5 h-5 text-blue-400"
+                viewBox="0 0 24 24"
+                preserveAspectRatio="xMidYMid meet"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
               >
-                <path
-                  fill-rule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clip-rule="evenodd"
-                />
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12" y2="8"></line>
               </svg>
-              <span class="text-emerald-300 font-semibold text-sm"
-                >Target: <span class="text-white">67</span></span
-              >
-            </div>
+            </button>
           </div>
 
           <!-- Visualization Content 
@@ -617,8 +627,9 @@
                 </div>
               </div>
 
-              <!-- Search Space Info -->
+              <!-- Search Space Info (Re-added context since the trigger was removed) -->
               <div class="text-slate-400 text-sm">
+                Target: <span class="text-emerald-400 font-bold">67</span> |
                 Search space:
                 <span class="text-white font-bold">7</span> elements
               </div>
@@ -881,6 +892,128 @@
       </div>
     </div>
 
+    <!-- ========================================
+         ALGORITHM INFO MODAL (NEW - MODIFIED TO MATCH PREDICTION MODAL STYLE)
+         ======================================== -->
+    <div
+      x-show="showAlgorithmInfo"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-200"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      class="fixed inset-0 bg-black bg-opacity-75 z-[100] flex items-center justify-center"
+      style="display: none"
+    >
+      <div
+        @click.away="showAlgorithmInfo = false"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-90"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-90"
+        class="bg-slate-800 rounded-xl shadow-2xl w-full max-w-xl border border-slate-700 p-6 max-h-85vh flex flex-col"
+      >
+        <!-- Header -->
+        <div
+          class="flex justify-between items-center border-b border-slate-700 pb-3 mb-4 flex-shrink-0"
+        >
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <!-- Algorithm Icon -->
+            <svg
+              class="w-6 h-6 text-blue-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            Binary Search Algorithm Details
+          </h2>
+          <button
+            @click="showAlgorithmInfo = false"
+            class="p-1 text-slate-400 hover:text-white rounded-full hover:bg-slate-700 transition-colors"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Content -->
+        <div class="space-y-4 text-slate-300 flex-1 overflow-y-auto">
+          <p>
+            Binary Search is an efficient algorithm for finding an item from a
+            sorted list of items. It works by repeatedly dividing the search
+            interval in half. This visualization demonstrates the iterative
+            approach.
+          </p>
+
+          <h3 class="text-lg font-semibold text-white pt-2">Complexity</h3>
+          <ul class="list-disc list-inside ml-4 space-y-1">
+            <li>
+              <span class="font-medium text-slate-200">Time Complexity:</span>
+              O(log n)
+            </li>
+            <li>
+              <span class="font-medium text-slate-200">Space Complexity:</span>
+              O(1) (Iterative)
+            </li>
+          </ul>
+
+          <h3 class="text-lg font-semibold text-white pt-2">Key Variables</h3>
+          <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+            <div class="flex justify-between col-span-2">
+              <span class="text-slate-400">L (Left):</span>
+              <span class="text-white text-right">The starting boundary of the current search range.</span>
+            </div>
+            <div class="flex justify-between col-span-2">
+              <span class="text-slate-400">R (Right):</span>
+              <span class="text-white text-right">The ending boundary of the current search range.</span>
+            </div>
+            <div class="flex justify-between col-span-2">
+              <span class="text-slate-400">M (Mid):</span>
+              <span class="text-white text-right">The central element currently being compared to the target.</span>
+            </div>
+            <div class="flex justify-between col-span-2">
+              <span class="text-slate-400">Target:</span>
+              <span class="text-white text-right">The specific value the algorithm is trying to locate.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer (Styled like a prediction modal action bar) -->
+        <div class="mt-6 pt-4 border-t border-slate-700 flex justify-end items-center flex-shrink-0">
+            <span class="text-xs text-slate-500 mr-4">
+                Binary Search requires the input array to be sorted.
+            </span>
+            <button
+                @click="showAlgorithmInfo = false"
+                class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors font-medium text-sm"
+            >
+                Close Details
+            </button>
+        </div>
+      </div>
+    </div>
+
     <!-- 
 📑 Tenant Guide Compliance
 ✅ Panel Ratio: 3:1.5 (Section 1.2)
@@ -888,7 +1021,7 @@
 ✅ Overflow: items-start + mx-auto (Section 1.6)
 ✅ Header: ≤60px height
 ✅ Algorithm Switcher: Dropdown (scalable)
-
+✅ New ID: #algorithm-info-trigger added.
     -->
   </body>
 </html>

@@ -89,6 +89,28 @@ def list_algorithms():
         return jsonify({"error": "Failed to retrieve algorithm list"}), 500
 
 
+@app.route('/api/algorithms/<algorithm_name>/info', methods=['GET'])
+def get_algorithm_info(algorithm_name):
+    """
+    Get detailed algorithm information (markdown).
+    
+    Returns:
+        200: { "algorithm": "binary-search", "info": "# Binary Search\n..." }
+        404: { "error": "...", "available_algorithms": [...] }
+    """
+    try:
+        info_markdown = registry.get_info(algorithm_name)
+        return jsonify({
+            'algorithm': algorithm_name,
+            'info': info_markdown
+        })
+    except ValueError as e:
+        return jsonify({
+            'error': str(e),
+            'available_algorithms': [alg['name'] for alg in registry.list_algorithms()]
+        }), 404
+
+
 @app.route('/api/trace/unified', methods=['POST'])
 def generate_trace_unified():
     """
@@ -165,7 +187,7 @@ def generate_trace():
     Kept for backward compatibility with existing frontend.
 
     Now uses refactored IntervalCoverageTracer.execute() method.
-    
+
     Accept intervals, return complete trace.
     """
     try:
@@ -359,6 +381,7 @@ if __name__ == '__main__':
     print()
     print("📡 Available endpoints:")
     print("   GET  /api/algorithms               - List all algorithms (NEW)")
+    print("   GET  /api/algorithms/<name>/info   - Get algorithm details (NEW)")
     print("   POST /api/trace/unified            - Unified trace endpoint (NEW)")
     print("   POST /api/trace                    - Interval Coverage (legacy)")
     print("   POST /api/trace/binary-search      - Binary Search (legacy)")
