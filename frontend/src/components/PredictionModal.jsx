@@ -1,15 +1,77 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 
 const PredictionModal = ({
-    isOpen,
-    question,
-    choices,
-    onSelect,
+    predictionData,
+    onAnswer,
     onSkip,
-    selectedChoice,
-    onSubmit,
+    isOpen = true // Default to true as parent conditionally renders
 }) => {
+    const [selectedChoiceId, setSelectedChoiceId] = useState(null);
+
+    // Destructure data with safety checks
+    const { question, choices = [] } = predictionData || {};
+
+    // Map choices to include UI properties if missing
+    const mappedChoices = choices.map((choice, index) => {
+        // Default styling based on index
+        const defaultColors = [
+            'bg-blue-600 hover:bg-blue-500',
+            'bg-purple-600 hover:bg-purple-500',
+            'bg-emerald-600 hover:bg-emerald-500'
+        ];
+        
+        // Default shortcuts
+        const defaultShortcuts = ['k', 'c', 't']; // k=keep/1, c=cover/2, t=third
+
+        return {
+            ...choice,
+            // Use provided ID or index as fallback
+            id: choice.id || `choice-${index}`,
+            // Use provided styling or default
+            className: choice.className || defaultColors[index % defaultColors.length],
+            // Use provided shortcut or default
+            shortcut: choice.shortcut || defaultShortcuts[index % defaultShortcuts.length]
+        };
+    });
+
+    const handleSubmit = useCallback(() => {
+        if (selectedChoiceId) {
+            onAnswer(selectedChoiceId);
+        }
+    }, [selectedChoiceId, onAnswer]);
+
+    // Handle keyboard shortcuts locally
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const handleKeyDown = (e) => {
+            const key = e.key.toLowerCase();
+
+            // Skip if typing in inputs
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            // Choice selection shortcuts
+            mappedChoices.forEach(choice => {
+                if (choice.shortcut && key === choice.shortcut.toLowerCase()) {
+                    setSelectedChoiceId(choice.id);
+                }
+            });
+
+            // Action shortcuts
+            if (key === 'enter') {
+                e.preventDefault();
+                handleSubmit();
+            } else if (key === 's' || key === 'escape') {
+                e.preventDefault();
+                onSkip();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, mappedChoices, handleSubmit, onSkip]);
+
     if (!isOpen) return null;
 
     return (
@@ -20,25 +82,25 @@ const PredictionModal = ({
             <div className="bg-slate-800 border border-slate-700 rounded-lg shadow-xl max-w-lg w-full p-6 text-white">
                 <h2 className="text-2xl font-bold mb-6">{question}</h2>
 
-                <div className={`grid grid-cols-${choices.length} gap-3 mb-6`}>
-                    {choices.map((choice) => (
+                <div className={`grid grid-cols-${Math.min(mappedChoices.length, 3)} gap-3 mb-6`}>
+                    {mappedChoices.map((choice) => (
                         <button
                             key={choice.id}
-                            onClick={() => onSelect(choice.id)}
+                            onClick={() => setSelectedChoiceId(choice.id)}
                             className={`p-4 rounded-lg text-white font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800
                                 ${choice.className}
                                 ${
-                                    selectedChoice === choice.id
-                                        ? 'scale-105 ring-2 ring-blue-400 shadow-xl'
-                                        : 'opacity-60 hover:opacity-100'
+                                    selectedChoiceId === choice.id
+                                        ? 'scale-105 ring-2 ring-white shadow-xl z-10'
+                                        : 'opacity-80 hover:opacity-100 hover:scale-[1.02]'
                                 }
-                                ${selectedChoice && selectedChoice !== choice.id ? 'opacity-40' : ''}
+                                ${selectedChoiceId && selectedChoiceId !== choice.id ? 'opacity-40' : ''}
                             `}
                         >
                             <div className="text-base">{choice.label}</div>
                             {choice.shortcut && (
-                                <div className="text-xs opacity-75 mt-1">
-                                    Press [{choice.shortcut.toUpperCase()}]
+                                <div className="text-xs opacity-75 mt-1 uppercase">
+                                    Press [{choice.shortcut}]
                                 </div>
                             )}
                         </button>
@@ -53,9 +115,9 @@ const PredictionModal = ({
                         Skip Question (S)
                     </button>
                     <button
-                        onClick={onSubmit}
-                        disabled={!selectedChoice}
-                        className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-md font-semibold disabled:bg-slate-600 disabled:cursor-not-allowed"
+                        onClick={handleSubmit}
+                        disabled={!selectedChoiceId}
+                        className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-md font-semibold disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors"
                     >
                         Submit (Enter)
                     </button>
@@ -66,20 +128,18 @@ const PredictionModal = ({
 };
 
 PredictionModal.propTypes = {
-    isOpen: PropTypes.bool.isRequired,
-    question: PropTypes.string.isRequired,
-    choices: PropTypes.arrayOf(
-        PropTypes.shape({
-            id: PropTypes.string.isRequired,
-            label: PropTypes.string.isRequired,
-            className: PropTypes.string.isRequired,
+    predictionData: PropTypes.shape({
+        question: PropTypes.string,
+        choices: PropTypes.arrayOf(PropTypes.shape({
+            id: PropTypes.string,
+            label: PropTypes.string,
+            className: PropTypes.string,
             shortcut: PropTypes.string,
-        })
-    ).isRequired,
-    onSelect: PropTypes.func.isRequired,
+        }))
+    }),
+    onAnswer: PropTypes.func.isRequired,
     onSkip: PropTypes.func.isRequired,
-    onSubmit: PropTypes.func.isRequired,
-    selectedChoice: PropTypes.string,
+    isOpen: PropTypes.bool
 };
 
 export default PredictionModal;

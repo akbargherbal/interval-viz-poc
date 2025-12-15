@@ -1,8 +1,8 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 
-export const useTraceNavigation = (trace, resetPredictionStats) => {
+export const useTraceNavigation = (trace, resetPredictionStats, activatePredictionForStep) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [showCompletionModal, setShowCompletionModal] = useState(false); // State to control the modal
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
   const totalSteps = trace?.trace?.steps?.length || 0;
 
   const isViewingFinalStep = useMemo(
@@ -10,7 +10,6 @@ export const useTraceNavigation = (trace, resetPredictionStats) => {
     [currentStep, totalSteps]
   );
 
-  // Reset state when the trace (algorithm) changes
   useEffect(() => {
     setCurrentStep(0);
     setShowCompletionModal(false);
@@ -20,15 +19,20 @@ export const useTraceNavigation = (trace, resetPredictionStats) => {
   }, [trace, resetPredictionStats]);
 
   const nextStep = useCallback(() => {
-    // If viewing the final step, the next action is to show the modal.
     if (isViewingFinalStep) {
       setShowCompletionModal(true);
       return;
     }
     if (totalSteps > 0 && currentStep < totalSteps - 1) {
-      setCurrentStep((prev) => prev + 1);
+      const nextStepIndex = currentStep + 1;
+      // FIX: Check for a prediction before advancing the step.
+      // If activatePredictionForStep returns true, it means a modal is shown, so we halt navigation.
+      if (activatePredictionForStep && activatePredictionForStep(nextStepIndex)) {
+        return;
+      }
+      setCurrentStep(nextStepIndex);
     }
-  }, [totalSteps, currentStep, isViewingFinalStep]);
+  }, [totalSteps, currentStep, isViewingFinalStep, activatePredictionForStep]);
 
   const prevStep = useCallback(() => {
     if (currentStep > 0) {
@@ -39,13 +43,13 @@ export const useTraceNavigation = (trace, resetPredictionStats) => {
   const jumpToEnd = useCallback(() => {
     if (totalSteps > 0) {
       setCurrentStep(totalSteps - 1);
-      setShowCompletionModal(false); // Ensure modal is hidden when jumping
+      setShowCompletionModal(false);
     }
   }, [totalSteps]);
 
   const resetTrace = useCallback(() => {
     setCurrentStep(0);
-    setShowCompletionModal(false); // Also reset modal state
+    setShowCompletionModal(false);
     if (resetPredictionStats) {
       resetPredictionStats();
     }
@@ -60,7 +64,6 @@ export const useTraceNavigation = (trace, resetPredictionStats) => {
     [trace, currentStep]
   );
 
-  // This property is no longer used for modal logic but may be useful elsewhere.
   const isComplete = currentStepData?.type === "ALGORITHM_COMPLETE";
 
   return {
@@ -72,8 +75,8 @@ export const useTraceNavigation = (trace, resetPredictionStats) => {
     resetTrace,
     jumpToEnd,
     isComplete,
-    setCurrentStep,
-    showCompletionModal, // New state for modal visibility
-    closeCompletionModal, // New function to close modal
+    setCurrentStep, // Expose setCurrentStep for the prediction hook
+    showCompletionModal,
+    closeCompletionModal,
   };
 };

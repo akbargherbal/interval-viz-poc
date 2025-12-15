@@ -28,6 +28,19 @@ export const usePredictionMode = (trace, setCurrentStep) => {
 
   const handlePredictionAnswer = useCallback((userAnswer) => {
     if (!activePrediction) return;
+
+    // BUG FIX: Add defensive check for step_index to prevent NaN error.
+    if (typeof activePrediction.step_index !== 'number') {
+      console.error(
+        "Prediction point is missing a valid 'step_index'. Cannot advance step.",
+        activePrediction
+      );
+      // Close the modal to prevent getting stuck, but do not advance.
+      setShowPrediction(false);
+      setActivePrediction(null);
+      return;
+    }
+
     const isCorrect = userAnswer === activePrediction.correct_answer;
     const targetStep = activePrediction.step_index;
     setPredictionStats((prev) => ({
@@ -41,6 +54,19 @@ export const usePredictionMode = (trace, setCurrentStep) => {
 
   const handlePredictionSkip = useCallback(() => {
     if (!activePrediction) return;
+
+    // BUG FIX: Add defensive check for step_index to prevent NaN error.
+    if (typeof activePrediction.step_index !== 'number') {
+      console.error(
+        "Prediction point is missing a valid 'step_index'. Cannot skip step.",
+        activePrediction
+      );
+      // Close the modal to prevent getting stuck, but do not advance.
+      setShowPrediction(false);
+      setActivePrediction(null);
+      return;
+    }
+
     const targetStep = activePrediction.step_index;
     setShowPrediction(false);
     setActivePrediction(null);

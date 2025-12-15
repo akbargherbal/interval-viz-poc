@@ -1,9 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { ChevronRight } from "lucide-react";
 import { getIntervalColor } from "../../constants/intervalColors";
 
-const IntervalCoverageState = ({ step, activeCallRef, onIntervalHover, currentStep }) => {
+const IntervalCoverageState = ({ step, onIntervalHover, currentStep }) => {
+  // Internal ref for scrolling to active call
+  const activeCallRef = useRef(null);
+
   // FIXED: Updated to use new standardized path (step.data.visualization.call_stack_state)
   const callStack = step?.data?.visualization?.call_stack_state || [];
 
@@ -15,7 +18,7 @@ const IntervalCoverageState = ({ step, activeCallRef, onIntervalHover, currentSt
         block: "center",
       });
     }
-  }, [currentStep, activeCallRef]);
+  }, [currentStep]);
 
   if (callStack.length === 0) {
     return (
@@ -140,7 +143,6 @@ const IntervalCoverageState = ({ step, activeCallRef, onIntervalHover, currentSt
 
 IntervalCoverageState.propTypes = {
   step: PropTypes.object,
-  activeCallRef: PropTypes.object,
   onIntervalHover: PropTypes.func.isRequired,
   currentStep: PropTypes.number,
 };
