@@ -9,6 +9,7 @@
 
 import BinarySearchState from "../components/algorithm-states/BinarySearchState";
 import IntervalCoverageState from "../components/algorithm-states/IntervalCoverageState";
+import SlidingWindowState from "../components/algorithm-states/SlidingWindowState";
 import TwoPointerState from "../components/algorithm-states/TwoPointerState"; // <-- ADDED
 
 /**
@@ -33,7 +34,8 @@ const DefaultStateComponent = ({ step }) => {
 const STATE_REGISTRY = {
   "binary-search": BinarySearchState,
   "interval-coverage": IntervalCoverageState,
-   "two-pointer": TwoPointerState, // <-- ADDED
+  "sliding-window": SlidingWindowState,
+  "two-pointer": TwoPointerState, // <-- ADDED
 };
 
 /**

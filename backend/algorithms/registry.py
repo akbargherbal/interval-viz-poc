@@ -1,4 +1,4 @@
-# backend/algorithms/registry.py
+# /home/akbar/Jupyter_Notebooks/interval-viz-poc/backend/algorithms/registry.py
 """
 Algorithm Registry for automatic discovery and routing.
 
@@ -214,193 +214,225 @@ def register_algorithms():
     from .binary_search import BinarySearchTracer
     from .interval_coverage import IntervalCoverageTracer
     from .two_pointer import TwoPointerTracer
+    from .sliding_window import SlidingWindowTracer
 
     # -------------------------------------------------------------------------
     # Interval Coverage (PoC Algorithm - Now Refactored!)
     # -------------------------------------------------------------------------
-    registry.register(
-        name="interval-coverage",
-        tracer_class=IntervalCoverageTracer,
-        display_name="Interval Coverage",
-        description="Remove intervals that are completely covered by other intervals using a greedy recursive strategy",
-        example_inputs=[
-            {
-                "name": "Basic Example - 4 Intervals",
-                "input": {
-                    "intervals": [
-                        {"id": 1, "start": 540, "end": 660, "color": "blue"},
-                        {"id": 2, "start": 600, "end": 720, "color": "green"},
-                        {"id": 3, "start": 540, "end": 720, "color": "amber"},
-                        {"id": 4, "start": 900, "end": 960, "color": "purple"},
-                    ]
-                },
-            },
-            {
-                "name": "No Overlap - All Kept",
-                "input": {
-                    "intervals": [
-                        {"id": 1, "start": 100, "end": 200, "color": "blue"},
-                        {"id": 2, "start": 300, "end": 400, "color": "green"},
-                        {"id": 3, "start": 500, "end": 600, "color": "amber"},
-                    ]
-                },
-            },
-            {
-                "name": "Full Coverage - Only One Kept",
-                "input": {
-                    "intervals": [
-                        {"id": 1, "start": 100, "end": 500, "color": "blue"},
-                        {"id": 2, "start": 150, "end": 250, "color": "green"},
-                        {"id": 3, "start": 200, "end": 300, "color": "amber"},
-                        {"id": 4, "start": 350, "end": 450, "color": "purple"},
-                    ]
-                },
-            },
-            {
-                "name": "Complex Case - 6 Intervals",
-                "input": {
-                    "intervals": [
-                        {"id": 1, "start": 0, "end": 300, "color": "blue"},
-                        {"id": 2, "start": 100, "end": 200, "color": "green"},
-                        {"id": 3, "start": 250, "end": 500, "color": "amber"},
-                        {"id": 4, "start": 150, "end": 350, "color": "purple"},
-                        {"id": 5, "start": 600, "end": 700, "color": "red"},
-                        {"id": 6, "start": 650, "end": 800, "color": "orange"},
-                    ]
-                },
-            },
-        ],
-        input_schema={
-            "type": "object",
-            "required": ["intervals"],
-            "properties": {
-                "intervals": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "required": ["id", "start", "end", "color"],
-                        "properties": {
-                            "id": {"type": "integer"},
-                            "start": {"type": "integer"},
-                            "end": {"type": "integer"},
-                            "color": {"type": "string"},
-                        },
+    if not registry.is_registered("interval-coverage"):
+        registry.register(
+            name="interval-coverage",
+            tracer_class=IntervalCoverageTracer,
+            display_name="Interval Coverage",
+            description="Remove intervals that are completely covered by other intervals using a greedy recursive strategy",
+            example_inputs=[
+                {
+                    "name": "Basic Example - 4 Intervals",
+                    "input": {
+                        "intervals": [
+                            {"id": 1, "start": 540, "end": 660, "color": "blue"},
+                            {"id": 2, "start": 600, "end": 720, "color": "green"},
+                            {"id": 3, "start": 540, "end": 720, "color": "amber"},
+                            {"id": 4, "start": 900, "end": 960, "color": "purple"},
+                        ]
                     },
-                    "minItems": 1,
-                    "maxItems": 100,
-                    "description": "List of time intervals to analyze",
-                }
+                },
+                {
+                    "name": "No Overlap - All Kept",
+                    "input": {
+                        "intervals": [
+                            {"id": 1, "start": 100, "end": 200, "color": "blue"},
+                            {"id": 2, "start": 300, "end": 400, "color": "green"},
+                            {"id": 3, "start": 500, "end": 600, "color": "amber"},
+                        ]
+                    },
+                },
+                {
+                    "name": "Full Coverage - Only One Kept",
+                    "input": {
+                        "intervals": [
+                            {"id": 1, "start": 100, "end": 500, "color": "blue"},
+                            {"id": 2, "start": 150, "end": 250, "color": "green"},
+                            {"id": 3, "start": 200, "end": 300, "color": "amber"},
+                            {"id": 4, "start": 350, "end": 450, "color": "purple"},
+                        ]
+                    },
+                },
+                {
+                    "name": "Complex Case - 6 Intervals",
+                    "input": {
+                        "intervals": [
+                            {"id": 1, "start": 0, "end": 300, "color": "blue"},
+                            {"id": 2, "start": 100, "end": 200, "color": "green"},
+                            {"id": 3, "start": 250, "end": 500, "color": "amber"},
+                            {"id": 4, "start": 150, "end": 350, "color": "purple"},
+                            {"id": 5, "start": 600, "end": 700, "color": "red"},
+                            {"id": 6, "start": 650, "end": 800, "color": "orange"},
+                        ]
+                    },
+                },
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["intervals"],
+                "properties": {
+                    "intervals": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["id", "start", "end", "color"],
+                            "properties": {
+                                "id": {"type": "integer"},
+                                "start": {"type": "integer"},
+                                "end": {"type": "integer"},
+                                "color": {"type": "string"},
+                            },
+                        },
+                        "minItems": 1,
+                        "maxItems": 100,
+                        "description": "List of time intervals to analyze",
+                    }
+                },
             },
-        },
-    )
+        )
 
     # -------------------------------------------------------------------------
     # Binary Search
     # -------------------------------------------------------------------------
-    registry.register(
-        name="binary-search",
-        tracer_class=BinarySearchTracer,
-        display_name="Binary Search",
-        description="Search for a target value in a sorted array using divide-and-conquer strategy (O(log n) time complexity)",
-        example_inputs=[
-            {
-                "name": "Basic Search - Target Found",
-                "input": {
-                    "array": [
-                        4,
-                        11,
-                        12,
-                        14,
-                        22,
-                        23,
-                        33,
-                        34,
-                        39,
-                        48,
-                        51,
-                        59,
-                        63,
-                        69,
-                        70,
-                        71,
-                        74,
-                        79,
-                        91,
-                        98,
-                    ],
-                    "target": 59,
+    if not registry.is_registered("binary-search"):
+        registry.register(
+            name="binary-search",
+            tracer_class=BinarySearchTracer,
+            display_name="Binary Search",
+            description="Search for a target value in a sorted array using divide-and-conquer strategy (O(log n) time complexity)",
+            example_inputs=[
+                {
+                    "name": "Basic Search - Target Found",
+                    "input": {
+                        "array": [
+                            4,
+                            11,
+                            12,
+                            14,
+                            22,
+                            23,
+                            33,
+                            34,
+                            39,
+                            48,
+                            51,
+                            59,
+                            63,
+                            69,
+                            70,
+                            71,
+                            74,
+                            79,
+                        ],
+                        "target": 59,
+                    },
+                },
+                {
+                    "name": "Basic Search - Target Not Found",
+                    "input": {"array": [1, 3, 5, 7, 9, 11, 13, 15], "target": 6},
+                },
+                {
+                    "name": "Large Array",
+                    "input": {
+                        "array": list(range(1, 101, 2)),  # [1, 3, 5, ..., 99]
+                        "target": 51,
+                    },
+                },
+                {"name": "Single Element - Found", "input": {"array": [42], "target": 42}},
+                {
+                    "name": "Target at Start",
+                    "input": {"array": [10, 20, 30, 40, 50], "target": 10},
+                },
+                {
+                    "name": "Target at End",
+                    "input": {"array": [10, 20, 30, 40, 50], "target": 50},
+                },
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["array", "target"],
+                "properties": {
+                    "array": {
+                        "type": "array",
+                        "items": {"type": "integer"},
+                        "minItems": 1,
+                        "description": "Sorted array of integers",
+                    },
+                    "target": {"type": "integer", "description": "Value to search for"},
                 },
             },
-            {
-                "name": "Basic Search - Target Not Found",
-                "input": {"array": [1, 3, 5, 7, 9, 11, 13, 15], "target": 6},
-            },
-            {
-                "name": "Large Array",
-                "input": {
-                    "array": list(range(1, 101, 2)),  # [1, 3, 5, ..., 99]
-                    "target": 51,
-                },
-            },
-            {"name": "Single Element - Found", "input": {"array": [42], "target": 42}},
-            {
-                "name": "Target at Start",
-                "input": {"array": [10, 20, 30, 40, 50], "target": 10},
-            },
-            {
-                "name": "Target at End",
-                "input": {"array": [10, 20, 30, 40, 50], "target": 50},
-            },
-        ],
-        input_schema={
-            "type": "object",
-            "required": ["array", "target"],
-            "properties": {
-                "array": {
-                    "type": "array",
-                    "items": {"type": "integer"},
-                    "minItems": 1,
-                    "description": "Sorted array of integers",
-                },
-                "target": {"type": "integer", "description": "Value to search for"},
-            },
-        },
-    )
+        )
 
     # -------------------------------------------------------------------------
-    # Two Pointer Pattern (NEW)
+    # Two Pointer Pattern
     # -------------------------------------------------------------------------
-    registry.register(
-        name="two-pointer",
-        tracer_class=TwoPointerTracer,
-        display_name="Two Pointer Pattern",
-        description="Remove duplicates from a sorted array in-place using a slow and fast pointer technique.",
-        example_inputs=[
-            {
-                "name": "Basic Duplicates",
-                "input": {
-                    "array": [0, 1, 3, 3, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 7, 8, 8, 9]
+    if not registry.is_registered("two-pointer"):
+        registry.register(
+            name="two-pointer",
+            tracer_class=TwoPointerTracer,
+            display_name="Two Pointer Pattern",
+            description="Remove duplicates from a sorted array in-place using a slow and fast pointer technique.",
+            example_inputs=[
+                {
+                    "name": "Basic Duplicates",
+                    "input": {
+                        "array": [0, 1, 3, 3, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 7, 8, 8, 9]
+                    },
+                },
+                {"name": "All Unique", "input": {"array": [1, 2, 3, 4, 5]}},
+                {"name": "All Duplicates", "input": {"array": [1, 1, 1, 1, 1]}},
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["array"],
+                "properties": {
+                    "array": {
+                        "type": "array",
+                        "items": {"type": "integer"},
+                        "description": "Sorted array of integers, may contain duplicates",
+                    }
                 },
             },
-            {"name": "All Unique", "input": {"array": [1, 2, 3, 4, 5]}},
-            {"name": "All Duplicates", "input": {"array": [1, 1, 1, 1, 1]}},
-        ],
-        input_schema={
-            "type": "object",
-            "required": ["array"],
-            "properties": {
-                "array": {
-                    "type": "array",
-                    "items": {"type": "integer"},
-                    "description": "Sorted array of integers, may contain duplicates",
-                }
+        )
+
+    # -------------------------------------------------------------------------
+    # Sliding Window Pattern (NEW)
+    # -------------------------------------------------------------------------
+    if not registry.is_registered("sliding-window"):
+        registry.register(
+            name='sliding-window',
+            tracer_class=SlidingWindowTracer,
+            display_name='Sliding Window Pattern',
+            description='Find maximum sum subarray of a fixed size k',
+            example_inputs=[
+                {'name': 'Basic', 'input': {'array': [1, 5, 1, 3, 2,5,1,6,7,0,5], 'k': 3}},
+                {'name': 'Increasing Trend', 'input': {'array': [1, 2, 3, 4, 5, 6], 'k': 3}},
+                {'name': 'Decreasing Trend', 'input': {'array': [6, 5, 4, 3, 2, 1], 'k': 4}},
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["array", "k"],
+                "properties": {
+                    "array": {
+                        "type": "array",
+                        "items": {"type": "integer"},
+                        "description": "Array of integers",
+                    },
+                    "k": {"type": "integer", "description": "The size of the sliding window"},
+                },
             },
-        },
-    )
+        )
 
 
 # Auto-register algorithms on module import
-register_algorithms()
+# Added idempotency checks to prevent re-registration during hot-reloading
+if not registry.is_registered("binary-search"):
+    register_algorithms()
 
 
 # =============================================================================

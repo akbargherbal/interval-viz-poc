@@ -1,4 +1,3 @@
-
 import React from "react";
 import ArrayItem from "./ArrayItem";
 
@@ -25,6 +24,9 @@ const ArrayView = ({ step, config = {} }) => {
     mid: { label: 'M', color: 'text-yellow-400', bgColor: 'bg-yellow-900/50' },
     slow: { label: 'S', color: 'text-cyan-400', bgColor: 'bg-cyan-900/50' },
     fast: { label: 'F', color: 'text-orange-400', bgColor: 'bg-orange-900/50' },
+    // NEW pointers for Sliding Window
+    window_start: { label: 'Start', color: 'text-purple-400', bgColor: 'bg-purple-900/50' },
+    window_end: { label: 'End', color: 'text-purple-400', bgColor: 'bg-purple-900/50' },
     // Add other common pointers here
     default: { label: 'P', color: 'text-gray-400', bgColor: 'bg-gray-900/50' }
   };
@@ -39,6 +41,9 @@ const ArrayView = ({ step, config = {} }) => {
         return `${baseClasses} bg-green-500 border-green-400 text-white scale-110 shadow-lg`;
       case "active_range":
         return `${baseClasses} bg-blue-600 border-blue-500 text-white shadow-md`;
+      // NEW state for Sliding Window
+      case "in_window":
+        return `${baseClasses} bg-purple-600 border-purple-500 text-white shadow-md`;
       case "excluded":
         return `${baseClasses} bg-gray-700 border-gray-600 text-gray-500 opacity-50`;
       // NEW states for Two Pointer

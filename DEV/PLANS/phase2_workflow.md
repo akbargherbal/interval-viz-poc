@@ -11,6 +11,19 @@
 
 ---
 
+**IMPORTANT NOTES**:
+Since I cannot share the entire codebase all at once, I rely on you to explicitly ask for the specific files you need to make an informed decision; do not make guesses or assumptions.
+
+Provide `cat` commands that I can copy and paste into my terminal to share file contents with you. For example:
+`cat absolute/path/to/file`
+
+For large JSON files, use `jq` with appropriate flags to specify the data you want me to provide.
+
+Use `pnpm` instead of `npm`, unless there is a specific need to use `npm`.
+
+
+---
+
 ## Role Definitions
 
 - **BE** = Backend Engineer (implements algorithm tracers, generates narratives)

@@ -8,7 +8,7 @@ import CompletionModal from "./components/CompletionModal";
 import ErrorBoundary from "./components/ErrorBoundary";
 import KeyboardHints from "./components/KeyboardHints";
 import PredictionModal from "./components/PredictionModal";
-import AlgorithmInfoModal from './components/AlgorithmInfoModal'; // <-- Import new modal
+import AlgorithmInfoModal from './components/AlgorithmInfoModal';
 
 // PHASE 3: Import visualization registry
 import { getVisualizationComponent } from "./utils/visualizationRegistry";
@@ -27,8 +27,10 @@ import { useVisualHighlight } from "./hooks/useVisualHighlight";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 
 const AlgorithmTracePlayer = () => {
-  // Add state for the new modal
+  // State for the AlgorithmInfoModal
   const [showAlgorithmInfo, setShowAlgorithmInfo] = useState(false);
+  const [algorithmInfoContent, setAlgorithmInfoContent] = useState('');
+  const [infoLoading, setInfoLoading] = useState(false);
 
   // 1. Data Loading Hook
   const {
@@ -51,24 +53,22 @@ const AlgorithmTracePlayer = () => {
     prevStep,
     resetTrace,
     jumpToEnd,
-    showCompletionModal, // <-- Use the new state
-    closeCompletionModal, // <-- Use the new handler
+    showCompletionModal,
+    closeCompletionModal,
   } = useTraceNavigation(trace, resetPredictionStatsRef.current);
 
   const activeCallRef = useRef(null);
 
-  // 3. Prediction Hook (PHASE 4: Now returns activePrediction)
+  // 3. Prediction Hook
   const prediction = usePredictionMode(trace, currentStep, navNextStep);
 
-  // Update the navigation hook's reset function reference
   useEffect(() => {
     resetPredictionStatsRef.current = prediction.resetPredictionStats;
   }, [prediction.resetPredictionStats]);
 
-  // 4. Visual Highlight Hook (for Interval Coverage)
+  // 4. Visual Highlight Hook
   const highlight = useVisualHighlight(trace, currentStep);
 
-  // PHASE 3: Dynamically select visualization component
   const visualizationType = trace?.metadata?.visualization_type || "timeline";
   const visualizationConfig = trace?.metadata?.visualization_config || {};
   const MainVisualizationComponent =
@@ -76,20 +76,41 @@ const AlgorithmTracePlayer = () => {
 
   // --- HANDLERS ---
 
-  // Handler: Next step wrapper (handles prediction blocking)
   const nextStep = () => {
-    if (prediction.showPrediction) return; // Block during prediction
+    if (prediction.showPrediction) return;
     navNextStep();
   };
 
-  // PHASE 4: Updated handler - now receives userAnswer instead of isCorrect
   const handlePredictionAnswer = (userAnswer) => {
     prediction.handlePredictionAnswer(userAnswer);
   };
 
-  // Handler: Prediction Skip
   const handlePredictionSkip = () => {
     prediction.handlePredictionSkip();
+  };
+
+  // FIX: New handler to fetch algorithm info
+  const handleShowInfo = async () => {
+      if (!currentAlgorithm) return;
+      
+      setShowAlgorithmInfo(true);
+      if (algorithmInfoContent) return; // Don't re-fetch if already loaded
+
+      setInfoLoading(true);
+      try {
+          // Assumes markdown files are in `public/algorithm-info/`
+          const response = await fetch(`/algorithm-info/${currentAlgorithm}.md`);
+          if (!response.ok) {
+              throw new Error(`Could not load details for ${currentAlgorithm}.`);
+          }
+          const markdown = await response.text();
+          setAlgorithmInfoContent(markdown);
+      } catch (err) {
+          console.error(err);
+          setAlgorithmInfoContent("Failed to load algorithm details. Please check the console.");
+      } finally {
+          setInfoLoading(false);
+      }
   };
 
   // 5. Keyboard Shortcuts Hook
@@ -98,8 +119,8 @@ const AlgorithmTracePlayer = () => {
     onPrev: prevStep,
     onReset: resetTrace,
     onJumpToEnd: jumpToEnd,
-    isComplete: showCompletionModal, // Use new state to manage shortcuts context
-    modalOpen: prediction.showPrediction || showAlgorithmInfo, // <-- Also disable nav shortcuts when info modal is open
+    isComplete: showCompletionModal,
+    modalOpen: prediction.showPrediction || showAlgorithmInfo,
   });
 
   // --- RENDER LOGIC ---
@@ -172,18 +193,13 @@ const AlgorithmTracePlayer = () => {
   }
 
   const badge = getStepTypeBadge(step?.type);
-
-  // PHASE 4: Dynamically select state component based on algorithm
-  // Only call after trace validation - currentAlgorithm is guaranteed to be set here
   const StateComponent = getStateComponent(currentAlgorithm);
 
-  // Create a generic props object and conditionally add algorithm-specific props
   const mainVisualizationProps = {
     step: step,
     config: visualizationConfig,
   };
 
-  // PHASE 4: Conditional props for interval coverage visualization
   if (currentAlgorithm === "interval-coverage") {
     mainVisualizationProps.highlightedIntervalId = highlight.effectiveHighlight;
     mainVisualizationProps.onIntervalHover = highlight.handleIntervalHover;
@@ -208,12 +224,14 @@ const AlgorithmTracePlayer = () => {
                 Step {currentStep + 1} of {totalSteps || 0}
               </p>
             </div>
-            {/* PHASE 2: Algorithm Switcher Dropdown */}
             <div className="pl-4 border-l border-slate-600">
               <AlgorithmSwitcher
                 currentAlgorithm={currentAlgorithm}
                 availableAlgorithms={availableAlgorithms}
-                onAlgorithmSwitch={switchAlgorithm}
+                onAlgorithmSwitch={(algo) => {
+                    setAlgorithmInfoContent(''); // Invalidate content on switch
+                    switchAlgorithm(algo);
+                }}
                 loading={loading}
               />
             </div>
@@ -241,7 +259,6 @@ const AlgorithmTracePlayer = () => {
       </div>
 
       <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
-        {/* PHASE 4: Pass activePrediction instead of step/nextStep */}
         {prediction.showPrediction && prediction.activePrediction && (
           <PredictionModal
             predictionData={prediction.activePrediction}
@@ -250,11 +267,11 @@ const AlgorithmTracePlayer = () => {
           />
         )}
         <CompletionModal
-          isOpen={showCompletionModal} // <-- Control visibility with the new prop
+          isOpen={showCompletionModal}
           trace={trace}
           step={step}
           onReset={resetTrace}
-          onClose={closeCompletionModal} // <-- Pass the new close handler
+          onClose={closeCompletionModal}
           predictionStats={prediction.predictionStats}
         />
         <KeyboardHints />
@@ -263,7 +280,6 @@ const AlgorithmTracePlayer = () => {
             id="panel-visualization"
             className="flex-[3] bg-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden"
           >
-            {/* MODIFIED: Replaced header with new version including info trigger */}
             <div className="px-4 py-3 border-b border-slate-700 flex items-center justify-between flex-shrink-0">
               <h2 className="text-lg font-semibold text-white">
                 {trace?.metadata?.visualization_type === 'array' && 'Array Visualization'}
@@ -271,7 +287,7 @@ const AlgorithmTracePlayer = () => {
               </h2>
               <button
                 id="algorithm-info-trigger"
-                onClick={() => setShowAlgorithmInfo(true)}
+                onClick={handleShowInfo} // FIX: Use the new handler
                 className="p-2 bg-slate-700 hover:bg-slate-600 rounded-full transition-colors group"
                 title="Algorithm Details"
                 aria-label="Show algorithm information"
@@ -291,7 +307,6 @@ const AlgorithmTracePlayer = () => {
                 </svg>
               </button>
             </div>
-            {/* FIX 13: Apply overflow pattern - items-start on outer container, mx-auto on inner wrapper */}
             <div className="flex-1 flex flex-col items-start overflow-auto p-6">
               <div className="mx-auto h-full w-full">
                 <ErrorBoundary>
@@ -312,7 +327,6 @@ const AlgorithmTracePlayer = () => {
               className="flex-1 overflow-y-auto px-6 py-4"
             >
               <ErrorBoundary>
-                {/* PHASE 4: Registry-based component rendering - zero algorithm-specific conditionals */}
                 <StateComponent
                   step={step}
                   trace={trace}
@@ -342,12 +356,15 @@ const AlgorithmTracePlayer = () => {
           </div>
         </div>
       </div>
-      {/* ADDED: Render the new AlgorithmInfoModal */}
+      {/* FIX: Pass all required props to the modal */}
       <AlgorithmInfoModal
         isOpen={showAlgorithmInfo}
         onClose={() => setShowAlgorithmInfo(false)}
-        algorithmName={currentAlgorithm}
-      />
+        title={trace?.metadata?.display_name || 'Algorithm Details'}
+        isLoading={infoLoading}
+      >
+        {algorithmInfoContent}
+      </AlgorithmInfoModal>
     </div>
   );
 };

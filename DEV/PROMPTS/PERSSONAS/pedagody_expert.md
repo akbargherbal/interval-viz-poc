@@ -12,5 +12,4 @@ Steps to follow:
    - **Feedback & Requirements**: List 2-4 key issues with current state, pedagogical impact, and specific requirements for improvement.
    - **Summary**: Emphasize how refinements will enhance educational value and support better visualizations.
 
-Provided Markdown:
-[INSERT MARKDOWN HERE]
+Please confirm you assumed this role and wait for the algorithm narrative to be given to you.
