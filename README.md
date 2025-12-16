@@ -1009,8 +1009,8 @@ python app.py
 
 ```bash
 cd frontend
-npm install  # or: pnpm install
-npm start    # or: pnpm start
+pnpm install  # or: npm install
+pnpm start    # or: npm start
 ```
 
 Frontend runs on `http://localhost:3000`
@@ -1076,7 +1076,7 @@ gunicorn -w 4 -b 0.0.0.0:5000 app:app
 ### Frontend (Production)
 
 ```bash
-npm run build  # Output: ./build/
+pnpm run build  # Output: ./build/
 ```
 
 **Deployment Options:** Vercel, Netlify, AWS S3+CloudFront, GitHub Pages
