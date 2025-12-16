@@ -54,19 +54,10 @@ const AlgorithmInfoModal = ({ isOpen, onClose, title, children, isLoading }) => 
                                     li: ({children}) => <li className="ml-2">{children}</li>
                                 }}
                             >
-                                {children}
+                                {children || ''}
                             </ReactMarkdown>
                         </div>
                     )}
-                </div>
-                
-                <div className="p-4 border-t border-slate-700 bg-slate-800/50 flex justify-end flex-shrink-0">
-                    <button 
-                        onClick={onClose}
-                        className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
-                    >
-                        Close
-                    </button>
                 </div>
             </div>
         </div>
@@ -76,8 +67,8 @@ const AlgorithmInfoModal = ({ isOpen, onClose, title, children, isLoading }) => 
 AlgorithmInfoModal.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
-    title: PropTypes.string.isRequired,
-    children: PropTypes.string.isRequired,
+    title: PropTypes.string,
+    children: PropTypes.string,
     isLoading: PropTypes.bool,
 };
 
