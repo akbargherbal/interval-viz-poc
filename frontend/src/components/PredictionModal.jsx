@@ -1,5 +1,3 @@
-// src/components/PredictionModal.jsx
-
 import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 
@@ -7,32 +5,48 @@ const PredictionModal = ({
     predictionData,
     onAnswer,
     onSkip,
-    isOpen = true // Default to true as parent conditionally renders
+    isOpen = true
 }) => {
     const [selectedChoiceId, setSelectedChoiceId] = useState(null);
 
     // Destructure data with safety checks
-    const { question, choices = [] } = predictionData || {};
+    const { question, choices = [], hint } = predictionData || {};
 
     // Map choices to include UI properties if missing
     const mappedChoices = choices.map((choice, index) => {
-        // Default styling based on index
-        const defaultColors = [
-            'bg-blue-600 hover:bg-blue-500',
-            'bg-purple-600 hover:bg-purple-500',
-            'bg-emerald-600 hover:bg-emerald-500'
-        ];
+        // Default styling based on index if no specific class provided
+        // We try to infer semantic meaning from labels if possible, otherwise cycle colors
+        let colorClass = 'bg-slate-600 hover:bg-slate-500'; // Fallback
+        
+        const labelLower = (choice.label || '').toLowerCase();
+        const idLower = (choice.id || '').toLowerCase();
+        
+        // Semantic color mapping based on mockup guidelines
+        if (labelLower.includes('found') || labelLower.includes('keep') || labelLower.includes('yes') || idLower === 'found') {
+            colorClass = 'bg-emerald-600 hover:bg-emerald-500';
+        } else if (labelLower.includes('covered') || labelLower.includes('discard') || labelLower.includes('no') || idLower.includes('covered')) {
+            colorClass = 'bg-orange-600 hover:bg-orange-500';
+        } else if (labelLower.includes('left') || labelLower.includes('back') || labelLower.includes('prev')) {
+            colorClass = 'bg-blue-600 hover:bg-blue-500';
+        } else if (labelLower.includes('right') || labelLower.includes('next')) {
+            colorClass = 'bg-red-600 hover:bg-red-500';
+        } else {
+            // Fallback cycle for generic choices
+            const defaultColors = [
+                'bg-blue-600 hover:bg-blue-500',
+                'bg-purple-600 hover:bg-purple-500',
+                'bg-emerald-600 hover:bg-emerald-500'
+            ];
+            colorClass = defaultColors[index % defaultColors.length];
+        }
         
         // Default shortcuts
-        const defaultShortcuts = ['k', 'c', 't']; // k=keep/1, c=cover/2, t=third
+        const defaultShortcuts = ['1', '2', '3']; 
 
         return {
             ...choice,
-            // Use provided ID or index as fallback
             id: choice.id || `choice-${index}`,
-            // Use provided styling or default
-            className: choice.className || defaultColors[index % defaultColors.length],
-            // Use provided shortcut or default
+            className: choice.className || colorClass,
             shortcut: choice.shortcut || defaultShortcuts[index % defaultShortcuts.length]
         };
     });
@@ -55,7 +69,11 @@ const PredictionModal = ({
 
             // Choice selection shortcuts
             mappedChoices.forEach(choice => {
-                if (choice.shortcut && key === choice.shortcut.toLowerCase()) {
+                // Check explicit shortcut or numeric fallback
+                if (
+                    (choice.shortcut && key === choice.shortcut.toLowerCase()) ||
+                    (key === (mappedChoices.indexOf(choice) + 1).toString())
+                ) {
                     setSelectedChoiceId(choice.id);
                 }
             });
@@ -81,48 +99,80 @@ const PredictionModal = ({
             id="prediction-modal"
             className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         >
-            {/* LOCKED: w-[600px] and max-h-[80vh] */}
-            <div className="bg-slate-800 border-2 border-slate-600 rounded-2xl shadow-2xl w-[600px] max-h-[80vh] flex flex-col p-6 text-white overflow-hidden">
-                <h2 className="text-2xl font-bold mb-6 flex-shrink-0">{question}</h2>
+            {/* LOCKED: max-w-lg (512px), p-6, NO height constraint */}
+            <div className="bg-slate-800 border-2 border-slate-600 rounded-2xl shadow-2xl max-w-lg w-full p-6 text-white select-none">
+                
+                {/* Header Section */}
+                <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-white mb-2 leading-tight">{question}</h2>
+                    {/* Optional: Could add step info here if passed via props */}
+                </div>
 
-                <div className="overflow-y-auto flex-1 pr-2">
-                    <div className={`grid grid-cols-${Math.min(mappedChoices.length, 3)} gap-3 mb-6`}>
-                        {mappedChoices.map((choice) => (
+                {/* Hint Box (Visual Standard) */}
+                {hint && (
+                    <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mb-6">
+                        <p className="text-blue-300 text-sm">
+                            💡 <strong>Hint:</strong> {hint}
+                        </p>
+                    </div>
+                )}
+
+                {/* Choices Grid */}
+                <div className={`grid ${mappedChoices.length > 2 ? 'grid-cols-3' : 'grid-cols-2'} gap-3 mb-6`}>
+                    {mappedChoices.map((choice) => {
+                        const isSelected = selectedChoiceId === choice.id;
+                        const isOthersSelected = selectedChoiceId && !isSelected;
+                        
+                        // Extract base color for ring (simplified logic)
+                        let ringColor = 'ring-blue-400';
+                        if (choice.className.includes('emerald')) ringColor = 'ring-emerald-400';
+                        else if (choice.className.includes('orange')) ringColor = 'ring-orange-400';
+                        else if (choice.className.includes('red')) ringColor = 'ring-red-400';
+                        else if (choice.className.includes('purple')) ringColor = 'ring-purple-400';
+
+                        return (
                             <button
                                 key={choice.id}
                                 onClick={() => setSelectedChoiceId(choice.id)}
-                                className={`p-4 rounded-lg text-white font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800
+                                className={`
+                                    py-4 px-3 rounded-lg text-white font-semibold transition-all duration-200 
+                                    flex flex-col items-center justify-center text-center
+                                    focus:outline-none
                                     ${choice.className}
-                                    ${
-                                        selectedChoiceId === choice.id
-                                            ? 'scale-105 ring-2 ring-white shadow-xl z-10'
-                                            : 'opacity-80 hover:opacity-100 hover:scale-[1.02]'
+                                    ${isSelected 
+                                        ? `scale-105 ring-2 ${ringColor} shadow-xl z-10` 
+                                        : 'hover:scale-105 shadow-lg'
                                     }
-                                    ${selectedChoiceId && selectedChoiceId !== choice.id ? 'opacity-40' : ''}
+                                    ${isOthersSelected ? 'opacity-60' : 'opacity-100'}
                                 `}
                             >
-                                <div className="text-base">{choice.label}</div>
-                                {choice.shortcut && (
-                                    <div className="text-xs opacity-75 mt-1 uppercase">
-                                        Press [{choice.shortcut}]
-                                    </div>
-                                )}
+                                <div className="text-sm mb-1">{choice.label}</div>
+                                <div className="text-xs opacity-75 uppercase font-mono">
+                                    Press {choice.shortcut}
+                                </div>
                             </button>
-                        ))}
-                    </div>
+                        );
+                    })}
                 </div>
 
-                <div className="flex justify-between items-center pt-4 border-t border-slate-700 flex-shrink-0">
+                {/* Actions - Two-Step Confirmation */}
+                <div className="flex justify-between items-center pt-4 border-t border-slate-700">
                     <button
                         onClick={onSkip}
-                        className="text-sm text-slate-400 hover:text-white transition-colors"
+                        className="text-slate-400 hover:text-slate-300 text-sm transition-colors"
                     >
-                        Skip Question (S)
+                        Skip (Press S)
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={!selectedChoiceId}
-                        className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-md font-semibold disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors"
+                        className={`
+                            px-6 py-2 rounded-lg font-semibold transition-all shadow-lg
+                            ${selectedChoiceId 
+                                ? 'bg-blue-600 hover:bg-blue-500 text-white animate-pulse hover:scale-105' 
+                                : 'bg-blue-600 text-white opacity-50 cursor-not-allowed'
+                            }
+                        `}
                     >
                         Submit (Enter)
                     </button>
@@ -135,6 +185,7 @@ const PredictionModal = ({
 PredictionModal.propTypes = {
     predictionData: PropTypes.shape({
         question: PropTypes.string,
+        hint: PropTypes.string,
         choices: PropTypes.arrayOf(PropTypes.shape({
             id: PropTypes.string,
             label: PropTypes.string,
