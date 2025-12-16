@@ -1,0 +1,8 @@
+1) Space efficiency in Calls Stack (Sliding Window / Two Pointers)
+2) Algorithem Info
+	2.1 - Esc key doesn't close modal; only clicking the x button
+	2.2 - Font and text feels off - something ain't right.
+3) Predecition Modals don't adhere to color scheme set by static mockup
+
+4) Completion Modal doesn't show <-- This is good; use call stack!
+---

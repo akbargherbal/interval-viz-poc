@@ -1,6 +1,6 @@
-// Create this as frontend/src/components/KeyboardHints.jsx
+// src/components/KeyboardHints.jsx
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Keyboard, X } from "lucide-react";
 
 const KeyboardHints = () => {
@@ -14,6 +14,18 @@ const KeyboardHints = () => {
     { keys: ["Esc"], action: "Close modal" },
   ];
 
+  // Handle Escape key to close hints
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (isOpen && event.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
+
   return (
     <div className="fixed bottom-4 right-4 z-50">
       {!isOpen ? (
@@ -25,7 +37,7 @@ const KeyboardHints = () => {
           <Keyboard size={20} />
         </button>
       ) : (
-        <div className="bg-slate-800 border border-slate-600 rounded-lg shadow-2xl p-4 w-64">
+        <div className="bg-slate-800 border border-slate-600 rounded-lg shadow-2xl p-4 w-64 animate-in fade-in slide-in-from-bottom-4 duration-200">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-white font-bold flex items-center gap-2">
               <Keyboard size={18} />
@@ -45,7 +57,7 @@ const KeyboardHints = () => {
                 <div className="flex gap-1">
                   {shortcut.keys.map((key, keyIdx) => (
                     <React.Fragment key={keyIdx}>
-                      <kbd className="bg-slate-700 text-white px-2 py-1 rounded text-xs font-mono border border-slate-600">
+                      <kbd className="bg-slate-700 text-white px-2 py-1 rounded text-xs font-mono border border-slate-600 shadow-sm">
                         {key}
                       </kbd>
                       {keyIdx < shortcut.keys.length - 1 && (

@@ -1,4 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+// src/App.jsx
+
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Loader, AlertCircle } from "lucide-react";
 
 // Import the components
@@ -50,11 +52,10 @@ const AlgorithmTracePlayer = () => {
     jumpToEnd,
     showCompletionModal,
     closeCompletionModal,
-    setCurrentStep, // <-- CRITICAL: Destructure setCurrentStep here
+    setCurrentStep,
   } = useTraceNavigation(trace, resetPredictionStatsRef.current);
 
   // 3. Prediction Hook
-  // CRITICAL FIX: Pass the `setCurrentStep` function from useTraceNavigation into usePredictionMode.
   const prediction = usePredictionMode(trace, setCurrentStep);
 
   // Link the prediction reset function back to the navigation hook via a ref
@@ -72,7 +73,6 @@ const AlgorithmTracePlayer = () => {
 
   // --- HANDLERS ---
 
-  // CRITICAL FIX: New nextStep handler with imperative prediction logic
   const nextStep = () => {
     if (prediction.showPrediction) return;
 
@@ -95,6 +95,22 @@ const AlgorithmTracePlayer = () => {
   const handlePredictionSkip = () => {
     prediction.handlePredictionSkip();
   };
+
+  // Unified Modal Close Handler for Keyboard Shortcuts
+  const handleCloseModals = useCallback(() => {
+    if (showAlgorithmInfo) {
+      setShowAlgorithmInfo(false);
+      return;
+    }
+    if (prediction.showPrediction) {
+      prediction.handlePredictionSkip();
+      return;
+    }
+    if (showCompletionModal) {
+      closeCompletionModal();
+      return;
+    }
+  }, [showAlgorithmInfo, prediction, showCompletionModal, closeCompletionModal]);
 
   // Fetch algorithm info when modal opens
   useEffect(() => {
@@ -120,7 +136,8 @@ const AlgorithmTracePlayer = () => {
     onReset: resetTrace,
     onJumpToEnd: jumpToEnd,
     isComplete: showCompletionModal,
-    modalOpen: prediction.showPrediction || showAlgorithmInfo,
+    modalOpen: prediction.showPrediction || showAlgorithmInfo || showCompletionModal,
+    onCloseModal: handleCloseModals, // <-- Connected the handler
   });
 
   // --- RENDER LOGIC ---

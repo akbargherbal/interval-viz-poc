@@ -1,3 +1,5 @@
+// src/components/PredictionModal.jsx
+
 import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 
@@ -79,35 +81,38 @@ const PredictionModal = ({
             id="prediction-modal"
             className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         >
-            <div className="bg-slate-800 border border-slate-700 rounded-lg shadow-xl max-w-lg w-full p-6 text-white">
-                <h2 className="text-2xl font-bold mb-6">{question}</h2>
+            {/* LOCKED: w-[600px] and max-h-[80vh] */}
+            <div className="bg-slate-800 border-2 border-slate-600 rounded-2xl shadow-2xl w-[600px] max-h-[80vh] flex flex-col p-6 text-white overflow-hidden">
+                <h2 className="text-2xl font-bold mb-6 flex-shrink-0">{question}</h2>
 
-                <div className={`grid grid-cols-${Math.min(mappedChoices.length, 3)} gap-3 mb-6`}>
-                    {mappedChoices.map((choice) => (
-                        <button
-                            key={choice.id}
-                            onClick={() => setSelectedChoiceId(choice.id)}
-                            className={`p-4 rounded-lg text-white font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800
-                                ${choice.className}
-                                ${
-                                    selectedChoiceId === choice.id
-                                        ? 'scale-105 ring-2 ring-white shadow-xl z-10'
-                                        : 'opacity-80 hover:opacity-100 hover:scale-[1.02]'
-                                }
-                                ${selectedChoiceId && selectedChoiceId !== choice.id ? 'opacity-40' : ''}
-                            `}
-                        >
-                            <div className="text-base">{choice.label}</div>
-                            {choice.shortcut && (
-                                <div className="text-xs opacity-75 mt-1 uppercase">
-                                    Press [{choice.shortcut}]
-                                </div>
-                            )}
-                        </button>
-                    ))}
+                <div className="overflow-y-auto flex-1 pr-2">
+                    <div className={`grid grid-cols-${Math.min(mappedChoices.length, 3)} gap-3 mb-6`}>
+                        {mappedChoices.map((choice) => (
+                            <button
+                                key={choice.id}
+                                onClick={() => setSelectedChoiceId(choice.id)}
+                                className={`p-4 rounded-lg text-white font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800
+                                    ${choice.className}
+                                    ${
+                                        selectedChoiceId === choice.id
+                                            ? 'scale-105 ring-2 ring-white shadow-xl z-10'
+                                            : 'opacity-80 hover:opacity-100 hover:scale-[1.02]'
+                                    }
+                                    ${selectedChoiceId && selectedChoiceId !== choice.id ? 'opacity-40' : ''}
+                                `}
+                            >
+                                <div className="text-base">{choice.label}</div>
+                                {choice.shortcut && (
+                                    <div className="text-xs opacity-75 mt-1 uppercase">
+                                        Press [{choice.shortcut}]
+                                    </div>
+                                )}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
-                <div className="flex justify-between items-center pt-4 border-t border-slate-700">
+                <div className="flex justify-between items-center pt-4 border-t border-slate-700 flex-shrink-0">
                     <button
                         onClick={onSkip}
                         className="text-sm text-slate-400 hover:text-white transition-colors"
