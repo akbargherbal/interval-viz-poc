@@ -145,6 +145,9 @@ interval-viz-poc/
 │   │   │   ├── CompletionModal.jsx      # Success screen
 │   │   │   ├── PredictionModal.jsx      # Interactive predictions
 │   │   │   ├── KeyboardHints.jsx        # Shortcut guide
+│   │   │   ├── panels/                  # ⭐ Layout Containers
+│   │   │   │   ├── VisualizationPanel.jsx
+│   │   │   │   └── StatePanel.jsx
 │   │   │   ├── algorithm-states/        # ⭐ Algorithm-specific state components
 │   │   │   │   ├── BinarySearchState.jsx
 │   │   │   │   ├── IntervalCoverageState.jsx
@@ -153,7 +156,12 @@ interval-viz-poc/
 │   │   │       ├── ArrayView.jsx
 │   │   │       ├── TimelineView.jsx
 │   │   │       └── index.js
-│   │   ├── hooks/                       # Business logic hooks
+│   │   ├── contexts/                    # ⭐ State Management (Context API)
+│   │   │   ├── TraceContext.jsx
+│   │   │   ├── NavigationContext.jsx
+│   │   │   ├── PredictionContext.jsx
+│   │   │   └── KeyboardContext.jsx
+│   │   ├── hooks/                       # Context Consumers
 │   │   │   ├── useTraceLoader.js
 │   │   │   ├── useTraceNavigation.js
 │   │   │   ├── usePredictionMode.js
@@ -883,13 +891,23 @@ const VISUALIZATION_REGISTRY = {
 
 ## Component Architecture
 
-### Business Logic Hooks
+### State Management (Context API)
 
-- **`useTraceLoader`** - Fetch algorithm list and traces
-- **`useTraceNavigation`** - Step controls (next/prev/reset)
-- **`usePredictionMode`** - Prediction state management
-- **`useVisualHighlight`** - Visual highlighting (Interval Coverage)
-- **`useKeyboardShortcuts`** - Keyboard navigation
+The application uses React Context to manage state, avoiding prop drilling and "God Object" patterns.
+
+- **`TraceContext`** - Raw trace data and metadata loading
+- **`NavigationContext`** - Current step index and derived step data
+- **`PredictionContext`** - Active learning mode and scoring logic
+- **`KeyboardContext`** - Centralized event handling with priority system
+
+### Context Consumers (Hooks)
+
+Custom hooks now serve as convenient wrappers around Contexts:
+
+- **`useTraceLoader`** - Consumes `TraceContext`
+- **`useTraceNavigation`** - Consumes `NavigationContext`
+- **`usePredictionMode`** - Consumes `PredictionContext`
+- **`useKeyboardShortcuts`** - Consumes `KeyboardContext`
 
 ### UI Components
 

@@ -1,10 +1,11 @@
+// frontend/src/utils/visualizationRegistry.js
 /**
  * Visualization Registry
- * 
+ *
  * Phase 3: Maps visualization types to React components.
  * Allows algorithms to declare their visualization needs via metadata,
  * and the frontend dynamically selects the correct component.
- * 
+ *
  * Usage:
  *   const Component = getVisualizationComponent(trace.metadata.visualization_type);
  *   return <Component step={step} config={trace.metadata.visualization_config} />;
@@ -15,23 +16,23 @@ import ArrayView from "../components/visualizations/ArrayView";
 
 /**
  * Registry mapping visualization types to components.
- * 
+ *
  * Key = visualization_type from backend metadata
  * Value = React component
  */
 const VISUALIZATION_REGISTRY = {
   // Interval Coverage algorithm
   timeline: TimelineView,
-  
+
   // Binary Search and other array algorithms
   array: ArrayView,
-  
+
   // Future: Graph algorithms (DFS, BFS, Dijkstra)
   // graph: GraphView,
-  
+
   // Future: Tree algorithms (BST, Heap)
   // tree: TreeView,
-  
+
   // Future: Matrix algorithms (Dynamic Programming)
   // matrix: MatrixView,
 };
@@ -39,7 +40,7 @@ const VISUALIZATION_REGISTRY = {
 /**
  * Retrieve visualization component by type.
  * Falls back to TimelineView if type not found (backward compatibility).
- * 
+ *
  * @param {string} type - Visualization type from backend metadata
  * @returns {React.Component} - Visualization component
  */
@@ -48,21 +49,23 @@ export const getVisualizationComponent = (type) => {
     console.warn("No visualization type specified, using default (timeline)");
     return TimelineView;
   }
-  
+
   const component = VISUALIZATION_REGISTRY[type];
-  
+
   if (!component) {
-    console.warn(`Unknown visualization type: ${type}, falling back to timeline`);
+    console.warn(
+      `Unknown visualization type: ${type}, falling back to timeline`
+    );
     return TimelineView;
   }
-  
+
   return component;
 };
 
 /**
  * Get list of all registered visualization types.
  * Useful for debugging and validation.
- * 
+ *
  * @returns {string[]} - Array of visualization type keys
  */
 export const getRegisteredTypes = () => {
@@ -71,7 +74,7 @@ export const getRegisteredTypes = () => {
 
 /**
  * Check if a visualization type is registered.
- * 
+ *
  * @param {string} type - Visualization type to check
  * @returns {boolean}
  */
@@ -79,8 +82,10 @@ export const isVisualizationTypeRegistered = (type) => {
   return type in VISUALIZATION_REGISTRY;
 };
 
-export default {
+const registry = {
   getVisualizationComponent,
   getRegisteredTypes,
   isVisualizationTypeRegistered,
 };
+
+export default registry;

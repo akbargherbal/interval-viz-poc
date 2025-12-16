@@ -1,9 +1,11 @@
+// frontend/src/contexts/PredictionContext.jsx
 import React, {
   createContext,
   useContext,
   useState,
   useCallback,
   useEffect,
+  useMemo,
 } from "react";
 import { useTrace } from "./TraceContext";
 import { useNavigation } from "./NavigationContext";
@@ -22,7 +24,11 @@ export const PredictionProvider = ({ children }) => {
     correct: 0,
   });
 
-  const predictionPoints = trace?.metadata?.prediction_points || [];
+  // Memoize prediction points to prevent unstable dependency in activatePredictionForStep
+  const predictionPoints = useMemo(
+    () => trace?.metadata?.prediction_points || [],
+    [trace]
+  );
 
   // Reset stats when trace changes
   useEffect(() => {

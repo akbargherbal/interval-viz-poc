@@ -1,6 +1,5 @@
-// src/App.jsx
-
-import React, { useEffect, useCallback } from "react";
+// frontend/src/App.jsx
+import React, { useCallback } from "react";
 import { Loader, AlertCircle } from "lucide-react";
 
 // Import the components
