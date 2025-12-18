@@ -5,11 +5,11 @@ import PropTypes from 'prop-types';
 
 /**
  * SlidingWindowState - Iterative Metrics Template
- * 
+ *
  * RHP Layout:
  * - Top 2/3: Metrics (Current Sum, Max Sum, Window Tracking)
  * - Bottom 1/3: Narrative
- * 
+ *
  * Optimization:
  * - Compact vertical layout to prevent scrolling
  * - Highlights "New Max" updates
@@ -40,11 +40,11 @@ const SlidingWindowState = ({ step, trace }) => {
   const currentSum = metrics.current_sum ?? '-';
   const maxSum = metrics.max_sum ?? '-';
   const k = metrics.k ?? '-';
-  
+
   // Window Indices
   const currStart = pointers.window_start ?? '-';
   const currEnd = pointers.window_end ?? '-';
-  
+
   // Best Window Calculation (derived)
   const bestStart = metrics.max_window_start ?? '-';
   let bestEnd = '-';
@@ -74,7 +74,7 @@ const SlidingWindowState = ({ step, trace }) => {
           SECTION 1: Metrics (Top 2/3)
           ========================================== */}
       <div className="flex-[2] flex flex-col p-4 overflow-hidden relative border-b border-slate-700">
-        
+
         {/* Row 1: Primary Metrics (Scoreboard) */}
         <div className="grid grid-cols-2 gap-3 mb-3 flex-1">
           {/* Current Sum */}
@@ -92,8 +92,8 @@ const SlidingWindowState = ({ step, trace }) => {
 
           {/* Max Sum */}
           <div className={`border rounded-lg p-2 flex flex-col items-center justify-center transition-colors duration-300 ${
-            isMax 
-              ? 'bg-emerald-900/20 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]' 
+            isMax
+              ? 'bg-emerald-900/20 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
               : 'bg-slate-700/30 border-slate-600/50'
           }`}>
             <span className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${
@@ -118,7 +118,7 @@ const SlidingWindowState = ({ step, trace }) => {
         {/* Row 2: Window Tracking (Compact Strip) */}
         <div className="bg-slate-900/40 rounded-lg border border-slate-700/50 p-2 mt-auto shrink-0">
           <div className="grid grid-cols-2 divide-x divide-slate-700/50">
-            
+
             {/* Current Window */}
             <div className="px-3 flex flex-col items-center justify-center">
               <div className="text-[9px] text-slate-500 font-semibold uppercase mb-1">
