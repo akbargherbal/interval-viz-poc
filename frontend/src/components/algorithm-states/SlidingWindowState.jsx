@@ -1,35 +1,37 @@
 // frontend/src/components/algorithm-states/SlidingWindowState.jsx
 
-import React, { useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React, { useEffect } from "react";
+import PropTypes from "prop-types";
 
 /**
- * SlidingWindowState - Iterative Metrics Template
+ * SlidingWindowState - Iterative Metrics Template (Dashboard Edition)
  *
  * RHP Layout:
- * - Top 2/3: Metrics (Current Sum, Max Sum, Window Tracking)
+ * - Top 2/3: Metrics Dashboard (Current vs Max, Indices, Performance Bar)
  * - Bottom 1/3: Narrative
  *
- * Optimization:
- * - Compact vertical layout to prevent scrolling
- * - Highlights "New Max" updates
- * - Tracks "Best Window" indices
+ * Improvements:
+ * - "Dashboard" feel: Grouped data (Sum + Indices) in unified cards
+ * - Vertical Density: Indices moved inside cards to save space
+ * - Visual Context: Added a progress bar comparing Current vs Max
  */
 const SlidingWindowState = ({ step, trace }) => {
   // Effect to hide the parent StatePanel's default description footer
   useEffect(() => {
-    const parentFooter = document.getElementById('panel-step-description');
+    const parentFooter = document.getElementById("panel-step-description");
     if (parentFooter) {
-      parentFooter.style.display = 'none';
+      parentFooter.style.display = "none";
     }
     return () => {
-      if (parentFooter) parentFooter.style.display = '';
+      if (parentFooter) parentFooter.style.display = "";
     };
   }, []);
 
   // Early return
   if (!step?.data?.visualization) {
-    return <div className="text-slate-400 text-sm p-4">No state data available</div>;
+    return (
+      <div className="text-slate-400 text-sm p-4">No state data available</div>
+    );
   }
 
   const viz = step.data.visualization;
@@ -37,112 +39,135 @@ const SlidingWindowState = ({ step, trace }) => {
   const pointers = viz.pointers || {};
 
   // Data Extraction
-  const currentSum = metrics.current_sum ?? '-';
-  const maxSum = metrics.max_sum ?? '-';
-  const k = metrics.k ?? '-';
+  const currentSum = metrics.current_sum ?? 0;
+  const maxSum = metrics.max_sum ?? 0;
+  const k = metrics.k ?? "-";
 
   // Window Indices
-  const currStart = pointers.window_start ?? '-';
-  const currEnd = pointers.window_end ?? '-';
+  const currStart = pointers.window_start ?? "-";
+  const currEnd = pointers.window_end ?? "-";
 
-  // Best Window Calculation (derived)
-  const bestStart = metrics.max_window_start ?? '-';
-  let bestEnd = '-';
-  if (bestStart !== '-' && k !== '-') {
+  // Best Window Calculation
+  const bestStart = metrics.max_window_start ?? "-";
+  let bestEnd = "-";
+  if (bestStart !== "-" && k !== "-") {
     bestEnd = bestStart + k - 1;
   }
 
   // "New Max" Detection
-  // We assume if current == max (and max > 0), it might be a new max.
-  // Without previous step data, this is a best-effort visual cue.
-  const isMax = currentSum !== '-' && maxSum !== '-' && currentSum === maxSum;
+  const isMax = currentSum > 0 && currentSum === maxSum;
+
+  // Progress Bar Calculation
+  const progressPercent =
+    maxSum > 0 ? Math.min(100, (currentSum / maxSum) * 100) : 0;
 
   // Step Type Coloring
   const getStepColor = (type) => {
-    const t = type?.toUpperCase() || '';
-    if (t.includes('MAX') || t.includes('UPDATE')) return 'bg-emerald-900/30 text-emerald-200 border-emerald-800';
-    if (t.includes('SLIDE') || t.includes('MOVE')) return 'bg-blue-900/30 text-blue-200 border-blue-800';
-    return 'bg-slate-700/20 text-slate-200 border-slate-700';
+    const t = type?.toUpperCase() || "";
+    if (t.includes("MAX") || t.includes("UPDATE"))
+      return "bg-emerald-900/30 text-emerald-200 border-emerald-800";
+    if (t.includes("SLIDE") || t.includes("MOVE"))
+      return "bg-blue-900/30 text-blue-200 border-blue-800";
+    return "bg-slate-700/20 text-slate-200 border-slate-700";
   };
 
-  const stepType = step.type || 'STEP';
+  const stepType = step.type || "STEP";
   const stepColorClass = getStepColor(stepType);
 
   return (
     <div className="h-full flex flex-col bg-slate-800">
       {/* ==========================================
-          SECTION 1: Metrics (Top 2/3)
+          SECTION 1: Metrics Dashboard (Top 2/3)
           ========================================== */}
-      <div className="flex-[2] flex flex-col p-4 overflow-hidden relative border-b border-slate-700">
+      <div className="flex-[2] flex flex-col p-4 overflow-hidden relative border-b border-slate-700 gap-3">
+        {/* Header: Context Info */}
+        <div className="flex justify-between items-center shrink-0">
+          <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+            Window Metrics
+          </h2>
+          <div className="text-[10px] font-mono text-slate-500 bg-slate-900/50 px-2 py-1 rounded">
+            Window Size: <span className="text-slate-300 font-bold">{k}</span>
+          </div>
+        </div>
 
-        {/* Row 1: Primary Metrics (Scoreboard) */}
-        <div className="grid grid-cols-2 gap-3 mb-3 flex-1">
-          {/* Current Sum */}
-          <div className="bg-slate-700/30 border border-slate-600/50 rounded-lg p-2 flex flex-col items-center justify-center relative">
-            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">
-              Current Sum
-            </span>
-            <span className="text-cyan-300 text-4xl font-mono font-bold tracking-tighter drop-shadow-lg">
-              {currentSum}
-            </span>
-            <div className="absolute top-2 right-2 text-[9px] text-slate-500 font-mono">
-              k={k}
+        {/* Main Dashboard Grid */}
+        <div className="grid grid-cols-2 gap-3 flex-1 min-h-0">
+          {/* Card 1: Active Window (Cyan Theme) */}
+          <div className="bg-slate-700/30 border-l-4 border-cyan-500/50 rounded-r-lg p-3 flex flex-col justify-between relative overflow-hidden">
+            <div className="text-[10px] font-bold text-cyan-400/80 uppercase tracking-wider">
+              Active Window
+            </div>
+
+            <div className="flex flex-col items-start my-1">
+              <span className="text-4xl font-mono font-bold text-cyan-300 tracking-tighter drop-shadow-lg">
+                {currentSum}
+              </span>
+              <span className="text-[10px] text-slate-400 uppercase mt-1">
+                Current Sum
+              </span>
+            </div>
+
+            <div className="mt-auto pt-2 border-t border-slate-600/30 w-full">
+              <div className="flex justify-between items-center text-xs font-mono">
+                <span className="text-slate-500">Indices:</span>
+                <span className="text-cyan-200 bg-cyan-900/30 px-1.5 py-0.5 rounded">
+                  [{currStart}-{currEnd}]
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Max Sum */}
-          <div className={`border rounded-lg p-2 flex flex-col items-center justify-center transition-colors duration-300 ${
-            isMax
-              ? 'bg-emerald-900/20 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
-              : 'bg-slate-700/30 border-slate-600/50'
-          }`}>
-            <span className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${
-              isMax ? 'text-emerald-400' : 'text-slate-400'
-            }`}>
-              Max Sum
-            </span>
-            <span className="text-emerald-400 text-4xl font-mono font-bold tracking-tighter drop-shadow-lg">
-              {maxSum}
-            </span>
-            {isMax && (
-              <div className="absolute top-2 right-2">
+          {/* Card 2: Best Record (Emerald Theme) */}
+          <div
+            className={`border-l-4 rounded-r-lg p-3 flex flex-col justify-between relative overflow-hidden transition-all duration-500 ${
+              isMax
+                ? "bg-emerald-900/10 border-emerald-500"
+                : "bg-slate-700/30 border-emerald-500/30"
+            }`}
+          >
+            <div className="flex justify-between items-start">
+              <div className="text-[10px] font-bold text-emerald-400/80 uppercase tracking-wider">
+                All-Time Best
+              </div>
+              {isMax && (
                 <span className="flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
+              )}
+            </div>
+
+            <div className="flex flex-col items-start my-1">
+              <span className="text-4xl font-mono font-bold text-emerald-400 tracking-tighter drop-shadow-lg">
+                {maxSum}
+              </span>
+              <span className="text-[10px] text-slate-400 uppercase mt-1">
+                Max Sum Found
+              </span>
+            </div>
+
+            <div className="mt-auto pt-2 border-t border-slate-600/30 w-full">
+              <div className="flex justify-between items-center text-xs font-mono">
+                <span className="text-slate-500">Indices:</span>
+                <span className="text-emerald-200 bg-emerald-900/30 px-1.5 py-0.5 rounded">
+                  [{bestStart}-{bestEnd}]
+                </span>
               </div>
-            )}
+            </div>
           </div>
         </div>
 
-        {/* Row 2: Window Tracking (Compact Strip) */}
-        <div className="bg-slate-900/40 rounded-lg border border-slate-700/50 p-2 mt-auto shrink-0">
-          <div className="grid grid-cols-2 divide-x divide-slate-700/50">
-
-            {/* Current Window */}
-            <div className="px-3 flex flex-col items-center justify-center">
-              <div className="text-[9px] text-slate-500 font-semibold uppercase mb-1">
-                Current Window
-              </div>
-              <div className="flex items-center gap-2 font-mono text-sm font-bold text-slate-300">
-                <span className="bg-slate-700 px-1.5 rounded text-blue-300">[{currStart}]</span>
-                <span className="text-slate-600">to</span>
-                <span className="bg-slate-700 px-1.5 rounded text-blue-300">[{currEnd}]</span>
-              </div>
-            </div>
-
-            {/* Best Window */}
-            <div className="px-3 flex flex-col items-center justify-center">
-              <div className="text-[9px] text-slate-500 font-semibold uppercase mb-1">
-                Best Window Found
-              </div>
-              <div className="flex items-center gap-2 font-mono text-sm font-bold text-slate-300">
-                <span className="bg-slate-700 px-1.5 rounded text-emerald-300">[{bestStart}]</span>
-                <span className="text-slate-600">to</span>
-                <span className="bg-slate-700 px-1.5 rounded text-emerald-300">[{bestEnd}]</span>
-              </div>
-            </div>
-
+        {/* Performance Bar (Visual Context) */}
+        <div className="shrink-0 pt-1">
+          <div className="flex justify-between text-[9px] text-slate-500 mb-1 uppercase font-bold">
+            <span>Performance</span>
+            <span>{Math.round(progressPercent)}% of Max</span>
+          </div>
+          <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-700/50">
+            <div
+              className="h-full bg-gradient-to-r from-cyan-500 to-emerald-500 transition-all duration-500 ease-out"
+              style={{ width: `${progressPercent}%` }}
+            />
           </div>
         </div>
       </div>
@@ -152,9 +177,11 @@ const SlidingWindowState = ({ step, trace }) => {
           ========================================== */}
       <div className="flex-1 flex min-h-0">
         {/* Step Name */}
-        <div className={`w-28 border-r flex items-center justify-center p-3 text-center shrink-0 ${stepColorClass}`}>
+        <div
+          className={`w-28 border-r flex items-center justify-center p-3 text-center shrink-0 ${stepColorClass}`}
+        >
           <span className="text-xs font-bold leading-tight drop-shadow-md uppercase">
-            {stepType.replace(/_/g, ' ')}
+            {stepType.replace(/_/g, " ")}
           </span>
         </div>
 
