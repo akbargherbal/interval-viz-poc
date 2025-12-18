@@ -121,7 +121,8 @@ Before responding to any feature request or bug report, you MUST:
 - **Theme Consistency**: Slate-800 backgrounds, slate-700 panels
 - **Typography Standards**: font-mono for values, font-sans for labels
 - **Reference Files**:
-  - `docs/static_mockup/algorithm_page_mockup.html`
+  - `docs/static_mockup/iterative_metrics_algorithm_mockup.html` for iterative algorithms (loop-based, ≤6 numeric state variables)
+  - `docs/static_mockup/recursive_context_algorithm_mockup.html`for recursive algorithms (self-calling, call stack context)
   - `docs/static_mockup/prediction_modal_mockup.html`
   - `docs/static_mockup/completion_modal_mockup.html`
 

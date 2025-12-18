@@ -8,11 +8,12 @@
     NOTE TO COMPONENT DESIGNER: 
     This mockup uses Tailwind CSS utility classes. 
     Ensure your React components import or utilize these classes correctly.
-    AlpineJS directives (x-data, @click, etc.) have been removed and replaced 
-    with static values representing the current state (Step 12, Watch Mode).
+    AlpineJS directives (x-data, @click, etc.) have been added to manage UI state.
     -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
+      [x-cloak] { display: none !important; }
       body {
         background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -55,7 +56,7 @@
         color: #e2e8f0; /* slate-200 */
         box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
       }
-      
+
       /* NEW: Custom max height for modals (85vh) */
       .max-h-85vh {
         max-height: 85vh;
@@ -95,6 +96,18 @@
 
     <div
       id="app-root"
+      x-data="{ 
+        currentStep: 12, 
+        totalSteps: 23, 
+        mode: 'watch', 
+        isAlgoDropdownOpen: false,
+        isShortcutsModalOpen: false,
+        isInfoModalOpen: false
+      }"
+      @keydown.window.escape="isShortcutsModalOpen = false; isInfoModalOpen = false; isAlgoDropdownOpen = false"
+      @keydown.window.r="currentStep = 1"
+      @keydown.window.arrow-right="if(currentStep < totalSteps) currentStep++"
+      @keydown.window.arrow-left="if(currentStep > 1) currentStep--"
       class="w-full h-screen bg-slate-900 flex flex-col overflow-hidden"
     >
       <!-- ========================================
@@ -105,20 +118,19 @@
         id="app-header"
         class="bg-slate-800 border-b border-slate-700 px-4 py-3 flex-shrink-0"
       >
-        <div
-          class="max-w-7xl mx-auto flex items-center justify-between gap-4"
-        >
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <!-- LEFT: Algorithm Info + Switcher -->
           <div class="flex items-center gap-4">
             <div>
               <h1 class="text-xl font-bold text-white">Interval Coverage</h1>
-              <p class="text-slate-400 text-xs">Step 12 / 23</p>
+              <p class="text-slate-400 text-xs" x-text="`Step ${currentStep} / ${totalSteps}`">Step 12 / 23</p>
             </div>
 
             <!-- Algorithm Switcher (Dropdown Mockup) -->
             <div class="pl-4 border-l border-slate-600">
               <div class="relative">
                 <button
+                  @click="isAlgoDropdownOpen = !isAlgoDropdownOpen"
                   class="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:cursor-not-allowed rounded-lg transition-colors group"
                   aria-expanded="false"
                   aria-haspopup="true"
@@ -142,7 +154,7 @@
                   <span class="text-white font-medium text-sm"
                     >Interval Coverage</span
                   >
-                  <!-- Dropdown Arrow (Static, not rotated) -->
+                  <!-- Dropdown Arrow -->
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="24"
@@ -154,26 +166,43 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     class="w-4 h-4 text-slate-400 group-hover:text-white transition-all"
+                    :class="isAlgoDropdownOpen ? 'rotate-180' : ''"
                   >
                     <path d="m6 9 6 6 6-6"></path>
                   </svg>
                 </button>
-                <!-- Dropdown content omitted for static mockup simplicity -->
+                
+                <!-- Dropdown content -->
+                <div 
+                  x-show="isAlgoDropdownOpen" 
+                  @click.away="isAlgoDropdownOpen = false"
+                  x-cloak
+                  class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-slate-800 border border-slate-700 z-50"
+                >
+                  <div class="py-1">
+                    <a href="#" class="block px-4 py-2 text-sm text-white bg-blue-600">Interval Coverage</a>
+                    <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">Meeting Rooms II</a>
+                    <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">Merge Intervals</a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- RIGHT: Mode Toggle + Controls -->
           <div class="flex items-center gap-2">
-            <!-- Mode Toggle (Watch Mode Active) -->
+            <!-- Mode Toggle -->
             <button
-              class="px-3 py-1.5 rounded text-sm flex items-center gap-2 transition-colors font-semibold bg-slate-700 hover:bg-slate-600 text-slate-300"
+              @click="mode = mode === 'watch' ? 'predict' : 'watch'"
+              class="px-3 py-1.5 rounded text-sm flex items-center gap-2 transition-colors font-semibold"
+              :class="mode === 'watch' ? 'bg-slate-700 hover:bg-slate-600 text-slate-300' : 'bg-indigo-600 hover:bg-indigo-500 text-white'"
             >
-              ⚡ Watch
+              <span x-text="mode === 'watch' ? '⚡ Watch' : '🎯 Predict'">⚡ Watch</span>
             </button>
 
             <!-- Reset -->
             <button
+              @click="currentStep = 1"
               class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
               title="Reset (R)"
             >
@@ -189,7 +218,9 @@
                 stroke-linejoin="round"
                 class="lucide lucide-rotate-ccw"
               >
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path
+                  d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
+                ></path>
                 <path d="M3 3v5h5"></path>
               </svg>
               Reset
@@ -197,6 +228,8 @@
 
             <!-- Previous -->
             <button
+              @click="if(currentStep > 1) currentStep--"
+              :disabled="currentStep <= 1"
               class="bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
               title="Previous (←)"
             >
@@ -220,6 +253,8 @@
 
             <!-- Next (Active) -->
             <button
+              @click="if(currentStep < totalSteps) currentStep++"
+              :disabled="currentStep >= totalSteps"
               class="bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-600 disabled:cursor-not-allowed text-black px-6 py-2 rounded-lg flex items-center gap-2 transition-colors font-bold"
               title="Next (→)"
             >
@@ -247,37 +282,6 @@
              MAIN CONTENT AREA
              ======================================== -->
       <main class="flex-1 flex items-center justify-center p-4 overflow-hidden">
-        <!-- Keyboard Shortcuts Button (Fixed position) -->
-        <div class="fixed bottom-4 right-4 z-50">
-          <button
-            class="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-full shadow-lg transition-all hover:scale-110"
-            title="Keyboard shortcuts"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-keyboard"
-            >
-              <rect width="20" height="16" x="2" y="4" rx="2" ry="2"></rect>
-              <path d="M6 8h.001"></path>
-              <path d="M10 8h.001"></path>
-              <path d="M14 8h.001"></path>
-              <path d="M18 8h.001"></path>
-              <path d="M8 12h.001"></path>
-              <path d="M12 12h.001"></path>
-              <path d="M16 12h.001"></path>
-              <path d="M7 16h10"></path>
-            </svg>
-          </button>
-        </div>
-
         <div class="w-full h-full max-w-7xl flex gap-4 overflow-hidden">
           <!-- LEFT PANEL: VISUALIZATION 
                  [REQ] LOCKED: flex-[3] ratio (66.67% width)
@@ -296,9 +300,10 @@
                 Timeline Visualization
               </h2>
 
-              <!-- Algorithm Info Trigger (Static) -->
+              <!-- Algorithm Info Trigger -->
               <button
                 id="algorithm-info-trigger"
+                @click="isInfoModalOpen = true"
                 class="p-2 bg-slate-700 hover:bg-slate-600 rounded-full transition-colors group"
                 title="Algorithm Details"
               >
@@ -319,9 +324,7 @@
             </div>
 
             <!-- Visualization Content (Timeline) -->
-            <div
-              class="flex-1 flex flex-col items-start overflow-auto p-6"
-            >
+            <div class="flex-1 flex flex-col items-start overflow-auto p-6">
               <div class="mx-auto h-full w-full">
                 <div class="relative h-full flex flex-col">
                   <!-- Timeline Container -->
@@ -451,18 +454,49 @@
             class="w-96 bg-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden"
           >
             <!-- Algorithm State Card -->
-            <div class="px-6 py-4 border-b border-slate-700 flex-shrink-0">
+            <div
+              class="px-6 py-4 border-b border-slate-700 flex-shrink-0 flex items-center justify-between"
+            >
               <h2 class="text-white font-bold">Algorithm State</h2>
-              <!-- State variables omitted for brevity, but typically placed here -->
+              <!-- Keyboard Shortcuts Button (Circular) -->
+              <button
+                @click="isShortcutsModalOpen = true"
+                class="bg-slate-700 hover:bg-slate-600 text-white w-8 h-8 rounded-full shadow-sm transition-all hover:scale-105 flex items-center justify-center"
+                title="Keyboard shortcuts"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-keyboard"
+                >
+                  <rect width="20" height="16" x="2" y="4" rx="2" ry="2"></rect>
+                  <path d="M6 8h.001"></path>
+                  <path d="M10 8h.001"></path>
+                  <path d="M14 8h.001"></path>
+                  <path d="M18 8h.001"></path>
+                  <path d="M8 12h.001"></path>
+                  <path d="M12 12h.001"></path>
+                  <path d="M16 12h.001"></path>
+                  <path d="M7 16h10"></path>
+                </svg>
+              </button>
             </div>
 
             <!-- Steps List 
                      [REQ] CRITICAL: Must have #panel-steps-list ID
                      [REQ] CRITICAL: #step-current must scroll into view on change
+                     [REQ] UPDATED: flex-[2] for 2/3 height ratio
                 -->
             <div
               id="panel-steps-list"
-              class="flex-1 overflow-y-auto custom-scrollbar px-6 py-4"
+              class="flex-[2] overflow-y-auto custom-scrollbar px-6 py-4"
             >
               <div class="space-y-2">
                 <!-- Step 1 (Depth 0) -->
@@ -602,28 +636,26 @@
                       720
                     </div>
                   </div>
-                  <!-- Result/Action area omitted as it's the current step -->
                 </div>
               </div>
             </div>
 
             <!-- Current Step Description 
                      [REQ] CRITICAL: Must have #panel-step-description ID
+                     [REQ] UPDATED: flex-[1] for 1/3 height ratio
                 -->
+
             <div
               id="panel-step-description"
-              class="border-t border-slate-700 p-4 bg-slate-800 flex-shrink-0"
+              class="flex-[1] border-t border-slate-700 py-2 px-4 bg-gradient-to-br from-slate-700/60 to-slate-800/60 overflow-hidden flex flex-col"
             >
-              <div
-                class="p-4 bg-gradient-to-br from-slate-700/60 to-slate-800/60 rounded-lg border border-slate-600/50 shadow-lg"
-              >
-                <div class="mb-3">
-                  <span
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold bg-yellow-500/20 text-yellow-300 border border-yellow-500/50"
-                    >🔍 EXAMINE</span
-                  >
-                </div>
+              <div class="flex-1 overflow-y-auto custom-scrollbar">
                 <p class="text-white text-base font-medium leading-relaxed">
+                  <span
+                    class="inline-flex items-center gap-1.5 px-2 py-0.5 mr-2 rounded-md text-xs font-bold bg-yellow-500/20 text-yellow-300 border border-yellow-500/50 align-middle"
+                  >
+                    🔍 EXAMINE
+                  </span>
                   Does interval (600, 720) extend beyond max_end=720? If yes, we
                   KEEP it; if no, it's COVERED.
                 </p>
@@ -632,16 +664,90 @@
           </div>
         </div>
       </main>
-    </div>
 
-    <!-- 
-    ================================================================
-    MODALS (Omitted for brevity in static mockup, but structure should be noted)
-    ================================================================
-    
-    [MODAL] Keyboard Shortcuts Modal (Hidden)
-    [MODAL] Algorithm Info Modal (Hidden)
-    
-    -->
+      <!-- MODALS -->
+      
+      <!-- Keyboard Shortcuts Modal -->
+      <div 
+        x-show="isShortcutsModalOpen" 
+        x-cloak
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm"
+      >
+        <div 
+          @click.away="isShortcutsModalOpen = false"
+          class="bg-slate-800 border border-slate-700 rounded-xl shadow-2xl w-full max-w-md overflow-hidden"
+        >
+          <div class="px-6 py-4 border-b border-slate-700 flex justify-between items-center">
+            <h3 class="text-xl font-bold text-white">Keyboard Shortcuts</h3>
+            <button @click="isShortcutsModalOpen = false" class="text-slate-400 hover:text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </div>
+          <div class="p-6 space-y-4">
+            <div class="flex justify-between items-center">
+              <span class="text-slate-300">Next Step</span>
+              <kbd class="kbd">→</kbd>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-slate-300">Previous Step</span>
+              <kbd class="kbd">←</kbd>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-slate-300">Reset Algorithm</span>
+              <kbd class="kbd">R</kbd>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-slate-300">Close Modals</span>
+              <kbd class="kbd">ESC</kbd>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Algorithm Info Modal -->
+      <div 
+        x-show="isInfoModalOpen" 
+        x-cloak
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm"
+      >
+        <div 
+          @click.away="isInfoModalOpen = false"
+          class="bg-slate-800 border border-slate-700 rounded-xl shadow-2xl w-full max-w-2xl max-h-85vh overflow-hidden flex flex-col"
+        >
+          <div class="px-6 py-4 border-b border-slate-700 flex justify-between items-center flex-shrink-0">
+            <h3 class="text-xl font-bold text-white">About Interval Coverage</h3>
+            <button @click="isInfoModalOpen = false" class="text-slate-400 hover:text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </div>
+          <div class="p-6 overflow-y-auto custom-scrollbar space-y-4 text-slate-300">
+            <p>
+              The <strong class="text-blue-400">Interval Coverage</strong> algorithm (often related to Greedy Interval Scheduling) aims to find the minimum number of intervals needed to cover a target range, or to identify redundant intervals.
+            </p>
+            <h4 class="text-white font-semibold">How it works:</h4>
+            <ul class="list-disc pl-5 space-y-2">
+              <li>Sort intervals by their start time.</li>
+              <li>Iterate through intervals while maintaining a <code class="text-cyan-400">max_end_so_far</code>.</li>
+              <li>If a new interval's end is less than or equal to the current max, it is considered "covered" or redundant.</li>
+              <li>If it extends beyond the current max, we update our coverage.</li>
+            </ul>
+            <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+              <h5 class="text-xs font-bold text-slate-500 uppercase mb-2">Complexity</h5>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <p class="text-xs text-slate-400">Time Complexity</p>
+                  <p class="text-white font-mono">O(N log N)</p>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-400">Space Complexity</p>
+                  <p class="text-white font-mono">O(1) or O(N)</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </body>
 </html>

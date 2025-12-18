@@ -442,6 +442,9 @@ Before handoff to Stage 4 (QA), verify:
 - [ ] **Visual Compliance**
 
   - UI follows static mockup specifications (`docs/static_mockup/*.html`)
+  - Correct mockup selected for algorithm type:
+    - Iterative → `iterative_metrics_algorithm_mockup.html` (loop-based, ≤6 numeric state variables)
+    - Recursive → `recursive_context_algorithm_mockup.html` (self-calling, requires call stack context)
   - No deviation from established visual patterns without justification
 
 - [ ] **Documentation**
