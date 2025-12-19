@@ -445,15 +445,15 @@
             </div>
           </div>
 
-          <!-- RIGHT PANEL: STEPS & STATE 
-                 [REQ] LOCKED: w-96 (384px fixed width)
-                 [REQ] LOCKED: Must have #panel-steps ID
+          <!-- RIGHT SIDE PANEL (#right-side-panel)
+               [REQ] Encompasses the entire right side
+               [REQ] w-96 (384px fixed width)
             -->
           <div
-            id="panel-steps"
+            id="right-side-panel"
             class="w-96 bg-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden"
           >
-            <!-- Algorithm State Card -->
+            <!-- Header: Algorithm State + Keyboard Hints (OUTSIDE #panel-steps) -->
             <div
               class="px-6 py-4 border-b border-slate-700 flex-shrink-0 flex items-center justify-between"
             >
@@ -489,15 +489,21 @@
               </button>
             </div>
 
-            <!-- Steps List 
-                     [REQ] CRITICAL: Must have #panel-steps-list ID
-                     [REQ] CRITICAL: #step-current must scroll into view on change
-                     [REQ] UPDATED: flex-[2] for 2/3 height ratio
-                -->
+            <!-- Steps Panel Container (#panel-steps) - 2/3 of remaining space
+                 [REQ] CRITICAL: Must have #panel-steps ID
+            -->
             <div
-              id="panel-steps-list"
-              class="flex-[2] overflow-y-auto custom-scrollbar px-6 py-4"
+              id="panel-steps"
+              class="flex-[2] flex flex-col overflow-hidden"
             >
+              <!-- Steps List 
+                   [REQ] CRITICAL: Must have #panel-steps-list ID
+                   [REQ] CRITICAL: #step-current must scroll into view on change
+              -->
+              <div
+                id="panel-steps-list"
+                class="flex-1 overflow-y-auto custom-scrollbar px-6 py-4"
+              >
               <div class="space-y-2">
                 <!-- Step 1 (Depth 0) -->
                 <div
@@ -638,6 +644,7 @@
                   </div>
                 </div>
               </div>
+            </div>
             </div>
 
             <!-- Current Step Description 

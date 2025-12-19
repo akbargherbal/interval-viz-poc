@@ -1,6 +1,6 @@
 // frontend/src/components/algorithm-states/BinarySearchState.jsx
 
-import React, { useEffect } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 
 /**
@@ -10,24 +10,9 @@ import PropTypes from "prop-types";
  * - Top 2/3: Key Metrics (Mid Value, Target, Pointers)
  * - Bottom 1/3: Narrative & Step Description
  *
- * NOTE: This component uses a DOM manipulation effect to hide the
- * parent StatePanel's default footer to prevent description duplication.
+ * Template: iterative-metrics (StatePanel hides its footer for this template)
  */
 const BinarySearchState = ({ step, trace }) => {
-  // Effect to hide the parent StatePanel's default description footer
-  useEffect(() => {
-    const parentFooter = document.getElementById("panel-step-description");
-    if (parentFooter) {
-      parentFooter.style.display = "none";
-    }
-
-    return () => {
-      if (parentFooter) {
-        parentFooter.style.display = "";
-      }
-    };
-  }, []);
-
   // Early return for graceful degradation
   if (!step?.data?.visualization) {
     return (

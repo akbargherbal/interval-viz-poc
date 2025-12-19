@@ -1,32 +1,21 @@
 // frontend/src/components/algorithm-states/SlidingWindowState.jsx
 
-import React, { useEffect } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 
 /**
- * SlidingWindowState - Iterative Metrics Template (Dashboard Edition)
+ * SlidingWindowState - Iterative Metrics Template (Dashboard Edition v2)
  *
  * RHP Layout:
- * - Top 2/3: Metrics Dashboard (Current vs Max, Indices, Performance Bar)
+ * - Top 2/3: Metrics Dashboard with Window Operation Math
  * - Bottom 1/3: Narrative
  *
- * Improvements:
- * - "Dashboard" feel: Grouped data (Sum + Indices) in unified cards
- * - Vertical Density: Indices moved inside cards to save space
- * - Visual Context: Added a progress bar comparing Current vs Max
+ * NEW in v2 (Target 10/10):
+ * - Window Operation Card: Shows "Prev - Out + In = New" math
+ * - Extracts operation from step description and array data
+ * - Highlights the actual values involved in the calculation
  */
 const SlidingWindowState = ({ step, trace }) => {
-  // Effect to hide the parent StatePanel's default description footer
-  useEffect(() => {
-    const parentFooter = document.getElementById("panel-step-description");
-    if (parentFooter) {
-      parentFooter.style.display = "none";
-    }
-    return () => {
-      if (parentFooter) parentFooter.style.display = "";
-    };
-  }, []);
-
   // Early return
   if (!step?.data?.visualization) {
     return (
@@ -37,6 +26,7 @@ const SlidingWindowState = ({ step, trace }) => {
   const viz = step.data.visualization;
   const metrics = viz.metrics || {};
   const pointers = viz.pointers || {};
+  const array = viz.array || [];
 
   // Data Extraction
   const currentSum = metrics.current_sum ?? 0;
@@ -73,6 +63,50 @@ const SlidingWindowState = ({ step, trace }) => {
 
   const stepType = step.type || "STEP";
   const stepColorClass = getStepColor(stepType);
+
+  // === NEW: Window Operation Calculation ===
+  const calculateWindowOperation = () => {
+    // Only show for SLIDE_WINDOW steps
+    if (stepType !== "SLIDE_WINDOW") return null;
+
+    // Extract previous sum from description (e.g., "Sum changes from 8 to 7")
+    const desc = step.description || "";
+    const match = desc.match(/from (\d+) to (\d+)/);
+    if (!match) return null;
+
+    const prevSum = parseInt(match[1]);
+    const newSum = parseInt(match[2]);
+
+    // Verify newSum matches currentSum
+    if (newSum !== currentSum) return null;
+
+    // Calculate outgoing and incoming values
+    const outgoingIndex = currStart - 1;
+    const incomingIndex = currEnd;
+
+    if (outgoingIndex < 0 || outgoingIndex >= array.length) return null;
+    if (incomingIndex < 0 || incomingIndex >= array.length) return null;
+
+    const outgoingValue = array[outgoingIndex]?.value;
+    const incomingValue = array[incomingIndex]?.value;
+
+    if (outgoingValue === undefined || incomingValue === undefined) return null;
+
+    // Verify the math
+    const calculatedSum = prevSum - outgoingValue + incomingValue;
+    if (calculatedSum !== currentSum) return null;
+
+    return {
+      prevSum,
+      outgoingValue,
+      incomingValue,
+      newSum,
+      outgoingIndex,
+      incomingIndex,
+    };
+  };
+
+  const operation = calculateWindowOperation();
 
   return (
     <div className="h-full flex flex-col bg-slate-800">
@@ -157,6 +191,36 @@ const SlidingWindowState = ({ step, trace }) => {
           </div>
         </div>
 
+        {/* === NEW: Window Operation Card === */}
+        {operation && (
+          <div className="shrink-0 bg-amber-900/20 border border-amber-700/30 rounded-lg p-3">
+            <div className="text-[10px] font-bold text-amber-400/80 uppercase tracking-wider mb-2">
+              Window Operation
+            </div>
+            <div className="flex items-center justify-center gap-2 font-mono text-sm">
+              <span className="text-slate-300">{operation.prevSum}</span>
+              <span className="text-slate-500">−</span>
+              <span className="text-red-400 font-bold">
+                {operation.outgoingValue}
+                <span className="text-[9px] text-red-300/60 ml-0.5">
+                  [↗{operation.outgoingIndex}]
+                </span>
+              </span>
+              <span className="text-slate-500">+</span>
+              <span className="text-green-400 font-bold">
+                {operation.incomingValue}
+                <span className="text-[9px] text-green-300/60 ml-0.5">
+                  [↘{operation.incomingIndex}]
+                </span>
+              </span>
+              <span className="text-slate-500">=</span>
+              <span className="text-cyan-300 font-bold text-lg">
+                {operation.newSum}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Performance Bar (Visual Context) */}
         <div className="shrink-0 pt-1">
           <div className="flex justify-between text-[9px] text-slate-500 mb-1 uppercase font-bold">
@@ -202,6 +266,7 @@ SlidingWindowState.propTypes = {
     description: PropTypes.string,
     data: PropTypes.shape({
       visualization: PropTypes.shape({
+        array: PropTypes.array,
         metrics: PropTypes.object,
         pointers: PropTypes.object,
       }),

@@ -64,12 +64,15 @@ Before responding to any feature request or bug report, you MUST:
 - Ensure proper component organization and naming conventions
 - Register all components in appropriate registries
 
-### 2. Narrative-Driven Design
+### Phase 2: Narrative Analysis
 
-- Extract visualization requirements from backend-generated narratives
-- Align visual states with narrative step progression
-- Emphasize key data points identified in narratives
-- Ensure visual-narrative correspondence throughout user experience
+1. Read all backend-generated narratives: `docs/narratives/{algorithm-name}/`
+2. **⚠️ Analyze JSON payload as primary source** - Narratives provide context, but JSON is the complete specification
+3. Extract visualization requirements from "Frontend Visualization Hints"
+4. **Filter metrics by pedagogical value** - Not all data deserves visualization (avoid "saying too much" or "too little")
+5. Identify key data points, state transitions, and decision points
+6. Consider the 200px × 400px dashboard constraint when desiging the steps panel <div id="panel-steps-list"></div>
+7. Create visualization plan mapping narrative sections to visual components
 
 ### 3. Architecture Compliance
 
@@ -155,10 +158,14 @@ Before responding to any feature request or bug report, you MUST:
 
 ### Phase 3: Component Design
 
-1. Determine if existing visualizations can be reused (ArrayView, TimelineView, GraphView)
-2. Design state component structure following standard patterns
-3. Plan data access paths with safe fallbacks
-4. Design sub-components if needed for complexity management
+1. **Create visualization outline** - You are telling the story of an algorithm, not dumping data
+2. Determine if existing visualizations can be reused (ArrayView, TimelineView, GraphView)
+3. Design state component structure following standard patterns
+4. Plan data access paths with safe fallbacks
+5. Design sub-components if needed for complexity management
+6. **⚠️ Avoid reimplementing algorithm logic** - Use JSON payload data; don't recalculate in frontend
+7. **Create static mockup** showing typical algorithm visualization state
+8. **Get static mockup approval** before proceeding to implementation
 
 ### Phase 4: Implementation
 
@@ -287,6 +294,16 @@ export default AlgorithmState;
 - ❌ Creating visual elements that contradict narrative descriptions
 - ❌ Misaligning visual emphasis with narrative pedagogical intent
 
+### Pedagogical Design Violations
+
+- ❌ Treating narrative as complete specification (it's partial guidance—JSON is the source of truth)
+- ❌ Visualizing all JSON data without filtering for pedagogical value
+- ❌ Reimplementing algorithm logic in frontend instead of using JSON payload
+- ❌ Ignoring 200px × 400px dashboard constraints in the design of the steps panel <div id="panel-steps-list"></div>
+- ❌ Implementing before creating and getting approval for static mockup
+- ❌ Creating "slide-deck style" visualizations that underwhelm students
+- ❌ Overwhelming with excessive/redundant information that reduces clarity
+
 ---
 
 ## Decision Framework
@@ -366,9 +383,13 @@ export default AlgorithmState;
 
 - [ ] Documentation reviewed and acknowledged
 - [ ] Narratives read and visualization plan created
+- [ ] **JSON payload analyzed for pedagogically valuable metrics**
+- [ ] **Visualization outline created (storytelling approach defined)**
+- [ ] **Static mockup created and approved**
 - [ ] LOCKED elements identified and respected
 - [ ] Keyboard shortcut conflicts checked
 - [ ] Reuse vs. new component decision made
+- [ ] Dashboard constraint (200px × 400px) considered in the design of the steps panel <div id="panel-steps-list"></div>
 
 ### During Implementation
 

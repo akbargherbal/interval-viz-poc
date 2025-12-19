@@ -5,12 +5,12 @@
  * Mirrors the pattern from visualizationRegistry.js but for algorithm-specific state displays.
  *
  * Phase 5: Updated imports to use algorithm-states directory.
+ * Bug Fix (Dec 19, 2025): Added template metadata to support conditional footer rendering.
  */
-
 import BinarySearchState from "../components/algorithm-states/BinarySearchState";
 import IntervalCoverageState from "../components/algorithm-states/IntervalCoverageState";
 import SlidingWindowState from "../components/algorithm-states/SlidingWindowState";
-import TwoPointerState from "../components/algorithm-states/TwoPointerState"; // <-- ADDED
+import TwoPointerState from "../components/algorithm-states/TwoPointerState";
 
 /**
  * Fallback component for algorithms without a registered state component
@@ -27,15 +27,29 @@ const DefaultStateComponent = ({ step }) => {
 };
 
 /**
- * Registry mapping algorithm names to state components
+ * Registry mapping algorithm names to state components with metadata
  *
- * @type {Object.<string, React.Component>}
+ * @typedef {Object} AlgorithmConfig
+ * @property {React.Component} component - The state component to render
+ * @property {string} template - Template type: 'iterative-metrics' | 'recursive-context'
  */
 const STATE_REGISTRY = {
-  "binary-search": BinarySearchState,
-  "interval-coverage": IntervalCoverageState,
-  "sliding-window": SlidingWindowState,
-  "two-pointer": TwoPointerState, // <-- ADDED
+  "binary-search": {
+    component: BinarySearchState,
+    template: "recursive-context", // FIXED: Binary Search uses traditional layout
+  },
+  "interval-coverage": {
+    component: IntervalCoverageState,
+    template: "recursive-context",
+  },
+  "sliding-window": {
+    component: SlidingWindowState,
+    template: "iterative-metrics",
+  },
+  "two-pointer": {
+    component: TwoPointerState,
+    template: "iterative-metrics",
+  },
 };
 
 /**
@@ -54,16 +68,34 @@ export const getStateComponent = (algorithmName) => {
     return DefaultStateComponent;
   }
 
-  const component = STATE_REGISTRY[algorithmName];
-
-  if (!component) {
+  const config = STATE_REGISTRY[algorithmName];
+  if (!config) {
     console.warn(
       `No state component registered for algorithm: ${algorithmName}`
     );
     return DefaultStateComponent;
   }
 
-  return component;
+  return config.component;
+};
+
+/**
+ * Get the template type for a given algorithm
+ *
+ * @param {string} algorithmName - The algorithm identifier
+ * @returns {string} Template type ('iterative-metrics' | 'recursive-context')
+ *
+ * @example
+ * const template = getAlgorithmTemplate('binary-search');
+ * // Returns: 'recursive-context'
+ */
+export const getAlgorithmTemplate = (algorithmName) => {
+  if (!algorithmName) {
+    return "recursive-context"; // Default fallback
+  }
+
+  const config = STATE_REGISTRY[algorithmName];
+  return config?.template || "recursive-context";
 };
 
 /**
