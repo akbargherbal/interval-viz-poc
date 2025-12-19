@@ -1,8 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, createContext, useContext } from "react";
 import { Keyboard, X } from "lucide-react";
 import { useKeyboardHandler } from "../contexts/KeyboardContext";
 
-const KeyboardHints = () => {
+/**
+ * KeyboardHintsContext - Provides access to modal controls
+ * Phase 0 Refactoring (Session 53):
+ * - Removed floating button (was bottom-right corner)
+ * - Modal now controlled via context (StatePanel can trigger it)
+ */
+const KeyboardHintsContext = createContext({
+  openModal: () => {},
+  closeModal: () => {},
+  isOpen: false,
+});
+
+export const useKeyboardHintsModal = () => useContext(KeyboardHintsContext);
+
+export const KeyboardHintsProvider = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const shortcuts = [
@@ -22,59 +36,70 @@ const KeyboardHints = () => {
     return false;
   }, 5);
 
-  return (
-    <div className="fixed bottom-4 right-4 z-50">
-      {!isOpen ? (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-full shadow-lg transition-all hover:scale-110"
-          title="Keyboard shortcuts"
-        >
-          <Keyboard size={20} />
-        </button>
-      ) : (
-        <div className="bg-slate-800 border border-slate-600 rounded-lg shadow-2xl p-4 w-64 animate-in fade-in slide-in-from-bottom-4 duration-200">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-white font-bold flex items-center gap-2">
-              <Keyboard size={18} />
-              Keyboard Shortcuts
-            </h3>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-slate-400 hover:text-white transition-colors"
-            >
-              <X size={18} />
-            </button>
-          </div>
+  const openModal = () => setIsOpen(true);
+  const closeModal = () => setIsOpen(false);
 
-          <div className="space-y-2">
-            {shortcuts.map((shortcut, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between text-sm"
+  return (
+    <KeyboardHintsContext.Provider value={{ openModal, closeModal, isOpen }}>
+      {children}
+      
+      {/* Modal Only - No Floating Button */}
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-slate-800 border border-slate-600 rounded-lg shadow-2xl p-6 w-80 animate-in fade-in slide-in-from-bottom-4 duration-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white font-bold flex items-center gap-2">
+                <Keyboard size={18} />
+                Keyboard Shortcuts
+              </h3>
+              <button
+                onClick={closeModal}
+                className="text-slate-400 hover:text-white transition-colors"
+                aria-label="Close keyboard shortcuts"
               >
-                <div className="flex gap-1">
-                  {shortcut.keys.map((key, keyIdx) => (
-                    <React.Fragment key={keyIdx}>
-                      <kbd className="bg-slate-700 text-white px-2 py-1 rounded text-xs font-mono border border-slate-600 shadow-sm">
-                        {key}
-                      </kbd>
-                      {keyIdx < shortcut.keys.length - 1 && (
-                        <span className="text-slate-500 mx-1">or</span>
-                      )}
-                    </React.Fragment>
-                  ))}
+                <X size={18} />
+              </button>
+            </div>
+            <div className="space-y-2">
+              {shortcuts.map((shortcut, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <div className="flex gap-1">
+                    {shortcut.keys.map((key, keyIdx) => (
+                      <React.Fragment key={keyIdx}>
+                        <kbd className="bg-slate-700 text-white px-2 py-1 rounded text-xs font-mono border border-slate-600 shadow-sm">
+                          {key}
+                        </kbd>
+                        {keyIdx < shortcut.keys.length - 1 && (
+                          <span className="text-slate-500 mx-1">or</span>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                  <span className="text-slate-400 text-xs">
+                    {shortcut.action}
+                  </span>
                 </div>
-                <span className="text-slate-400 text-xs">
-                  {shortcut.action}
-                </span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       )}
-    </div>
+    </KeyboardHintsContext.Provider>
   );
+};
+
+/**
+ * Legacy default export for backwards compatibility
+ * Can be removed once App.jsx is updated
+ */
+const KeyboardHints = () => {
+  console.warn(
+    "KeyboardHints: Using legacy default export. Please migrate to KeyboardHintsProvider."
+  );
+  return null;
 };
 
 export default KeyboardHints;

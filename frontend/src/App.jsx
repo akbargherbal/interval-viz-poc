@@ -6,7 +6,7 @@ import { Loader, AlertCircle } from "lucide-react";
 import AlgorithmSwitcher from "./components/AlgorithmSwitcher";
 import ControlBar from "./components/ControlBar";
 import CompletionModal from "./components/CompletionModal";
-import KeyboardHints from "./components/KeyboardHints";
+import { KeyboardHintsProvider } from "./components/KeyboardHints";
 import PredictionModal from "./components/PredictionModal";
 import VisualizationPanel from "./components/panels/VisualizationPanel";
 import StatePanel from "./components/panels/StatePanel";
@@ -168,68 +168,70 @@ const AlgorithmTracePlayer = () => {
   }
 
   return (
-    <div
-      id="app-root"
-      className="w-full h-screen bg-slate-900 flex flex-col overflow-hidden"
-    >
+    <KeyboardHintsProvider>
       <div
-        id="app-header"
-        className="bg-slate-800 border-b border-slate-700 px-4 py-3"
+        id="app-root"
+        className="w-full h-screen bg-slate-900 flex flex-col overflow-hidden"
       >
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div>
-              <h1 className="text-xl font-bold text-white">
-                {trace?.metadata?.display_name || currentAlgorithm}
-              </h1>
-              <p id="step-current" className="text-slate-400 text-xs">
-                Step {currentStep + 1} / {totalSteps || 0}
-              </p>
+        <div
+          id="app-header"
+          className="bg-slate-800 border-b border-slate-700 px-4 py-3"
+        >
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div>
+                <h1 className="text-xl font-bold text-white">
+                  {trace?.metadata?.display_name || currentAlgorithm}
+                </h1>
+                <p id="step-current" className="text-slate-400 text-xs">
+                  Step {currentStep + 1} / {totalSteps || 0}
+                </p>
+              </div>
+              <div className="pl-4 border-l border-slate-600">
+                <AlgorithmSwitcher />
+              </div>
             </div>
-            <div className="pl-4 border-l border-slate-600">
-              <AlgorithmSwitcher />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={togglePredictionMode}
+                className={`px-3 py-1.5 rounded text-sm flex items-center gap-2 transition-colors font-semibold ${
+                  predictionMode
+                    ? "bg-blue-600 hover:bg-blue-500 text-white"
+                    : "bg-slate-700 hover:bg-slate-600 text-slate-300"
+                }`}
+              >
+                {predictionMode ? "⏳ Predict" : "⚡ Watch"}
+              </button>
+              <ControlBar
+                onPrev={prevStep}
+                onNext={nextStep}
+                onReset={resetTrace}
+              />
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={togglePredictionMode}
-              className={`px-3 py-1.5 rounded text-sm flex items-center gap-2 transition-colors font-semibold ${
-                predictionMode
-                  ? "bg-blue-600 hover:bg-blue-500 text-white"
-                  : "bg-slate-700 hover:bg-slate-600 text-slate-300"
-              }`}
-            >
-              {predictionMode ? "⏳ Predict" : "⚡ Watch"}
-            </button>
-            <ControlBar
-              onPrev={prevStep}
-              onNext={nextStep}
-              onReset={resetTrace}
-            />
           </div>
         </div>
-      </div>
 
-      <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
-        <ErrorBoundary>
-          {showPrediction && activePrediction && <PredictionModal />}
-        </ErrorBoundary>
-        <ErrorBoundary>
-          <CompletionModal
-            isOpen={showCompletionModal}
-            step={step}
-            onReset={resetTrace}
-            onClose={closeCompletionModal}
-            predictionStats={predictionStats}
-          />
-        </ErrorBoundary>
-        <KeyboardHints />
-        <div className="w-full h-full max-w-7xl flex gap-4 overflow-hidden">
-          <VisualizationPanel />
-          <StatePanel />
+        <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+          <ErrorBoundary>
+            {showPrediction && activePrediction && <PredictionModal />}
+          </ErrorBoundary>
+          <ErrorBoundary>
+            <CompletionModal
+              isOpen={showCompletionModal}
+              step={step}
+              onReset={resetTrace}
+              onClose={closeCompletionModal}
+              predictionStats={predictionStats}
+            />
+          </ErrorBoundary>
+          {/* REMOVED: <KeyboardHints /> - Now handled by KeyboardHintsProvider wrapper */}
+          <div className="w-full h-full max-w-7xl flex gap-4 overflow-hidden">
+            <VisualizationPanel />
+            <StatePanel />
+          </div>
         </div>
       </div>
-    </div>
+    </KeyboardHintsProvider>
   );
 };
 
