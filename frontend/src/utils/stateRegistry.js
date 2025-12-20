@@ -11,6 +11,7 @@ import BinarySearchState from "../components/algorithm-states/BinarySearchState"
 import IntervalCoverageState from "../components/algorithm-states/IntervalCoverageState";
 import SlidingWindowState from "../components/algorithm-states/SlidingWindowState";
 import TwoPointerState from "../components/algorithm-states/TwoPointerState";
+import MergeSortState from "../components/algorithm-states/MergeSortState";
 
 /**
  * Fallback component for algorithms without a registered state component
@@ -49,6 +50,10 @@ const STATE_REGISTRY = {
   "two-pointer": {
     component: TwoPointerState,
     template: "iterative-metrics",
+  },
+  "merge-sort": {
+    component: MergeSortState,
+    template: "recursive-context",
   },
 };
 
