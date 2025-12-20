@@ -128,7 +128,6 @@
         letter-spacing: 0.05em;
         z-index: 20;
         line-height: 1;
-        opacity: 0.7;
       }
 
       /* --- ZONE 1: PRIMARY FOCUS --- */
@@ -257,7 +256,6 @@
         
         /* UPDATED FONT SPECS */
         font-size: clamp(11px, 4cqh, 13px); /* Target ~12px */
-        font-style: italic;                 /* Requested Italic */
         font-weight: 900;
         letter-spacing: 0.1em;
       }
@@ -280,8 +278,8 @@
       .zone-action {
         grid-row: 3;
         grid-column: 1 / 3;
-        background: var(--bg-secondary);
-        color: var(--color-action);
+        background: #00574B;
+        color: #FFFFFF;
         align-items: center;
         justify-content: center;
       }
@@ -510,27 +508,7 @@
               </svg>
             </button>
 
-            <button
-              @click="isInfoModalOpen = true"
-              class="bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-lg transition-colors"
-              title="Algorithm Info"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <path d="M12 16v-4" />
-                <path d="M12 8h.01" />
-              </svg>
-            </button>
+
           </div>
         </div>
       </header>
@@ -625,7 +603,7 @@
             -->
         <div
           id="panel-steps"
-          class="w-96 bg-slate-800 flex flex-col overflow-hidden"
+          class="w-96 bg-slate-800 flex flex-col overflow-hidden rounded-xl shadow-2xl border border-slate-700"
         >
           <!-- 
               ================================================================
@@ -757,22 +735,22 @@
                 <!-- ZONE 1: PRIMARY FOCUS -->
                 <div class="zone zone-primary">
                   <div class="zone-label">Mid</div>
-                  <div class="zone-meta">IDX 5</div>
-                  <div class="primary-value">42</div>
+                  <div class="zone-meta">IDX 10</div>
+                  <div class="primary-value">51</div>
 
                   <!-- ZONE 5: OVERLAY -->
                   <div class="zone-boundaries">
                     <div class="boundary-cell">
                       <div class="boundary-label">Left</div>
-                      <div class="boundary-value">5</div>
+                      <div class="boundary-value">9</div>
                     </div>
                     <div class="boundary-cell">
                       <div class="boundary-label">Right</div>
-                      <div class="boundary-value">5</div>
+                      <div class="boundary-value">12</div>
                     </div>
                     <div class="boundary-cell">
                       <div class="boundary-label">Range</div>
-                      <div class="boundary-value">1</div>
+                      <div class="boundary-value">4</div>
                     </div>
                   </div>
                 </div>
@@ -780,15 +758,17 @@
                 <!-- ZONE 2: GOAL -->
                 <div class="zone zone-goal">
                   <div class="zone-label">Target</div>
-                  <div class="goal-value">42</div>
+                  <div class="goal-value">59</div>
                 </div>
 
                 <!-- ZONE 3: LOGIC (VERTICAL LABEL) -->
                 <div class="zone zone-logic">
                   <div class="zone-label">LOGIC</div>
                   <div class="logic-content">
-                    42 == 42<br>
-                    TRUE
+                     <p>CALC MID</p>
+                     <p class="text-[0.75em]">(9 + 12) / 2 = 10</p>
+                    
+
                   </div>
                 </div>
 
@@ -810,16 +790,9 @@
             id="panel-step-description"
             class="flex-[1] border-t border-slate-700 py-3 px-4 bg-gradient-to-br from-slate-700/60 to-slate-800/60 overflow-hidden flex flex-col"
           >
-            <div class="flex-1 overflow-y-auto custom-scrollbar">
-              <p class="text-white text-base font-medium leading-relaxed">
-                <span
-                  class="inline-flex items-center gap-1.5 px-2 py-0.5 mr-2 rounded-md text-xs font-bold bg-green-500/20 text-green-300 border border-green-500/50 align-middle"
-                >
-                  ✓ FOUND
-                </span>
-                Target value 42 found at index 5. The middle element equals the target, so we return the index and terminate the search.
-              </p>
-            </div>
+
+<div class="flex-1 overflow-y-auto custom-scrollbar"><p class="text-white text-base font-medium leading-relaxed"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 mr-2 rounded-md text-xs font-bold bg-fuchsia-800 text-slate-300 align-middle">CALCULATE MID</span>📍 Calculate middle: index 10 (value = 51)</p></div>
+
           </div>
         </div>
       </main>

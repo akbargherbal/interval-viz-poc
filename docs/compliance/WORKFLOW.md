@@ -1,6 +1,6 @@
 # Algorithm Visualization Platform - Workflow & Architecture Guide
 
-**Version:** 2.4.2  
+**Version:** 2.5.0  
 **Status:** ACTIVE - Single Source of Truth
 
 ---
@@ -248,437 +248,470 @@ Issue 2: Add comparison step
 - Solution: Insert new step between 8-9 showing "5 > 3, search right"
 ```
 
-**Principle:** PE identifies gaps, Backend decides implementation.
-
 ---
 
 ## Stage 3: Frontend Integration
 
 ### Overview
 
-**Owner:** Frontend Developer  
-**Duration:** Variable (typically 30-60 minutes for new algorithm)  
-**Prerequisite:** Stage 2 complete (PE approval received)
+Frontend integration applies a **unified dashboard architecture** to all algorithms. All algorithms use the same dashboard structure in the Right-Side Panel (RSP), while the Left-Side Panel (LSP) provides algorithm-specific visualizations.
 
-Frontend Developer integrates PE-approved algorithm into the visualization platform using the registry-based architecture. The developer focuses on "how to render" the algorithm state, not "what to render" (backend provides the data).
+**Key Principle:** The dashboard structure is universal; only the visualization pattern changes.
 
-### 3.1 Core Deliverables
+### Step 1: Visualization Pattern Selection (5-10 minutes)
 
-#### Required (Every Algorithm):
+**Goal:** Identify which LSP visualization pattern fits your algorithm.
 
-1. **Algorithm-Specific State Component**
+#### Decision Tree
 
-   - **File:** `frontend/src/components/algorithm-states/{AlgorithmName}State.jsx`
-   - **Purpose:** Displays algorithm-specific state in RIGHT panel (e.g., pointers, call stack, search space)
-   - **Interface:** Receives `{ step, trace }` props (NOT contexts)
-   - **Pattern:** Pure presentational component, context-agnostic
+```
+What type of algorithm are you implementing?
 
-2. **State Registry Entry**
-   - **File:** `frontend/src/utils/stateRegistry.js`
-   - **Action:** Import component and add entry mapping algorithm ID to component
-   - **Contract:** Algorithm ID must match backend metadata exactly
+├── Iterative (step-by-step state changes)
+│   └── Visualization Patterns:
+│       ├── Array with pointers (Binary Search, Two Pointer)
+│       ├── Sliding window on array (Sliding Window)
+│       └── Custom iterative visualization
+│
+└── Recursive (call stack / context-dependent)
+    └── Visualization Patterns:
+        ├── Timeline with intervals (Interval Coverage)
+        ├── Tree structure (future: tree algorithms)
+        └── Custom recursive visualization
+```
 
-#### Conditional (Only If Needed):
+#### Pattern Examples
 
-3. **New Visualization Component** (if existing visualizations insufficient)
+| Algorithm | Type | LSP Visualization | RSP Dashboard |
+|-----------|------|-------------------|---------------|
+| Binary Search | Iterative | Array with L/R/M pointers | Unified (Mid, Target, Logic, Action) |
+| Interval Coverage | Recursive | Timeline with interval bars | Unified (Interval, max_end, Logic, Action) |
+| Merge Sort | Recursive | Tree/timeline hybrid | Unified (Subarray, Pivot, Logic, Action) |
+| Sliding Window | Iterative | Array with window highlight | Unified (Window Sum, Target, Logic, Action) |
 
-   - **File:** `frontend/src/components/visualizations/{ConceptName}View.jsx`
-   - **Purpose:** Generic, reusable visualization for LEFT panel (e.g., `ArrayView`, `TimelineView`)
-   - **When:** Only if algorithm requires visualization type not in `visualizationRegistry`
-   - **Reuse First:** Most array algorithms use `ArrayView`, interval algorithms use `TimelineView`
+**Note:** All algorithms use the same dashboard structure - only the content in zones changes.
 
-4. **Visualization Registry Entry** (if new visualization created)
-   - **File:** `frontend/src/utils/visualizationRegistry.js`
-   - **Action:** Import component and add entry mapping visualization type to component
+**Action:** Identify your visualization needs, not a "template type."
 
-### 3.2 Implementation Guidelines
+### Step 2: Dashboard Content Planning (5 minutes)
 
-#### Component Structure Pattern
+**Goal:** Map your algorithm's key metrics to the 5-zone dashboard structure.
 
-**Algorithm State Components** (`algorithm-states/`):
+#### Dashboard Zones (RSP)
 
-- Consume props: `{ step, trace }`
-- Extract data from `step.data.visualization`
-- Access metadata from `trace.metadata`
-- Define PropTypes for validation
-- Handle missing data gracefully (early return pattern)
-- Display algorithm-specific state (pointers, stacks, progress indicators)
+```
+┌─────────────┬─────┐
+│             │  2  │  Zone 1 (Primary): Main focus value
+│      1      │─────│  Zone 2 (Goal): Target/objective
+│             │  3  │  Zone 3 (Logic): Current comparison
+│   ┌─────────┼─────┤  Zone 4 (Action): Next operation
+│   │    5    │  4  │  Zone 5 (Overlay): Metadata strip
+└───┴─────────┴─────┘
+```
 
-**Example Pattern:**
+#### Content Mapping Guidelines
+
+**Zone 1 (Primary Focus):**
+- Iterative: Current element being examined (e.g., Mid value, Window sum)
+- Recursive: Current context (e.g., Interval range, Subarray bounds)
+- Large, centered display
+
+**Zone 2 (Goal):**
+- Target value, max_end, sorted position, etc.
+- Single numeric or short text value
+
+**Zone 3 (Logic):**
+- Current comparison expression (e.g., "42 == 42", "720 > 720")
+- Two-line format: expression + result
+
+**Zone 4 (Action):**
+- Next operation (e.g., "RETURN Index 5", "✓ KEEP INTERVAL", "MERGE LEFT")
+- Action-oriented text
+
+**Zone 5 (Overlay - Bottom Strip):**
+- 2-3 metadata cells
+- Iterative: Left/Right boundaries, Range, Index
+- Recursive: Depth, Remaining, Kept count
+
+**Action:** Document your zone content mapping before implementation.
+
+### Step 3: Component Implementation (20-40 minutes)
+
+#### 3.1 Create Algorithm State Component
+
+**Location:** `frontend/src/components/algorithm-states/`
+
+**Naming:** `{AlgorithmName}State.jsx`
+
+**Structure:**
+
+```jsx
+import React from 'react';
+
+export const {AlgorithmName}State = ({ step, trace }) => {
+  // Extract data from step.data.visualization
+  const visualizationData = step.data.visualization;
+  
+  // Map to dashboard zones
+  const zone1 = {
+    label: "...",
+    meta: "...",
+    value: "..."
+  };
+  // ... other zones
+  
+  // Render unified dashboard structure
+  return (
+    <div className="dashboard h-full">
+      {/* Zone 1: Primary Focus */}
+      <div className="zone zone-primary">
+        <div className="zone-label">{zone1.label}</div>
+        <div className="zone-meta">{zone1.meta}</div>
+        <div className="primary-value">{zone1.value}</div>
+        
+        {/* Zone 5: Overlay (inside Zone 1) */}
+        <div className="zone-boundaries">
+          {zone5.map((cell, i) => (
+            <div key={i} className="boundary-cell">
+              <div className="boundary-label">{cell.label}</div>
+              <div className="boundary-value">{cell.value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Zone 2: Goal */}
+      <div className="zone zone-goal">
+        <div className="zone-label">{zone2.label}</div>
+        <div className="goal-value">{zone2.value}</div>
+      </div>
+      
+      {/* Zone 3: Logic */}
+      <div className="zone zone-logic">
+        <div className="zone-label">LOGIC</div>
+        <div className="logic-content">{zone3.content}</div>
+      </div>
+      
+      {/* Zone 4: Action */}
+      <div className="zone zone-action">
+        <div className="action-text">{zone4.text}</div>
+      </div>
+    </div>
+  );
+};
+```
+
+**Reference:** See `BinarySearchState.jsx` and `IntervalCoverageState.jsx` for complete examples.
+
+#### 3.2 Register Component in State Registry
+
+**Location:** `frontend/src/utils/stateRegistry.js`
 
 ```javascript
-const AlgorithmNameState = ({ step, trace }) => {
-  // Early return if no data
-  if (!step?.data?.visualization) {
-    return <div>No state data available</div>;
-  }
+import { YourAlgorithmState } from '../components/algorithm-states/YourAlgorithmState';
 
-  // Extract visualization data
-  const vizData = step.data.visualization;
-  const metadata = trace?.metadata;
-
-  // Render algorithm-specific state
-  return <div>{/* Display state */}</div>;
-};
-
-AlgorithmNameState.propTypes = {
-  step: PropTypes.shape({
-    data: PropTypes.shape({
-      visualization: PropTypes.object,
-    }),
-  }).isRequired,
-  trace: PropTypes.shape({
-    metadata: PropTypes.object,
-  }),
+export const stateRegistry = {
+  'your-algorithm': YourAlgorithmState,
+  // ... other algorithms
 };
 ```
 
-#### Naming Conventions
+**Key:** Must match `trace.metadata.algorithm` value from backend.
 
-- **Algorithm State Components:** `{AlgorithmName}State.jsx`
+#### 3.3 Create or Reuse LSP Visualization Component
 
-  - Examples: `BinarySearchState.jsx`, `MergeSortState.jsx`
-  - One component per algorithm (1:1 mapping)
-  - Suffix `State` indicates algorithm-specific
+**Location:** `frontend/src/components/visualizations/`
 
-- **Visualization Components:** `{ConceptName}View.jsx`
-  - Examples: `ArrayView.jsx`, `TimelineView.jsx`, `GraphView.jsx`
-  - Shared by multiple algorithms (1:N mapping)
-  - Suffix `View` indicates reusable visualization
+**Options:**
 
-#### Directory Organization
+1. **Reuse Existing:**
+   - `ArrayView.jsx` - Array-based iterative algorithms
+   - `TimelineView.jsx` - Timeline-based recursive algorithms
 
-```
-frontend/src/components/
-├── algorithm-states/          # Algorithm-specific (RIGHT panel)
-│   ├── BinarySearchState.jsx
-│   ├── IntervalCoverageState.jsx
-│   ├── SlidingWindowState.jsx
-│   └── TwoPointerState.jsx
-└── visualizations/            # Reusable visualizations (LEFT panel)
-    ├── ArrayView.jsx          # Used by: Binary Search, Sliding Window, Two Pointer
-    ├── TimelineView.jsx       # Used by: Interval Coverage
-    └── index.js
-```
+2. **Create New:**
+   - Follow patterns in existing components
+   - Register in `visualizationRegistry.js`
 
-**Principle:** Organize by reusability, not by algorithm. See `docs/ADR/FRONTEND/ADR-002-component-organization-principles.md`.
+#### 3.4 Create Algorithm Info Markdown
 
-#### Registry Integration
+**Location:** `frontend/public/algorithm-info/{algorithm-id}.md`
 
-**State Registry** (`stateRegistry.js`):
+**Template:**
 
-```javascript
-import BinarySearchState from "../components/algorithm-states/BinarySearchState";
+```markdown
+# {Algorithm Display Name}
 
-const STATE_REGISTRY = {
-  "binary-search": BinarySearchState, // Key must match backend metadata.algorithm
-  // ...
-};
-```
+{Brief description}
 
-**Visualization Registry** (`visualizationRegistry.js`):
+## How it works:
 
-```javascript
-import ArrayView from "../components/visualizations/ArrayView";
+- Step 1 description
+- Step 2 description
+- Step 3 description
 
-const VISUALIZATION_REGISTRY = {
-  array: ArrayView, // Key must match backend metadata.visualization_type
-  timeline: TimelineView,
-  // ...
-};
+## Complexity
+
+- **Time Complexity:** O(...)
+- **Space Complexity:** O(...)
+
+## Key Metrics
+
+- **{Metric 1}:** {Description}
+- **{Metric 2}:** {Description}
 ```
 
-#### Backend-Frontend Contract
+### Step 4: Visual Compliance Check (5-10 minutes)
 
-Backend provides in trace metadata:
+**Goal:** Ensure implementation matches unified dashboard standards.
 
-```json
-{
-  "metadata": {
-    "algorithm": "binary-search", // → Selects state component
-    "visualization_type": "array", // → Selects visualization component
-    "visualization_config": {
-      /* ... */
-    } // → Passed to visualization
-  }
+#### Dashboard Structure Checklist
+
+- [ ] Uses 5-zone grid layout
+- [ ] Zone 1 spans rows 1-2
+- [ ] Zone 5 overlay at bottom of Zone 1
+- [ ] Container query units (`cqh`) for responsive sizing
+- [ ] Edge-to-edge filling (no padding on dashboard wrapper)
+
+#### Visual Standards Checklist
+
+- [ ] Dashboard fills 100% of `#panel-steps` height
+- [ ] No borders/shadows on dashboard
+- [ ] Zone labels positioned consistently (top-left, 6px inset)
+- [ ] Metadata labels positioned consistently (top-right, 6px inset)
+
+#### Reference Mockup
+
+**Primary Reference:** `docs/static_mockup/unified_dashboard_reference.html`
+
+**What to Verify:**
+- Dashboard structure matches exactly (only content differs)
+- Grid layout identical
+- Container query behavior same
+- Color palette aligned with algorithm theme
+
+### Step 5: Integration Testing (10-15 minutes)
+
+**Test Scenarios:**
+
+1. **Algorithm Load**
+   - [ ] Algorithm appears in dropdown
+   - [ ] First step renders correctly
+   - [ ] Dashboard shows initial state
+
+2. **Step Navigation**
+   - [ ] Dashboard updates on Next/Previous
+   - [ ] All zones reflect current step data
+   - [ ] LSP visualization syncs with dashboard
+
+3. **Prediction Modal**
+   - [ ] Predictions appear at correct steps
+   - [ ] Modal content matches backend
+   - [ ] Keyboard shortcuts work
+
+4. **Completion Modal**
+   - [ ] Appears after final step
+   - [ ] Shows correct completion message
+   - [ ] Reset functionality works
+
+5. **Info Modal**
+   - [ ] Info button opens modal
+   - [ ] Markdown renders correctly
+   - [ ] Modal scrolls if needed
+
+### Step 6: Complete Frontend Compliance Checklist
+
+**Action:** Complete `docs/compliance/FRONTEND_CHECKLIST.md` for your algorithm.
+
+**Handoff to QA:** Provide completed checklist with Stage 4 integration testing.
+
+### Success Criteria
+
+**Stage 3 Complete When:**
+- [ ] Algorithm state component created and registered
+- [ ] LSP visualization component implemented or reused
+- [ ] Algorithm info markdown created
+- [ ] Visual compliance verified
+- [ ] Integration testing passed
+- [ ] Frontend compliance checklist completed
+
+**Deliverable:** Fully integrated algorithm ready for Stage 4 QA testing.
+
+### Time Breakdown
+
+| Task | Time |
+|------|------|
+| Visualization pattern selection | 5-10 min |
+| Dashboard content planning | 5 min |
+| State component implementation | 15-25 min |
+| Registry integration | 2-3 min |
+| LSP visualization (reuse) | 5 min |
+| LSP visualization (new) | 15-30 min |
+| Algorithm info markdown | 5 min |
+| Visual compliance check | 5-10 min |
+| Integration testing | 10-15 min |
+| **Total** | **30-60 min** |
+
+### Reference Files
+
+**Dashboard Implementation:**
+- `docs/static_mockup/unified_dashboard_reference.html` - Unified dashboard reference
+- `frontend/src/components/algorithm-states/BinarySearchState.jsx` - Iterative example
+- `frontend/src/components/algorithm-states/IntervalCoverageState.jsx` - Recursive example
+
+**Visualization Components:**
+- `frontend/src/components/visualizations/ArrayView.jsx`
+- `frontend/src/components/visualizations/TimelineView.jsx`
+
+**Registry Architecture:**
+- `frontend/src/utils/stateRegistry.js`
+- `frontend/src/utils/visualizationRegistry.js`
+
+**Documentation:**
+- `docs/compliance/FRONTEND_CHECKLIST.md`
+
+---
+
+## Stage 4: Integration Testing
+
+### QA Actions
+
+1. ✅ Test full algorithm flow end-to-end
+2. ✅ Verify narrative accuracy matches UI rendering
+3. ✅ Test prediction modal functionality
+4. ✅ Run regression tests on existing algorithms
+5. ✅ Complete QA Integration Checklist
+6. ✅ Document any integration issues
+
+### Test Scenarios
+
+**Full Flow:**
+- Algorithm selection → Load → Navigation → Predictions → Completion
+
+**Edge Cases:**
+- First step, last step, missing data handling
+
+**Cross-Browser:**
+- Chrome, Firefox, Safari (latest versions)
+
+**Regression:**
+- All existing algorithms still work
+- No visual regressions
+- No functional regressions
+
+### Decision Gate
+
+- **✅ APPROVED** → Merge to main
+- **⚠️ MINOR ISSUES** → Document and fix in follow-up
+- **❌ REJECTED** → Return to appropriate stage (BE/FE)
+
+---
+
+## LOCKED REQUIREMENTS (Cannot Be Modified)
+
+### Backend Requirements
+
+#### Trace Structure
+
+**Metadata (LOCKED):**
+
+```python
+metadata = {
+    'algorithm': str,           # LOCKED - Registry key
+    'display_name': str,        # LOCKED - UI display
+    'visualization_type': str,  # LOCKED - "array", "timeline", "graph"
+    'input_size': int          # LOCKED - Max input constraint
 }
 ```
 
-Frontend consumes via registries:
-
-```javascript
-// Right Panel (State)
-const StateComponent = getStateComponent(trace.metadata.algorithm);
-
-// Left Panel (Visualization)
-const VisualizationComponent = getVisualizationComponent(
-  trace.metadata.visualization_type
-);
-```
-
-### 3.3 Quality Gates
-
-Before handoff to Stage 4 (QA), verify:
-
-- [ ] **Component Functionality**
-
-  - State component renders without errors
-  - Component handles missing/malformed data gracefully
-  - PropTypes defined and validated
-
-- [ ] **Registry Compliance**
-
-  - State component registered in `stateRegistry.js` with correct algorithm ID
-  - If new visualization: registered in `visualizationRegistry.js` with correct type
-  - Registry keys match backend metadata exactly
-
-- [ ] **Architectural Compliance**
-
-  - State component in `algorithm-states/` directory
-  - Visualization component (if created) in `visualizations/` directory
-  - Naming convention followed (`{Algorithm}State.jsx` vs `{Concept}View.jsx`)
-  - Component is context-agnostic (uses props, not contexts)
-
-- [ ] **Visual Compliance**
-
-  - UI follows static mockup specifications (`docs/static_mockup/*.html`)
-  - Correct mockup selected for algorithm type:
-    - Iterative → `iterative_metrics_algorithm_mockup.html` (loop-based, ≤6 numeric state variables)
-    - Recursive → `recursive_context_algorithm_mockup.html` (self-calling, requires call stack context)
-  - No deviation from established visual patterns without justification
-
-- [ ] **Documentation**
-  - Frontend Compliance Checklist completed
-
-### 3.4 Using Narratives as Reference (Optional but Recommended)
-
-**Narratives are your "script":**
-
-- **JSON is the fuel** (drives your React engine) ← PRIMARY
-- **Markdown narratives provide context** (accelerates understanding) ← SUPPORTING
-
-**When to reference narratives:**
-
-- ✅ Understanding algorithm intent ("Why does this step happen?")
-- ✅ Debugging visualization ("What should step 5 look like?")
-- ✅ Verifying decision logic ("Is my rendering showing the right comparison?")
-- ✅ Onboarding to new algorithm ("How does this work?")
-
-**What narratives are NOT:**
-
-- ❌ UI specifications (you have creative freedom - see mockups)
-- ❌ Layout requirements (mockups govern visual standards)
-- ❌ Binding constraints (JSON is the contract)
-- ❌ Implementation instructions (you decide HOW to visualize)
-
-### 3.5 Handoff to Stage 4
-
-**QA Engineer receives:**
-
-- Working algorithm visualization
-- State component displaying algorithm-specific data
-- Registry entries for new algorithm
-- Completed Frontend Compliance Checklist
-
-**QA verifies:**
-
-- Full algorithm flow (trace execution)
-- UI interactions (step navigation, predictions)
-- Visual correctness (matches mockups)
-- No regressions in existing algorithms
-
----
-
-## LOCKED Requirements
-
-Cannot be changed without breaking platform architecture.
-
-### Frontend LOCKED Elements
-
-#### Modal Dimensions (🔒 Hardcoded in CSS)
-
-**Source:** `docs/static_mockup/prediction_modal_mockup.html`, `docs/static_mockup/completion_modal_mockup.html`
-
-**Why LOCKED:** Ensures consistent UX, prevents modal overflow bugs.
-
-#### HTML IDs (🔒 Required for Testing & Accessibility)
-
-**Source:** All static mockups
-
-```html
-<!-- Required IDs - DO NOT CHANGE -->
-<div id="prediction-modal">...</div>
-<div id="completion-modal">...</div>
-<div id="step-current">Step {N}</div>
-```
-
-**Why LOCKED:** Automated tests rely on these IDs. Changing them breaks test suite.
-
-#### Keyboard Shortcuts (🔒 Platform-Wide)
-
-**Source:** `docs/static_mockup/algorithm_page_mockup.html`
-
-```javascript
-// Required shortcuts - ALL algorithms must support
-'ArrowRight' → Next step
-'ArrowLeft'  → Previous step
-'r'          → Reset
-'k' or 'c'   → Select prediction choice K/C
-'s'          → Skip prediction
-```
-
-**Why LOCKED:** Consistent user experience across all algorithms.
-
----
-
-## CONSTRAINED Requirements
-
-Must follow established patterns and architectural decisions. Implementation details are flexible, but architectural compliance is required.
-
-### CONSTRAINED (Backend)
-
-**Stakeholder:** Backend Developer  
-**Approval Required:** Technical Lead  
-**Reference Documents:** `docs/ADR/BACKEND/ADR-001`, `docs/compliance/BACKEND_CHECKLIST.md`
-
-#### Trace Contract
-
-**Metadata Structure:**
-
-- Must include required fields: `algorithm`, `display_name`, `visualization_type`, `input_size`
-- `algorithm` ID must match frontend registry key format (lowercase, hyphen-separated)
-- `visualization_type` must be valid type in frontend registry (`array`, `timeline`, etc.)
-
-**Trace Steps Structure:**
-
-- Must include required fields: `step` (0-indexed), `type`, `description`, `data.visualization`
-- Step indices must be sequential with no gaps
-- Each step must contain visualization state sufficient for rendering
-
-**Prediction Points:**
-
-- Hard limit: 2-3 choices maximum per prediction point
-- Must include: `step_index`, `question`, `choices`, `correct_answer`, `explanation`
-- Prediction timing must align with meaningful decision points
-
-**Narrative Generation:**
-
-- Must implement `generate_narrative()` method
-- Must pass FAA arithmetic audit before proceeding
-- Narratives must be self-contained (no external references)
-- All decision data must be visible in narrative text
-- Must fail loudly on missing data (KeyError preferred over silent defaults)
-
-#### Algorithm Registration
-
-- Must register in `backend/algorithms/registry.py`
-- Must provide example inputs for narrative generation
-- Must inherit from `AlgorithmTracer` base class
-
-### CONSTRAINED (Frontend)
-
-**Stakeholder:** Frontend Developer  
-**Approval Required:** Technical Lead  
-**Reference Documents:** `docs/ADR/FRONTEND/ADR-001`, `ADR-002`, `ADR-003`, `docs/compliance/FRONTEND_CHECKLIST.md`
-
-#### Registry Pattern Compliance
-
-- New algorithms must register state component in `stateRegistry.js`
-- Algorithm ID in registry must match backend `metadata.algorithm` exactly
-- New visualization types must register in `visualizationRegistry.js`
-- Visualization type in registry must match backend `metadata.visualization_type`
-
-#### Component Organization
-
-- Algorithm-specific state components must be placed in `algorithm-states/` directory
-- Reusable visualization components must be placed in `visualizations/` directory
-- Must follow naming conventions:
-  - Algorithm state: `{AlgorithmName}State.jsx` (e.g., `BinarySearchState.jsx`)
-  - Visualization: `{ConceptName}View.jsx` (e.g., `ArrayView.jsx`)
-
-#### Component Architecture
-
-- State components must be context-agnostic (consume props, not contexts)
-- State components must accept props interface: `{ step, trace }`
-- State components must extract data from `step.data.visualization`
-- State components must define PropTypes for validation
-- State components must handle missing/malformed data gracefully
-
-#### Backend Metadata Adherence
-
-- Must respect `algorithm` field from metadata for component selection
-- Must respect `visualization_type` field for visualization selection
-- Must handle `visualization_config` from metadata appropriately
-- Must not assume data structure beyond documented contract
-
-#### Fallback Handling
-
-- Registries must provide graceful fallback for missing registrations
-- Components should display meaningful error messages when data is malformed
-- Must not crash application on unexpected data
-
-#### Context Architecture Compliance
-
-- Must follow provider hierarchy from ADR-003 when modifying core architecture
-- Context consumers must respect priority system (KeyboardContext)
-- New contexts must follow domain-driven design pattern
-
-### CONSTRAINED (Pedagogical Experience)
-
-**Stakeholder:** PE Specialist  
-**Approval Required:** Lead Educator  
-**Reference Documents:** `docs/compliance/WORKFLOW.md` Stage 2
-
-#### Narrative Quality Standards
-
-- All decision points must have visible supporting data
-- Temporal flow must be coherent (step N → step N+1 logical)
-- Must enable mental visualization without code/JSON
-- All quantitative claims must be arithmetically correct (FAA-verified)
-
-#### Review Scope
-
-- Focus on logical completeness, not implementation details
-- Provide descriptive feedback (WHAT is wrong), not prescriptive (HOW to fix)
-- Assume arithmetic correctness (FAA already validated)
-- Do not validate JSON structure or frontend rendering
-
----
-
-## Backend Implementation Details
-
-### Metadata Structure (🎨 Required Fields)
+#### Step Structure (LOCKED)
 
 ```python
-self.metadata = {
-    'algorithm': 'my-algorithm',           # REQUIRED
-    'display_name': 'My Algorithm',        # REQUIRED
-    'visualization_type': 'array',         # REQUIRED: array|timeline|graph|tree
-    'input_size': 20                       # REQUIRED
-}
-```
-
-### Trace Steps (🎨 Required Structure)
-
-```python
-{
-    'step': 0,                   # REQUIRED: 0-indexed
-    'type': 'COMPARE',           # REQUIRED: algorithm-defined
-    'description': '...',        # REQUIRED: human-readable
-    'data': {
-        'visualization': {...}   # REQUIRED: current state
+step = {
+    'step': int,                # LOCKED - Step number
+    'type': str,                # FREE - Algorithm-specific
+    'description': str,         # LOCKED - Human-readable
+    'data': {                   # LOCKED - Container
+        'visualization': dict,  # LOCKED - Viz state
+        'metrics': dict        # FREE - Optional metrics
     }
 }
 ```
 
-### Visualization Data Patterns
+#### Prediction Points (LOCKED)
+
+```python
+prediction = {
+    'step_index': int,          # LOCKED - When to pause
+    'question': str,            # LOCKED - Question text
+    'choices': list,            # LOCKED - 2-3 choices ONLY
+    'correct_answer': str,      # LOCKED - Choice ID
+    'explanation': str,         # LOCKED - Why correct
+    'hint': str                # FREE - Optional
+}
+```
+
+**HARD LIMIT: 2-3 choices maximum per prediction**
+
+### Frontend Requirements
+
+#### Modal IDs (LOCKED)
+
+```javascript
+// LOCKED - Used by keyboard shortcuts
+'#modal-prediction'   // Prediction modal
+'#modal-completion'   // Completion modal
+'#modal-algorithm-info' // Info modal
+```
+
+#### Keyboard Shortcuts (LOCKED)
+
+```
+→ / ← : Next/Previous step
+Space : Toggle prediction modal (if at prediction point)
+R     : Reset algorithm
+ESC   : Close modals
+1/2/3 : Select prediction choice
+S     : Skip prediction
+Enter : Submit answer / Restart
+```
+
+#### Panel Dimensions (LOCKED)
+
+```
+Left Panel (Visualization): flex-[3] (responsive - fills remaining space)
+Right Panel (State): w-96 (384px fixed width)
+```
+
+#### Overflow Pattern (LOCKED)
+
+```
+overflow-y: auto   // Vertical scrolling allowed
+overflow-x: hidden // Horizontal scrolling forbidden
+```
+
+---
+
+## CONSTRAINED REQUIREMENTS (Follow Architecture Patterns)
+
+### Backend Patterns
+
+#### Visualization State Structure
+
+```python
+# Pattern varies by visualization_type, but structure is CONSTRAINED
+def _get_visualization_state(self, ...):
+    return {
+        # Follow existing patterns for your visualization_type
+        # See examples in existing tracers
+    }
+```
 
 #### Array Algorithms (visualization_type: "array")
 
 ```python
 data['visualization'] = {
     'array': [
-        {'index': 0, 'value': 1, 'state': 'active_range'},
+        {'index': 0, 'value': 1, 'state': 'active'},
         {'index': 1, 'value': 3, 'state': 'examining'},
         {'index': 2, 'value': 5, 'state': 'excluded'}
     ],
@@ -877,13 +910,15 @@ Developer's choice - not constrained.
 **Frontend (Stage 3):**
 
 1. Receive FAA+PE approved narratives
-2. Create algorithm state component (`{Algorithm}State.jsx`)
-3. Register in `stateRegistry.js`
-4. Create algorithm info markdown (`public/algorithm-info/{algorithm-name}.md`)
-5. Create visualization component if needed (reuse if possible)
-6. Register visualization in `visualizationRegistry.js` if new
-7. Complete Frontend Checklist
-8. **Trust arithmetic correctness**
+2. Identify visualization pattern (not template type)
+3. Map dashboard content to 5 zones
+4. Create algorithm state component (`{Algorithm}State.jsx`)
+5. Register in `stateRegistry.js`
+6. Create or reuse LSP visualization component
+7. Create algorithm info markdown (`public/algorithm-info/{algorithm-name}.md`)
+8. Verify visual compliance against unified dashboard
+9. Complete Frontend Checklist
+10. **Trust arithmetic correctness**
 
 **QA Integration (Stage 4):**
 
@@ -904,6 +939,8 @@ Developer's choice - not constrained.
 ### Visual Reference
 
 All UI decisions: `docs/static_mockup/*.html`
+
+**Dashboard Reference:** `docs/static_mockup/unified_dashboard_reference.html`
 
 ### Common Anti-Patterns
 

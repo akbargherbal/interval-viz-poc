@@ -104,7 +104,7 @@ const SlidingWindowState = ({ step }) => {
         <div className="zone-label">LOGIC</div>
         <div className="logic-content">
           <div className="text-sm">{logicText}</div>
-          <div className="text-[0.6em] opacity-70 font-normal mt-1">
+          <div className="text-[0.8em] opacity-70 font-normal mt-1">
             {logicSubtext}
           </div>
         </div>
