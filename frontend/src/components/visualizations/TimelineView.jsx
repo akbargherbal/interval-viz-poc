@@ -27,14 +27,14 @@ const TimelineView = ({ step, highlightedIntervalId, onIntervalHover }) => {
   const hasHighlight = highlightedIntervalId !== null;
 
   return (
-    <div className="relative h-full flex flex-col">
+    <div className="relative h-full flex flex-col pb-4">
       {/* Timeline Container */}
       <div
         className="relative flex-1 bg-slate-900/50 rounded-lg flex flex-col overflow-y-auto overflow-x-hidden"
         style={{
           paddingLeft: "var(--timeline-padding-x)",
           paddingRight: "var(--timeline-padding-x)",
-          paddingTop: "1rem", // top-4
+          paddingTop: "2rem", // top-4
           paddingBottom: "2rem", // bottom-8 space for axis
         }}
       >
@@ -131,7 +131,7 @@ const TimelineView = ({ step, highlightedIntervalId, onIntervalHover }) => {
       </div>
 
       {/* Legend */}
-      <div className="mt-4 flex gap-4 text-xs flex-wrap">
+      <div className="mt-4 justify-center items-center flex gap-4 text-xs flex-wrap">
         <div className="flex items-center gap-2">
           <div className="w-8 h-3 bg-cyan-400 rounded"></div>
           <span className="text-slate-400">max_end line</span>

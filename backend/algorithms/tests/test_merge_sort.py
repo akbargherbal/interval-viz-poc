@@ -537,11 +537,11 @@ class TestMergeSortMetadataCompliance:
         assert result['metadata']['display_name'] == 'Merge Sort'
 
     def test_visualization_type_correct(self):
-        """visualization_type should be 'timeline'."""
+        """visualization_type should be 'merge-sort'."""
         tracer = MergeSortTracer()
         result = tracer.execute({'array': [3, 1, 2]})
         
-        assert result['metadata']['visualization_type'] == 'timeline'
+        assert result['metadata']['visualization_type'] == 'merge-sort'
 
     def test_visualization_config_structure(self):
         """visualization_config should have expected fields."""

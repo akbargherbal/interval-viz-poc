@@ -31,7 +31,7 @@ const VisualizationPanel = () => {
   return (
     <div
       id="panel-visualization"
-      className="flex-[3] bg-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden select-none"
+      className="flex-[3] bg-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden select-none border border-slate-700"
     >
       <div className="px-4 py-3 border-b border-slate-700 flex items-center justify-between flex-shrink-0">
         <h2 className="text-lg font-semibold text-white">
@@ -60,7 +60,7 @@ const VisualizationPanel = () => {
           </svg>
         </button>
       </div>
-      <div className="flex-1 flex flex-col items-start overflow-auto p-6">
+      <div className="flex-1 flex flex-col items-start overflow-auto">
         <div className="mx-auto h-full w-full">
           <ErrorBoundary>
             <VisualizationComponent {...componentProps} />

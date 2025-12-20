@@ -5,7 +5,7 @@ Implements recursive divide-and-conquer sorting with complete trace generation
 for step-by-step visualization showing splits, comparisons, and merges.
 
 VERSION: 1.0 - Backend Checklist v2.2 Compliance
-- Timeline visualization for recursive structure
+- Merge-Sort visualization for recursive structure
 - Complete narrative generation with arithmetic verification
 - Frontend visualization hints included
 - Algorithm info file integration
@@ -20,7 +20,7 @@ class MergeSortTracer(AlgorithmTracer):
     Tracer for Merge Sort algorithm using divide-and-conquer strategy.
 
     Visualization shows:
-    - Timeline structure displaying recursion tree
+    - Merge-Sort structure displaying recursion tree
     - Array splits at each recursion level
     - Merge operations with comparison decisions
     - Depth tracking for visual hierarchy
@@ -38,9 +38,9 @@ class MergeSortTracer(AlgorithmTracer):
 
     def _get_visualization_state(self) -> dict:
         """
-        Return current visualization state for timeline rendering.
+        Return current visualization state for Merge-Sort rendering.
 
-        Timeline structure shows:
+        Merge-Sort structure shows:
         - all_intervals: Array segments being processed (colored by depth)
         - call_stack_state: Active recursive calls with depth info
         """
@@ -311,7 +311,7 @@ class MergeSortTracer(AlgorithmTracer):
             Standardized trace result with:
                 - result: {'sorted_array': list, 'comparisons': int, 'merges': int}
                 - trace: Complete step-by-step execution
-                - metadata: Includes visualization_type='timeline'
+                - metadata: Includes visualization_type='merge-sort'
 
         Raises:
             ValueError: If input is invalid
@@ -346,7 +346,7 @@ class MergeSortTracer(AlgorithmTracer):
         self.metadata = {
             'algorithm': 'merge-sort',
             'display_name': 'Merge Sort',
-            'visualization_type': 'timeline',  # Uses timeline for recursion tree
+            'visualization_type': 'merge-sort',  # Uses merge-sort for recursion tree
             'visualization_config': {
                 'show_call_stack': True,
                 'show_depth_levels': True,

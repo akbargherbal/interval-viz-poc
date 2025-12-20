@@ -48,15 +48,11 @@ const StatePanel = () => {
   // 3. Template-specific content padding
   // iterative-metrics: NO padding (dashboard fills edge-to-edge, uses container queries)
   // recursive-context: px-6 py-4 (call stack needs breathing room + scrolling)
-  const contentClasses =
-    template === "iterative-metrics"
-      ? "flex-1 overflow-hidden" // Dashboard self-contained, no padding
-      : "flex-1 overflow-y-auto custom-scrollbar px-6 py-4"; // Stack scrollable with padding
-
+  const contentClasses = "flex-1 overflow-hidden"
   return (
     <div
       id="panel-steps"
-      className="w-96 bg-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden"
+      className="w-96 bg-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden select-none border border-slate-700"
     >
       {/* ================================================================
           UNIFIED HEADER (OUTSIDE #panel-steps-list)
