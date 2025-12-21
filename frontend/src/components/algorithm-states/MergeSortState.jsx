@@ -13,11 +13,11 @@ import PropTypes from "prop-types";
  * 4. Action: The "What" (e.g., "Take Left", "Split Array")
  * 5. Overlay: Context (Depth, Comparisons, Operation Type)
  */
-const LONG_TEXT = 4
+const LONG_TEXT = 4;
 const MergeSortState = ({ step }) => {
   // Graceful degradation
   if (!step?.data) {
-    return <div className="text-slate-400 p-4">No state data available</div>;
+    return <div className="p-4 text-slate-400">No state data available</div>;
   }
 
   const { type, data } = step;
@@ -177,7 +177,7 @@ const MergeSortState = ({ step }) => {
         <div
           className={`primary-value ${
             // typeof primaryValue === "string" && primaryValue.includes("vs")
-            typeof primaryValue === "string" && (primaryValue.length > LONG_TEXT)
+            typeof primaryValue === "string" && primaryValue.length > LONG_TEXT
               ? "long-text"
               : ""
           }`}
@@ -214,7 +214,7 @@ const MergeSortState = ({ step }) => {
         <div className="logic-content">
           <div className={logicColor}>{logicText}</div>
           <div
-            className={`text-[0.8em] opacity-70 font-normal mt-1 ${logicColor}`}
+            className={`mt-1 text-[0.8em] font-normal opacity-70 ${logicColor}`}
           >
             {logicSub}
           </div>

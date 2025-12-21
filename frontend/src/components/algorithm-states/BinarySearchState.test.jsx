@@ -52,14 +52,18 @@ describe("BinarySearchState", () => {
     const step = { data: {} };
     render(<BinarySearchState step={step} trace={mockTrace} />);
 
-    expect(screen.getByText("No state data available for this step")).toBeInTheDocument();
+    expect(
+      screen.getByText("No state data available for this step"),
+    ).toBeInTheDocument();
   });
 
   it("handles undefined visualization data gracefully", () => {
     const step = null;
     render(<BinarySearchState step={step} trace={mockTrace} />);
 
-    expect(screen.getByText("No state data available for this step")).toBeInTheDocument();
+    expect(
+      screen.getByText("No state data available for this step"),
+    ).toBeInTheDocument();
   });
 
   it("filters out null and undefined pointer values", () => {
@@ -74,21 +78,25 @@ describe("BinarySearchState", () => {
 
   it("calculates progress bar width correctly", () => {
     const step = createMockStep(null, 5);
-    const { container } = render(<BinarySearchState step={step} trace={mockTrace} />);
+    const { container } = render(
+      <BinarySearchState step={step} trace={mockTrace} />,
+    );
 
     // Search space size = 5, input size = 10
     // Progress = 100 - (5/10 * 100) = 50%
-    const progressBar = container.querySelector('.bg-blue-500');
-    expect(progressBar).toHaveStyle({ width: '50%' });
+    const progressBar = container.querySelector(".bg-blue-500");
+    expect(progressBar).toHaveStyle({ width: "50%" });
   });
 
   it("handles zero search space size", () => {
     const step = createMockStep(null, 0);
-    const { container } = render(<BinarySearchState step={step} trace={mockTrace} />);
+    const { container } = render(
+      <BinarySearchState step={step} trace={mockTrace} />,
+    );
 
     // Progress should be 100% when search space is 0
-    const progressBar = container.querySelector('.bg-blue-500');
-    expect(progressBar).toHaveStyle({ width: '100%' });
+    const progressBar = container.querySelector(".bg-blue-500");
+    expect(progressBar).toHaveStyle({ width: "100%" });
   });
 
   it("handles missing trace metadata gracefully", () => {

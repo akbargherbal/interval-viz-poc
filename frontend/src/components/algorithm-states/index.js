@@ -7,7 +7,7 @@
  * Naming convention: {Algorithm}State.jsx
  */
 
-export { default as BinarySearchState } from './BinarySearchState';
-export { default as IntervalCoverageState } from './IntervalCoverageState';
-export { default as SlidingWindowState } from './SlidingWindowState';
-export { default as TwoPointerState } from './TwoPointerState';
+export { default as BinarySearchState } from "./BinarySearchState";
+export { default as IntervalCoverageState } from "./IntervalCoverageState";
+export { default as SlidingWindowState } from "./SlidingWindowState";
+export { default as TwoPointerState } from "./TwoPointerState";

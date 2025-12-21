@@ -43,34 +43,34 @@ const AlgorithmInfoModal = ({ isOpen, onClose }) => {
   return (
     <div
       id="algorithm-info-modal"
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="bg-slate-800 border-2 border-slate-600 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col overflow-hidden"
+        className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border-2 border-slate-600 bg-slate-800 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center p-5 border-b border-slate-700 flex-shrink-0 bg-slate-800/50">
+        <div className="flex flex-shrink-0 items-center justify-between border-b border-slate-700 bg-slate-800/50 p-5">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-500/20 rounded-lg">
-              <Info className="w-6 h-6 text-blue-400" />
+            <div className="rounded-lg bg-blue-500/20 p-2">
+              <Info className="h-6 w-6 text-blue-400" />
             </div>
             <h2 className="text-xl font-bold text-white">{title}</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+            className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-700 hover:text-white"
             aria-label="Close modal"
           >
             <X size={24} />
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
+        <div className="custom-scrollbar flex-1 overflow-y-auto p-6">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center h-40 gap-3">
+            <div className="flex h-40 flex-col items-center justify-center gap-3">
               <Loader className="animate-spin text-blue-400" size={32} />
-              <p className="text-slate-400 text-sm">Loading documentation...</p>
+              <p className="text-sm text-slate-400">Loading documentation...</p>
             </div>
           ) : (
             <div className="prose prose-invert prose-sm max-w-none">
@@ -78,28 +78,28 @@ const AlgorithmInfoModal = ({ isOpen, onClose }) => {
                 components={{
                   code({ node, inline, className, children, ...props }) {
                     return (
-                      <code className="inline bg-slate-700 rounded-sm px-1 py-0.5 font-mono text-xs text-blue-200">
+                      <code className="inline rounded-sm bg-slate-700 px-1 py-0.5 font-mono text-xs text-blue-200">
                         {children}
                       </code>
                     );
                   },
                   h1: ({ children }) => (
-                    <h1 className="text-2xl font-bold text-white mb-4 pb-2 border-b border-slate-700">
+                    <h1 className="mb-4 border-b border-slate-700 pb-2 text-2xl font-bold text-white">
                       {children}
                     </h1>
                   ),
                   h2: ({ children }) => (
-                    <h2 className="text-lg font-bold text-white mt-6 mb-3 flex items-center gap-2">
+                    <h2 className="mb-3 mt-6 flex items-center gap-2 text-lg font-bold text-white">
                       {children}
                     </h2>
                   ),
                   p: ({ children }) => (
-                    <p className="text-slate-300 leading-relaxed mb-4">
+                    <p className="mb-4 leading-relaxed text-slate-300">
                       {children}
                     </p>
                   ),
                   ul: ({ children }) => (
-                    <ul className="list-disc list-inside space-y-1 mb-4 text-slate-300">
+                    <ul className="mb-4 list-inside list-disc space-y-1 text-slate-300">
                       {children}
                     </ul>
                   ),

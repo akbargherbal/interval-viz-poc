@@ -62,7 +62,7 @@ export const useVisualHighlight = () => {
   const context = useContext(HighlightContext);
   if (!context) {
     throw new Error(
-      "useVisualHighlight must be used within a HighlightProvider"
+      "useVisualHighlight must be used within a HighlightProvider",
     );
   }
   return context;

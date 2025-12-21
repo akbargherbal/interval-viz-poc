@@ -9,7 +9,7 @@
  * Naming convention: {Concept}View.jsx
  */
 
-export { default as TimelineView } from './TimelineView';
-export { default as ArrayView } from './ArrayView';
-export { default as RecursiveCallStackView } from './RecursiveCallStackView';
-export { default as MergeSortVisualization } from './MergeSortVisualization';
+export { default as TimelineView } from "./TimelineView";
+export { default as ArrayView } from "./ArrayView";
+export { default as RecursiveCallStackView } from "./RecursiveCallStackView";
+export { default as MergeSortVisualization } from "./MergeSortVisualization";

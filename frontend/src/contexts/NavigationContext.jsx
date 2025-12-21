@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+} from "react";
 import { useTrace } from "./TraceContext";
 
 const NavigationContext = createContext(null);
@@ -7,7 +14,7 @@ export const NavigationProvider = ({ children }) => {
   const { trace } = useTrace();
   const [currentStep, setCurrentStep] = useState(0);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
-  
+
   const totalSteps = trace?.trace?.steps?.length || 0;
 
   // Reset state when trace changes
@@ -18,7 +25,7 @@ export const NavigationProvider = ({ children }) => {
 
   const isViewingFinalStep = useMemo(
     () => currentStep === totalSteps - 1 && totalSteps > 0,
-    [currentStep, totalSteps]
+    [currentStep, totalSteps],
   );
 
   const nextStep = useCallback(() => {
@@ -55,7 +62,7 @@ export const NavigationProvider = ({ children }) => {
 
   const currentStepData = useMemo(
     () => trace?.trace?.steps?.[currentStep],
-    [trace, currentStep]
+    [trace, currentStep],
   );
 
   const isComplete = currentStepData?.type === "ALGORITHM_COMPLETE";
@@ -89,4 +96,3 @@ export const useNavigation = () => {
   }
   return context;
 };
-

@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useRef, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
 
 const KeyboardContext = createContext(null);
 
@@ -17,28 +23,29 @@ export const KeyboardProvider = ({ children }) => {
   useEffect(() => {
     const handleKeyDown = (event) => {
       // Global Input Guard
-      if (['INPUT', 'TEXTAREA'].includes(event.target.tagName)) {
+      if (["INPUT", "TEXTAREA"].includes(event.target.tagName)) {
         return;
       }
 
       // Sort handlers by priority (descending)
-      const sortedHandlers = Array.from(handlersRef.current.values())
-        .sort((a, b) => b.priority - a.priority);
+      const sortedHandlers = Array.from(handlersRef.current.values()).sort(
+        (a, b) => b.priority - a.priority,
+      );
 
       for (const { handler } of sortedHandlers) {
         // Handler should return true if it consumed the event
         const consumed = handler(event);
         if (consumed) {
           // If consumed, we assume preventDefault unless explicitly skipped?
-          // Better to let the handler call preventDefault if needed, 
+          // Better to let the handler call preventDefault if needed,
           // but we must stop propagation to lower priorities.
           break;
         }
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   return (
@@ -51,11 +58,13 @@ export const KeyboardProvider = ({ children }) => {
 export const useKeyboardHandler = (handler, priority = 1) => {
   const context = useContext(KeyboardContext);
   if (!context) {
-    throw new Error("useKeyboardHandler must be used within a KeyboardProvider");
+    throw new Error(
+      "useKeyboardHandler must be used within a KeyboardProvider",
+    );
   }
-  
+
   const { registerHandler, unregisterHandler } = context;
-  const idRef = useRef(Symbol('keyboard-handler'));
+  const idRef = useRef(Symbol("keyboard-handler"));
   const handlerRef = useRef(handler);
 
   // Always keep the latest handler ref
@@ -69,7 +78,7 @@ export const useKeyboardHandler = (handler, priority = 1) => {
     // Register a wrapper that calls the current handler
     // This allows the consumer to pass an inline function without re-registering
     registerHandler(id, (e) => handlerRef.current(e), priority);
-    
+
     return () => unregisterHandler(id);
   }, [registerHandler, unregisterHandler, priority]);
 };

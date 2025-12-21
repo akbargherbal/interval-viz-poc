@@ -66,7 +66,7 @@ describe("MergeSortState Component", () => {
 
     // Filter for the one that is likely the badge (has border class or is inside relative container)
     const activeBadge = mergeElements.find(
-      (el) => el.tagName === "SPAN" && el.className.includes("rounded")
+      (el) => el.tagName === "SPAN" && el.className.includes("rounded"),
     );
 
     expect(activeBadge).toBeInTheDocument();
@@ -83,7 +83,7 @@ describe("MergeSortState Component", () => {
     // Check values in comparison box specifically
     const comparisonValues = screen.getAllByText("5");
     const comparisonFive = comparisonValues.find((el) =>
-      el.className.includes("w-8 h-8")
+      el.className.includes("w-8 h-8"),
     );
     expect(comparisonFive).toBeInTheDocument();
 

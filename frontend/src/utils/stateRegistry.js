@@ -18,7 +18,7 @@ import MergeSortState from "../components/algorithm-states/MergeSortState";
  */
 const DefaultStateComponent = ({ step }) => {
   return (
-    <div className="text-slate-400 text-sm">
+    <div className="text-sm text-slate-400">
       <p className="mb-2">Algorithm state display not configured.</p>
       <p className="text-xs">
         Algorithm: {step?.metadata?.algorithm || "unknown"}
@@ -76,7 +76,7 @@ export const getStateComponent = (algorithmName) => {
   const config = STATE_REGISTRY[algorithmName];
   if (!config) {
     console.warn(
-      `No state component registered for algorithm: ${algorithmName}`
+      `No state component registered for algorithm: ${algorithmName}`,
     );
     return DefaultStateComponent;
   }

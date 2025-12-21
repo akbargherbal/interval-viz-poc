@@ -58,25 +58,22 @@ const MergeSortVisualization = ({ step, config = {} }) => {
       <div className="flex items-center gap-12">
         {/* Left Array */}
         <div className="flex flex-col items-center gap-2">
-          <div className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
             Left Sorted
           </div>
-          <div className="flex gap-2 p-2 bg-slate-800/50 rounded-lg border border-slate-700">
+          <div className="flex gap-2 rounded-lg border border-slate-700 bg-slate-800/50 p-2">
             {left.map((val, idx) => (
               <div
                 key={idx}
-                className={`
-                  w-12 h-12 flex items-center justify-center rounded font-bold text-lg border-2
-                  ${
-                    idx === 0 && leftActive
-                      ? "bg-slate-800 border-yellow-500 text-white shadow-[0_0_12px_rgba(234,179,8,0.3)]"
-                      : "bg-slate-800 border-slate-700 text-slate-500 opacity-40"
-                  }
-                `}
+                className={`flex h-12 w-12 items-center justify-center rounded border-2 text-lg font-bold ${
+                  idx === 0 && leftActive
+                    ? "border-yellow-500 bg-slate-800 text-white shadow-[0_0_12px_rgba(234,179,8,0.3)]"
+                    : "border-slate-700 bg-slate-800 text-slate-500 opacity-40"
+                } `}
               >
                 {val}
                 {idx === 0 && leftActive && (
-                  <div className="absolute -top-2 -left-2 w-5 h-5 bg-yellow-500 rounded-full text-[9px] text-black flex items-center justify-center font-bold">
+                  <div className="absolute -left-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-yellow-500 text-[9px] font-bold text-black">
                     L
                   </div>
                 )}
@@ -88,11 +85,11 @@ const MergeSortVisualization = ({ step, config = {} }) => {
         {/* Operator */}
         {left_value !== undefined && right_value !== undefined && (
           <div className="flex flex-col items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-slate-800 border-2 border-slate-600 flex items-center justify-center text-xl font-bold text-white shadow-lg">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-slate-600 bg-slate-800 text-xl font-bold text-white shadow-lg">
               {operator}
             </div>
             {operatorResult && (
-              <div className="px-3 py-1 bg-green-900/80 text-green-400 text-xs font-bold rounded-full border border-green-700 shadow-lg">
+              <div className="rounded-full border border-green-700 bg-green-900/80 px-3 py-1 text-xs font-bold text-green-400 shadow-lg">
                 {operatorResult}
               </div>
             )}
@@ -101,25 +98,22 @@ const MergeSortVisualization = ({ step, config = {} }) => {
 
         {/* Right Array */}
         <div className="flex flex-col items-center gap-2">
-          <div className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
             Right Sorted
           </div>
-          <div className="flex gap-2 p-2 bg-slate-800/50 rounded-lg border border-slate-700">
+          <div className="flex gap-2 rounded-lg border border-slate-700 bg-slate-800/50 p-2">
             {right.map((val, idx) => (
               <div
                 key={idx}
-                className={`
-                  w-12 h-12 flex items-center justify-center rounded font-bold text-lg border-2
-                  ${
-                    idx === 0 && rightActive
-                      ? "bg-slate-800 border-green-500 text-white shadow-[0_0_12px_rgba(34,197,94,0.3)]"
-                      : "bg-slate-800 border-slate-700 text-slate-500 opacity-40"
-                  }
-                `}
+                className={`flex h-12 w-12 items-center justify-center rounded border-2 text-lg font-bold ${
+                  idx === 0 && rightActive
+                    ? "border-green-500 bg-slate-800 text-white shadow-[0_0_12px_rgba(34,197,94,0.3)]"
+                    : "border-slate-700 bg-slate-800 text-slate-500 opacity-40"
+                } `}
               >
                 {val}
                 {idx === 0 && rightActive && (
-                  <div className="absolute -top-2 -right-2 w-5 h-5 bg-green-500 rounded-full text-[9px] text-black flex items-center justify-center font-bold">
+                  <div className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-[9px] font-bold text-black">
                     R
                   </div>
                 )}
@@ -137,7 +131,7 @@ const MergeSortVisualization = ({ step, config = {} }) => {
    */
   const renderMergedResult = () => {
     const { merged_array, left, right } = stepData;
-    
+
     // Don't show result during splits
     if (stepType.includes("SPLIT") || stepType === "BASE_CASE") return null;
     if (!left || !right) return null;
@@ -147,19 +141,19 @@ const MergeSortVisualization = ({ step, config = {} }) => {
     const emptyCount = totalSize - filledCount;
 
     return (
-      <div className="flex flex-col items-center gap-2 w-full max-w-lg">
-        <div className="text-[11px] text-slate-500 font-bold uppercase w-full text-left border-b border-slate-800 pb-1 flex justify-between px-1">
+      <div className="flex w-full max-w-lg flex-col items-center gap-2">
+        <div className="flex w-full justify-between border-b border-slate-800 px-1 pb-1 text-left text-[11px] font-bold uppercase text-slate-500">
           <span>Merged Result</span>
           <span className="text-purple-400">
             {filledCount === totalSize ? "Complete" : "Building..."}
           </span>
         </div>
-        <div className="flex gap-2 w-full p-4 bg-slate-950/50 rounded-lg border border-slate-800 min-h-[68px] items-center overflow-x-auto custom-scrollbar flex-wrap justify-center">
+        <div className="custom-scrollbar flex min-h-[68px] w-full flex-wrap items-center justify-center gap-2 overflow-x-auto rounded-lg border border-slate-800 bg-slate-950/50 p-4">
           {/* Filled elements */}
           {(merged_array || []).map((val, idx) => (
             <div
               key={`filled-${idx}`}
-              className="w-12 h-12 bg-emerald-900/30 border-2 border-emerald-500 rounded flex items-center justify-center text-emerald-300 text-lg font-bold flex-shrink-0"
+              className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded border-2 border-emerald-500 bg-emerald-900/30 text-lg font-bold text-emerald-300"
             >
               {val}
             </div>
@@ -168,7 +162,7 @@ const MergeSortVisualization = ({ step, config = {} }) => {
           {Array.from({ length: emptyCount }).map((_, idx) => (
             <div
               key={`empty-${idx}`}
-              className={`w-12 h-12 border-2 border-dashed border-slate-700 rounded flex items-center justify-center text-slate-600 text-sm font-medium flex-shrink-0 ${
+              className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded border-2 border-dashed border-slate-700 text-sm font-medium text-slate-600 ${
                 idx === 0 ? "animate-pulse" : ""
               }`}
             >
@@ -190,14 +184,14 @@ const MergeSortVisualization = ({ step, config = {} }) => {
 
     return (
       <div className="flex flex-col items-center gap-3">
-        <div className="text-slate-400 text-sm font-mono">
+        <div className="font-mono text-sm text-slate-400">
           Current Array [{array.length} elements]
         </div>
-        <div className="flex gap-2 flex-wrap justify-center">
+        <div className="flex flex-wrap justify-center gap-2">
           {array.map((val, idx) => (
             <div
               key={idx}
-              className="w-12 h-12 bg-slate-800 border-2 border-slate-600 rounded flex items-center justify-center text-white text-lg font-bold"
+              className="flex h-12 w-12 items-center justify-center rounded border-2 border-slate-600 bg-slate-800 text-lg font-bold text-white"
             >
               {val}
             </div>
@@ -228,13 +222,13 @@ const MergeSortVisualization = ({ step, config = {} }) => {
       />
 
       {/* RIGHT SIDE: Array Comparison (Main Area) */}
-      <div className="flex-1 bg-slate-900 flex flex-col relative overflow-hidden">
+      <div className="relative flex flex-1 flex-col overflow-hidden bg-slate-900">
         {/* Phase Indicator */}
-        <div className="absolute top-3 right-3 px-3 py-1 bg-purple-900/50 border border-purple-500/50 rounded-full text-purple-300 text-xs font-bold backdrop-blur-sm z-10">
+        <div className="absolute right-3 top-3 z-10 rounded-full border border-purple-500/50 bg-purple-900/50 px-3 py-1 text-xs font-bold text-purple-300 backdrop-blur-sm">
           {getPhase()}
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center gap-8 p-6 overflow-auto">
+        <div className="flex flex-1 flex-col items-center justify-center gap-8 overflow-auto p-6">
           {/* Render based on step type */}
           {stepType.includes("MERGE") && !stepType.includes("COMPLETE") ? (
             <>

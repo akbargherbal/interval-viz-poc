@@ -27,10 +27,10 @@ const TimelineView = ({ step, highlightedIntervalId, onIntervalHover }) => {
   const hasHighlight = highlightedIntervalId !== null;
 
   return (
-    <div className="relative h-full flex flex-col pb-4">
+    <div className="relative flex h-full flex-col pb-4">
       {/* Timeline Container */}
       <div
-        className="relative flex-1 bg-slate-900/50 rounded-lg flex flex-col overflow-y-auto overflow-x-hidden"
+        className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden rounded-lg bg-slate-900/50"
         style={{
           paddingLeft: "var(--timeline-padding-x)",
           paddingRight: "var(--timeline-padding-x)",
@@ -39,33 +39,33 @@ const TimelineView = ({ step, highlightedIntervalId, onIntervalHover }) => {
         }}
       >
         {/* Axis Line (Bottom) */}
-        <div className="absolute bottom-6 left-0 right-0 h-0.5 bg-slate-600 mx-[var(--timeline-padding-x)]"></div>
+        <div className="absolute bottom-6 left-0 right-0 mx-[var(--timeline-padding-x)] h-0.5 bg-slate-600"></div>
 
         {/* Axis Labels */}
-        <div className="absolute bottom-1 left-[var(--timeline-padding-x)] text-slate-400 text-xs transform -translate-x-1/2">
+        <div className="absolute bottom-1 left-[var(--timeline-padding-x)] -translate-x-1/2 transform text-xs text-slate-400">
           {TIMELINE_CONFIG.MIN_VAL}
         </div>
-        <div className="absolute bottom-1 left-1/2 text-slate-400 text-xs transform -translate-x-1/2">
+        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 transform text-xs text-slate-400">
           750
         </div>
-        <div className="absolute bottom-1 right-[var(--timeline-padding-x)] text-slate-400 text-xs transform translate-x-1/2">
+        <div className="absolute bottom-1 right-[var(--timeline-padding-x)] translate-x-1/2 transform text-xs text-slate-400">
           {TIMELINE_CONFIG.MAX_VAL}
         </div>
 
         {/* Max End Line */}
         {maxEnd !== undefined && maxEnd !== null && (
           <div
-            className="absolute top-4 bottom-6 w-0.5 bg-cyan-400 z-10 transition-all duration-300"
+            className="absolute bottom-6 top-4 z-10 w-0.5 bg-cyan-400 transition-all duration-300"
             style={{ left: `${TIMELINE_CONFIG.toPercent(maxEnd)}%` }}
           >
-            <div className="absolute -top-3 -left-10 bg-teal-400 text-black text-xs px-2 py-1 rounded font-bold whitespace-nowrap drop-shadow-sm">
+            <div className="absolute -left-10 -top-3 whitespace-nowrap rounded bg-teal-400 px-2 py-1 text-xs font-bold text-black drop-shadow-sm">
               max_end: {maxEnd}
             </div>
           </div>
         )}
 
         {/* Intervals Stack (Flex Column) */}
-        <div className="flex flex-col gap-[var(--timeline-row-gap)] w-full relative z-0">
+        <div className="relative z-0 flex w-full flex-col gap-[var(--timeline-row-gap)]">
           {allIntervals.map((interval, idx) => {
             if (
               !interval ||
@@ -114,7 +114,7 @@ const TimelineView = ({ step, highlightedIntervalId, onIntervalHover }) => {
                 className="relative h-10 w-full flex-shrink-0"
               >
                 <div
-                  className={`absolute h-full ${colors.bg} rounded border-2 ${colors.border} flex items-center justify-center text-white text-sm font-bold ${additionalClasses}`}
+                  className={`absolute h-full ${colors.bg} rounded border-2 ${colors.border} flex items-center justify-center text-sm font-bold text-white ${additionalClasses}`}
                   style={{
                     left: `${left}%`,
                     width: `${width}%`,
@@ -131,21 +131,21 @@ const TimelineView = ({ step, highlightedIntervalId, onIntervalHover }) => {
       </div>
 
       {/* Legend */}
-      <div className="mt-4 justify-center items-center flex gap-4 text-xs flex-wrap">
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-3 bg-cyan-400 rounded"></div>
+          <div className="h-3 w-8 rounded bg-cyan-400"></div>
           <span className="text-slate-400">max_end line</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-8 h-3 bg-yellow-400 rounded ring-2 ring-yellow-400"></div>
+          <div className="h-3 w-8 rounded bg-yellow-400 ring-2 ring-yellow-400"></div>
           <span className="text-slate-400">highlighted</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-8 h-3 bg-yellow-400 rounded border-2 border-yellow-300"></div>
+          <div className="h-3 w-8 rounded border-2 border-yellow-300 bg-yellow-400"></div>
           <span className="text-slate-400">examining</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-8 h-3 bg-slate-500 opacity-30 rounded line-through grayscale"></div>
+          <div className="h-3 w-8 rounded bg-slate-500 line-through opacity-30 grayscale"></div>
           <span className="text-slate-400">covered (skipped)</span>
         </div>
       </div>

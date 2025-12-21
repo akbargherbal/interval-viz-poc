@@ -22,5 +22,5 @@ root.render(
         </PredictionProvider>
       </NavigationProvider>
     </TraceProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

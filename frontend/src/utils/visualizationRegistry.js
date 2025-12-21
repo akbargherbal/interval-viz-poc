@@ -25,21 +25,21 @@ import MergeSortVisualization from "../components/visualizations/MergeSortVisual
 const VISUALIZATION_REGISTRY = {
   // Interval Coverage algorithm
   timeline: TimelineView,
-  
+
   // Binary Search and other array algorithms
   array: ArrayView,
-  
+
   // Merge Sort - LSP tree + array comparison (Added Dec 20, 2025)
   // Note: Changed from "timeline" to "merge-sort" for clarity
   // Merge sort needs custom 2-column layout (LSP tree + main area)
   "merge-sort": MergeSortVisualization,
-  
+
   // Future: Graph algorithms (DFS, BFS, Dijkstra)
   // graph: GraphView,
-  
+
   // Future: Tree algorithms (BST, Heap)
   // tree: TreeView,
-  
+
   // Future: Matrix algorithms (Dynamic Programming)
   // matrix: MatrixView,
 };
@@ -61,7 +61,7 @@ export const getVisualizationComponent = (type) => {
 
   if (!component) {
     console.warn(
-      `Unknown visualization type: ${type}, falling back to timeline`
+      `Unknown visualization type: ${type}, falling back to timeline`,
     );
     return TimelineView;
   }

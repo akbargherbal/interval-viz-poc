@@ -102,10 +102,10 @@ const AlgorithmTracePlayer = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-slate-900">
         <div className="text-center">
           <Loader
-            className="animate-spin text-emerald-500 mx-auto mb-4"
+            className="mx-auto mb-4 animate-spin text-emerald-500"
             size={48}
           />
           <p className="text-white">Loading trace from backend...</p>
@@ -116,16 +116,16 @@ const AlgorithmTracePlayer = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-8">
+      <div className="flex min-h-screen items-center justify-center bg-slate-900 p-8">
         <div className="max-w-md text-center">
-          <AlertCircle className="text-red-500 mx-auto mb-4" size={64} />
-          <h2 className="text-xl font-bold text-white mb-4">
+          <AlertCircle className="mx-auto mb-4 text-red-500" size={64} />
+          <h2 className="mb-4 text-xl font-bold text-white">
             Backend Not Available
           </h2>
-          <p className="text-gray-300 mb-6">{error}</p>
+          <p className="mb-6 text-gray-300">{error}</p>
           <button
             onClick={() => switchAlgorithm("interval-coverage")}
-            className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-6 py-2 rounded-lg transition"
+            className="rounded-lg bg-emerald-500 px-6 py-2 font-semibold text-black transition hover:bg-emerald-400"
           >
             Retry Connection
           </button>
@@ -136,7 +136,7 @@ const AlgorithmTracePlayer = () => {
 
   if (!trace) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-slate-900">
         <p className="text-white">No trace loaded.</p>
       </div>
     );
@@ -146,19 +146,19 @@ const AlgorithmTracePlayer = () => {
 
   if (!step) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-8">
+      <div className="flex min-h-screen items-center justify-center bg-slate-900 p-8">
         <div className="max-w-md text-center">
-          <AlertCircle className="text-red-500 mx-auto mb-4" size={64} />
-          <h2 className="text-xl font-bold text-white mb-4">
+          <AlertCircle className="mx-auto mb-4 text-red-500" size={64} />
+          <h2 className="mb-4 text-xl font-bold text-white">
             Invalid Step Data
           </h2>
-          <p className="text-gray-300 mb-6">
+          <p className="mb-6 text-gray-300">
             Step {currentStep + 1} could not be loaded. The trace data may be
             malformed.
           </p>
           <button
             onClick={resetTrace}
-            className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-6 py-2 rounded-lg transition"
+            className="rounded-lg bg-emerald-500 px-6 py-2 font-semibold text-black transition hover:bg-emerald-400"
           >
             Reset to Start
           </button>
@@ -171,33 +171,33 @@ const AlgorithmTracePlayer = () => {
     <KeyboardHintsProvider>
       <div
         id="app-root"
-        className="w-full h-screen bg-slate-900 flex flex-col overflow-hidden"
+        className="flex h-screen w-full flex-col overflow-hidden bg-slate-900"
       >
         <div
           id="app-header"
-          className="bg-slate-800 border-b border-slate-700 px-4 py-3"
+          className="border-b border-slate-700 bg-slate-800 px-4 py-3"
         >
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div>
                 <h1 className="text-xl font-bold text-white">
                   {trace?.metadata?.display_name || currentAlgorithm}
                 </h1>
-                <p id="step-current" className="text-slate-400 text-xs">
+                <p id="step-current" className="text-xs text-slate-400">
                   Step {currentStep + 1} / {totalSteps || 0}
                 </p>
               </div>
-              <div className="pl-4 border-l border-slate-600">
+              <div className="border-l border-slate-600 pl-4">
                 <AlgorithmSwitcher />
               </div>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={togglePredictionMode}
-                className={`px-3 py-1.5 rounded text-sm flex items-center gap-2 transition-colors font-semibold ${
+                className={`flex items-center gap-2 rounded px-3 py-1.5 text-sm font-semibold transition-colors ${
                   predictionMode
-                    ? "bg-blue-600 hover:bg-blue-500 text-white"
-                    : "bg-slate-700 hover:bg-slate-600 text-slate-300"
+                    ? "bg-blue-600 text-white hover:bg-blue-500"
+                    : "bg-slate-700 text-slate-300 hover:bg-slate-600"
                 }`}
               >
                 {predictionMode ? "⏳ Predict" : "⚡ Watch"}
@@ -211,7 +211,7 @@ const AlgorithmTracePlayer = () => {
           </div>
         </div>
 
-        <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+        <div className="flex flex-1 items-center justify-center overflow-hidden p-4">
           <ErrorBoundary>
             {showPrediction && activePrediction && <PredictionModal />}
           </ErrorBoundary>
@@ -225,7 +225,7 @@ const AlgorithmTracePlayer = () => {
             />
           </ErrorBoundary>
           {/* REMOVED: <KeyboardHints /> - Now handled by KeyboardHintsProvider wrapper */}
-          <div className="w-full h-full max-w-7xl flex gap-4 overflow-hidden">
+          <div className="flex h-full w-full max-w-7xl gap-4 overflow-hidden">
             <VisualizationPanel />
             <StatePanel />
           </div>

@@ -3,7 +3,10 @@ import PropTypes from "prop-types";
 import { useTrace } from "../../contexts/TraceContext";
 import { useNavigation } from "../../contexts/NavigationContext";
 import { useVisualHighlight } from "../../contexts/HighlightContext";
-import { getStateComponent, getAlgorithmTemplate } from "../../utils/stateRegistry";
+import {
+  getStateComponent,
+  getAlgorithmTemplate,
+} from "../../utils/stateRegistry";
 import { getStepTypeBadge } from "../../utils/stepBadges";
 import { useKeyboardHintsModal } from "../KeyboardHints";
 import ErrorBoundary from "../ErrorBoundary";
@@ -48,11 +51,11 @@ const StatePanel = () => {
   // 3. Template-specific content padding
   // iterative-metrics: NO padding (dashboard fills edge-to-edge, uses container queries)
   // recursive-context: px-6 py-4 (call stack needs breathing room + scrolling)
-  const contentClasses = "flex-1 overflow-hidden"
+  const contentClasses = "flex-1 overflow-hidden";
   return (
     <div
       id="panel-steps"
-      className="w-96 bg-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden select-none border border-slate-700"
+      className="flex w-96 select-none flex-col overflow-hidden rounded-xl border border-slate-700 bg-slate-800 shadow-2xl"
     >
       {/* ================================================================
           UNIFIED HEADER (OUTSIDE #panel-steps-list)
@@ -61,13 +64,13 @@ const StatePanel = () => {
           - Same for ALL algorithms (both iterative and recursive)
           - CRITICAL: This must be OUTSIDE #panel-steps-list per static mockup
           ================================================================ */}
-      <div className="flex justify-between px-5 pt-5 items-center mb-4 flex-shrink-0">
-        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+      <div className="mb-4 flex flex-shrink-0 items-center justify-between px-5 pt-5">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">
           Algorithm State
         </h2>
         <button
           onClick={openModal}
-          className="bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-full shadow-lg transition-all"
+          className="rounded-full bg-slate-700 p-2 text-white shadow-lg transition-all hover:bg-slate-600"
           title="Keyboard shortcuts"
           aria-label="Show keyboard shortcuts"
         >
@@ -107,7 +110,7 @@ const StatePanel = () => {
           ================================================================ */}
       <div
         id="panel-steps-list"
-        className="flex-[2] flex flex-col overflow-hidden"
+        className="flex flex-[2] flex-col overflow-hidden"
       >
         <div className={contentClasses}>
           <ErrorBoundary>
@@ -137,12 +140,12 @@ const StatePanel = () => {
           ================================================================ */}
       <div
         id="panel-step-description"
-        className="flex-[1] border-t border-slate-700 py-2 px-4 bg-gradient-to-br from-slate-700/60 to-slate-800/60 overflow-hidden flex flex-col"
+        className="flex flex-[1] flex-col overflow-hidden border-t border-slate-700 bg-gradient-to-br from-slate-700/60 to-slate-800/60 px-4 py-2"
       >
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <p className="text-white text-base font-medium leading-relaxed">
+        <div className="custom-scrollbar flex-1 overflow-y-auto">
+          <p className="text-base font-medium leading-relaxed text-white">
             <span
-              className={`inline-flex items-center gap-1.5 px-2 py-0.5 mr-2 rounded-md text-xs font-bold ${badge.color} align-middle`}
+              className={`mr-2 inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-bold ${badge.color} align-middle`}
             >
               {badge.icon && <span>{badge.icon}</span>}
               {badge.label}

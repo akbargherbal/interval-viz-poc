@@ -16,7 +16,7 @@ import PropTypes from "prop-types";
 const TwoPointerState = ({ step }) => {
   // Graceful degradation
   if (!step?.data?.visualization) {
-    return <div className="text-slate-400 p-4">No state data available</div>;
+    return <div className="p-4 text-slate-400">No state data available</div>;
   }
 
   const { pointers, metrics, array } = step.data.visualization;
@@ -109,7 +109,7 @@ const TwoPointerState = ({ step }) => {
         <div className="logic-content">
           <div className={logicColor}>{logicText}</div>
           <div
-            className={`text-[0.6em] opacity-70 font-normal mt-1 ${logicColor}`}
+            className={`mt-1 text-[0.6em] font-normal opacity-70 ${logicColor}`}
           >
             {logicSub}
           </div>
@@ -139,7 +139,7 @@ TwoPointerState.propTypes = {
         array: PropTypes.arrayOf(
           PropTypes.shape({
             value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-          })
+          }),
         ),
       }),
     }),

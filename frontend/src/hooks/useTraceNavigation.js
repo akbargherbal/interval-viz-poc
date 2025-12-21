@@ -7,4 +7,3 @@ import { useNavigation } from "../contexts/NavigationContext";
 export const useTraceNavigation = () => {
   return useNavigation();
 };
-

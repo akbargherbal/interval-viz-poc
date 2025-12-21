@@ -7,4 +7,3 @@ import { usePrediction } from "../contexts/PredictionContext";
 export const usePredictionMode = () => {
   return usePrediction();
 };
-

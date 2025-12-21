@@ -18,17 +18,15 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="w-full h-full bg-slate-900/50 rounded-lg flex flex-col items-center justify-center p-4 text-center">
-          <AlertTriangle className="w-12 h-12 text-red-500 mb-4" />
-          <h3 className="text-lg font-bold text-white mb-2">
-            Rendering Error
-          </h3>
-          <p className="text-slate-400 text-sm mb-4">
+        <div className="flex h-full w-full flex-col items-center justify-center rounded-lg bg-slate-900/50 p-4 text-center">
+          <AlertTriangle className="mb-4 h-12 w-12 text-red-500" />
+          <h3 className="mb-2 text-lg font-bold text-white">Rendering Error</h3>
+          <p className="mb-4 text-sm text-slate-400">
             There was an issue displaying this part of the visualization.
           </p>
           <button
             onClick={() => this.setState({ hasError: false, error: null })}
-            className="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2 rounded-lg text-sm"
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500"
           >
             Try to Recover
           </button>

@@ -7,4 +7,3 @@ import { useTrace } from "../contexts/TraceContext";
 export const useTraceLoader = () => {
   return useTrace();
 };
-

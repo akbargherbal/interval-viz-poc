@@ -3,9 +3,9 @@ import PropTypes from "prop-types";
 
 /**
  * BinarySearchState - Iterative Dashboard Implementation
- * 
+ *
  * Uses the 5-zone dashboard layout defined in index.css (from iterative_metrics_algorithm_mockup.html).
- * 
+ *
  * Zones:
  * 1. Primary: Mid Value (Hero)
  * 2. Goal: Target Value
@@ -16,21 +16,21 @@ import PropTypes from "prop-types";
 const BinarySearchState = ({ step }) => {
   // Graceful degradation
   if (!step?.data?.visualization) {
-    return <div className="text-slate-400 p-4">No state data available</div>;
+    return <div className="p-4 text-slate-400">No state data available</div>;
   }
 
   const { pointers, array, search_space_size } = step.data.visualization;
-  
+
   // Safe data extraction
   const leftIdx = pointers?.left ?? "-";
   const rightIdx = pointers?.right ?? "-";
   const midIdx = pointers?.mid; // Can be null/undefined initially
   const target = pointers?.target ?? "?";
-  
+
   // Resolve Mid Value
   let midValue = "-";
   if (midIdx !== null && midIdx !== undefined && Array.isArray(array)) {
-    const midElement = array.find(item => item.index === midIdx);
+    const midElement = array.find((item) => item.index === midIdx);
     if (midElement) midValue = midElement.value;
   }
 
@@ -100,15 +100,15 @@ const BinarySearchState = ({ step }) => {
         <div className="zone-label">LOGIC</div>
         <div className="logic-content">
           <div>{logicText}</div>
-          <div className="text-[0.6em] opacity-70 font-normal mt-1">{logicSubtext}</div>
+          <div className="mt-1 text-[0.6em] font-normal opacity-70">
+            {logicSubtext}
+          </div>
         </div>
       </div>
 
       {/* ZONE 4: ACTION */}
       <div className="zone zone-action">
-        <div className="action-text">
-          {actionText}
-        </div>
+        <div className="action-text">{actionText}</div>
       </div>
     </div>
   );

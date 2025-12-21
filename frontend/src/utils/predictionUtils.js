@@ -15,22 +15,22 @@ export const getAccuracyFeedback = (accuracy) => {
   if (accuracy >= 90) {
     return {
       message: "Excellent work!",
-      color: "emerald"
+      color: "emerald",
     };
   } else if (accuracy >= 70) {
     return {
       message: "Great job!",
-      color: "emerald"
+      color: "emerald",
     };
   } else if (accuracy >= 50) {
     return {
       message: "Good start! Keep practicing.",
-      color: "amber"
+      color: "amber",
     };
   } else {
     return {
       message: "Keep practicing! Review the step-by-step walkthrough.",
-      color: "red"
+      color: "red",
     };
   }
 };
@@ -40,13 +40,12 @@ export const getAccuracyFeedback = (accuracy) => {
  * @returns {Object} - Formatted stats with accuracy and feedback
  */
 export const formatPredictionStats = (stats) => {
-  const accuracy = stats.total > 0
-    ? Math.round((stats.correct / stats.total) * 100)
-    : 0;
+  const accuracy =
+    stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
   const feedback = getAccuracyFeedback(accuracy);
   return {
     ...stats,
     accuracy,
-    ...feedback
+    ...feedback,
   };
 };

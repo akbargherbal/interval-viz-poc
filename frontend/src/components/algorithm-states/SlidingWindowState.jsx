@@ -16,7 +16,7 @@ import PropTypes from "prop-types";
 const SlidingWindowState = ({ step }) => {
   // Graceful degradation
   if (!step?.data?.visualization) {
-    return <div className="text-slate-400 p-4">No state data available</div>;
+    return <div className="p-4 text-slate-400">No state data available</div>;
   }
 
   const { metrics, pointers } = step.data.visualization;
@@ -104,7 +104,7 @@ const SlidingWindowState = ({ step }) => {
         <div className="zone-label">LOGIC</div>
         <div className="logic-content">
           <div className="text-sm">{logicText}</div>
-          <div className="text-[0.8em] opacity-70 font-normal mt-1">
+          <div className="mt-1 text-[0.8em] font-normal opacity-70">
             {logicSubtext}
           </div>
         </div>

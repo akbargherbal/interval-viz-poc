@@ -153,13 +153,13 @@ const PredictionModal = ({
   return (
     <div
       id="prediction-modal"
-      className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
     >
       {/* LOCKED: max-w-lg (512px), p-6, NO height constraint */}
-      <div className="bg-slate-800 border-2 border-blue-500 rounded-2xl shadow-2xl max-w-lg w-full p-6 text-white select-none">
+      <div className="w-full max-w-lg select-none rounded-2xl border-2 border-blue-500 bg-slate-800 p-6 text-white shadow-2xl">
         {/* Header Section */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-white mb-2 leading-tight">
+          <h2 className="mb-2 text-2xl font-bold leading-tight text-white">
             {question}
           </h2>
         </div>
@@ -167,16 +167,16 @@ const PredictionModal = ({
         {/* Feedback Banner (Replaces Hint or stacks) */}
         {feedbackState !== "idle" && (
           <div
-            className={`rounded-lg p-4 mb-6 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 ${
+            className={`animate-in fade-in slide-in-from-top-2 mb-6 flex items-center gap-3 rounded-lg p-4 duration-300 ${
               feedbackState === "correct"
-                ? "bg-emerald-900/30 border border-emerald-500/50"
-                : "bg-red-900/30 border border-red-500/50"
+                ? "border border-emerald-500/50 bg-emerald-900/30"
+                : "border border-red-500/50 bg-red-900/30"
             }`}
           >
             {feedbackState === "correct" ? (
-              <CheckCircle className="w-6 h-6 text-emerald-400 flex-shrink-0" />
+              <CheckCircle className="h-6 w-6 flex-shrink-0 text-emerald-400" />
             ) : (
-              <XCircle className="w-6 h-6 text-red-400 flex-shrink-0" />
+              <XCircle className="h-6 w-6 flex-shrink-0 text-red-400" />
             )}
             <div>
               <h3
@@ -189,7 +189,7 @@ const PredictionModal = ({
                 {feedbackState === "correct" ? "Correct!" : "Incorrect"}
               </h3>
               {feedbackState === "incorrect" && (
-                <p className="text-sm text-slate-300 mt-1">
+                <p className="mt-1 text-sm text-slate-300">
                   The correct answer was:{" "}
                   <span className="font-semibold text-white">
                     {mappedChoices.find((c) => c.id === correct_answer)
@@ -203,8 +203,8 @@ const PredictionModal = ({
 
         {/* Hint Box (Only show if idle or if it adds context) */}
         {hint && feedbackState === "idle" && (
-          <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mb-6">
-            <p className="text-blue-300 text-sm">
+          <div className="mb-6 rounded-lg border border-blue-500/30 bg-blue-900/20 p-4">
+            <p className="text-sm text-blue-300">
               💡 <strong>Hint:</strong> {hint}
             </p>
           </div>
@@ -214,7 +214,7 @@ const PredictionModal = ({
         <div
           className={`grid ${
             mappedChoices.length > 2 ? "grid-cols-3" : "grid-cols-2"
-          } gap-5 mb-6`}
+          } mb-6 gap-5`}
         >
           {mappedChoices.map((choice) => {
             const isSelected = selectedChoiceId === choice.id;
@@ -280,22 +280,17 @@ const PredictionModal = ({
                   feedbackState === "idle" && setSelectedChoiceId(choice.id)
                 }
                 disabled={feedbackState !== "idle"}
-                className={`
-                  py-4 ${mappedChoices.length > 2 ? 'px-3' : 'px-4'} rounded-lg text-white font-semibold transition-all duration-200
-                  flex flex-col items-center justify-center text-center
-                  focus:outline-none
-                  ${stateClasses}
-                  ${ringClass}
-                  ${scaleClass}
-                  ${opacityClass}
-                  ${
-                    feedbackState !== "idle"
-                      ? "cursor-default"
-                      : "cursor-pointer shadow-lg"
-                  }
-                `}
+                className={`py-4 ${mappedChoices.length > 2 ? "px-3" : "px-4"} flex flex-col items-center justify-center rounded-lg text-center font-semibold text-white transition-all duration-200 focus:outline-none ${stateClasses} ${ringClass} ${scaleClass} ${opacityClass} ${
+                  feedbackState !== "idle"
+                    ? "cursor-default"
+                    : "cursor-pointer shadow-lg"
+                } `}
               >
-                <div className={`${mappedChoices.length > 2 ? 'text-sm' : 'text-base'} mb-1`}>{choice.label}</div>
+                <div
+                  className={`${mappedChoices.length > 2 ? "text-sm" : "text-base"} mb-1`}
+                >
+                  {choice.label}
+                </div>
                 {feedbackState === "idle" && (
                   <div className="text-xs opacity-75">
                     Press {choice.shortcut}
@@ -313,26 +308,23 @@ const PredictionModal = ({
         </div>
 
         {/* Actions - Two-Step Confirmation */}
-        <div className="flex justify-between items-center pt-4 border-t border-slate-700">
+        <div className="flex items-center justify-between border-t border-slate-700 pt-4">
           {feedbackState === "idle" ? (
             <>
               <button
                 onClick={onSkip}
-                className="text-slate-400 hover:text-slate-300 text-sm transition-colors"
+                className="text-sm text-slate-400 transition-colors hover:text-slate-300"
               >
                 Skip (Press S)
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={!selectedChoiceId}
-                className={`
-                  px-6 py-2 rounded-lg font-semibold transition-all shadow-lg
-                  ${
-                    selectedChoiceId
-                      ? "bg-blue-600 hover:bg-blue-500 text-white animate-pulse hover:scale-105"
-                      : "bg-blue-600 text-white opacity-50 cursor-not-allowed"
-                  }
-                `}
+                className={`rounded-lg px-6 py-2 font-semibold shadow-lg transition-all ${
+                  selectedChoiceId
+                    ? "animate-pulse bg-blue-600 text-white hover:scale-105 hover:bg-blue-500"
+                    : "cursor-not-allowed bg-blue-600 text-white opacity-50"
+                } `}
               >
                 Submit (Enter)
               </button>
@@ -340,10 +332,10 @@ const PredictionModal = ({
           ) : (
             <button
               onClick={handleSubmit}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg shadow-lg transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-3 font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:bg-blue-500"
             >
               Continue (Enter)
-              <span className="text-xs font-normal opacity-80 bg-blue-700 px-2 py-0.5 rounded">
+              <span className="rounded bg-blue-700 px-2 py-0.5 text-xs font-normal opacity-80">
                 ↵
               </span>
             </button>
