@@ -1,19 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- 
+    ================================================================================
+    ARCHITECTURAL STRATEGY: THE UNIFIED DASHBOARD (RSP)
+    ================================================================================
+    The Right Side Panel (RSP) implements a standardized "Resilient HUD" design.
+    This 5-Zone layout (Focus, Goal, Logic, Action, Context) is structurally 
+    IDENTICAL for all algorithms. 
+
+    - RSP (Right Panel): Standardized "Iron Logic" container. No layout changes allowed.
+    - LSP (Left Panel):  Custom visualization canvas. This is where algorithms differ.
+
+    For the full "Vertical Logic" design system and scaling rules, see:
+    docs/static_mockup/dashboard_design_philosophy.md
+    ================================================================================
+    -->
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Binary Search Algorithm Mockup</title>
+
     <!-- 
     NOTE TO COMPONENT DESIGNER: 
     This mockup uses Tailwind CSS utility classes. 
     Ensure your React components import or utilize these classes correctly.
-    AlpineJS directives (x-data, @click, etc.) have been added to manage UI state.
+    AlpineJS directives (x-data, @click, etc.) have been added to simulate interactivity on the client; but should not taken literally.
     -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script
+      defer
+      src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
     <style>
-      [x-cloak] { display: none !important; }
+      [x-cloak] {
+        display: none !important;
+      }
       body {
         background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -65,37 +87,37 @@
       /* Dashboard HUD Styles - Algo-Agnostic Template Integration */
       :root {
         /* --- PALETTE --- */
-        --color-hero: #fbbf24;      
-        --color-hero-dim: #d97706;  
-        --color-goal: #34d399;      
-        --color-goal-dim: #059669;  
-        --color-logic: #ffffff;     
-        --color-logic-dim: #93c5fd; 
-        --color-action: #f1f5f9;    
-        
+        --color-hero: #fbbf24;
+        --color-hero-dim: #d97706;
+        --color-goal: #34d399;
+        --color-goal-dim: #059669;
+        --color-logic: #ffffff;
+        --color-logic-dim: #93c5fd;
+        --color-action: #f1f5f9;
+
         /* --- BACKGROUNDS --- */
-        --bg-grid: #475569;         
-        --bg-primary: #1e293b;      
-        --bg-secondary: #334155;    
-        --bg-accent: #2563eb;       
-        --bg-overlay: rgba(15, 23, 42, 0.96); 
+        --bg-grid: #475569;
+        --bg-primary: #1e293b;
+        --bg-secondary: #334155;
+        --bg-accent: #2563eb;
+        --bg-overlay: rgba(15, 23, 42, 0.96);
       }
 
-.dashboard {
-  /* Use a single fixed value instead of clamp */
-  --h-strip: 48px;  /* Or 44px, or whatever size you want */
-  --h-action: clamp(28px, 16cqh, 32px);
+      .dashboard {
+        /* Use a single fixed value instead of clamp */
+        --h-strip: 48px; /* Or 44px, or whatever size you want */
+        --h-action: clamp(28px, 16cqh, 32px);
 
-  width: 100%;
-  height: 100%;
-  
-  background: var(--bg-grid);
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  grid-template-rows: 1fr var(--h-strip) var(--h-action);
-  gap: 1px;
-  container-type: size;
-}
+        width: 100%;
+        height: 100%;
+
+        background: var(--bg-grid);
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        grid-template-rows: 1fr var(--h-strip) var(--h-action);
+        gap: 1px;
+        container-type: size;
+      }
 
       /* --- GENERIC ZONE STYLES --- */
       .zone {
@@ -132,7 +154,7 @@
 
       /* --- ZONE 1: PRIMARY FOCUS --- */
       .zone-primary {
-        grid-row: 1 / 3; 
+        grid-row: 1 / 3;
         grid-column: 1;
         background: var(--bg-primary);
         color: var(--color-hero);
@@ -141,10 +163,13 @@
         justify-content: center;
         padding-bottom: var(--h-strip);
       }
-      .zone-primary .zone-label, .zone-primary .zone-meta { color: var(--color-hero-dim); }
+      .zone-primary .zone-label,
+      .zone-primary .zone-meta {
+        color: var(--color-hero-dim);
+      }
 
       .primary-value {
-        font-size: clamp(70px, 45cqh, 110px); 
+        font-size: clamp(70px, 45cqh, 110px);
         font-weight: 900;
         line-height: 0.8;
         letter-spacing: -0.03em;
@@ -161,7 +186,7 @@
         height: var(--h-strip);
         background: var(--bg-overlay);
         backdrop-filter: blur(4px);
-        border-top: 1px solid rgba(255,255,255,0.1);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
         z-index: 10;
         display: flex;
         align-items: stretch;
@@ -172,11 +197,13 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        border-right: 1px solid rgba(255,255,255,0.05);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
       }
-      .boundary-cell:last-child { border-right: none; }
+      .boundary-cell:last-child {
+        border-right: none;
+      }
       .boundary-label {
-        font-size: clamp(8px, 2.5cqh, 10px); 
+        font-size: clamp(8px, 2.5cqh, 10px);
         color: #94a3b8;
         font-weight: 700;
         letter-spacing: 0.05em;
@@ -193,10 +220,22 @@
         gap: 4px;
         line-height: 1;
       }
-      .val-old { font-size: 0.75em; opacity: 0.4; text-decoration: line-through; }
-      .val-arrow { font-size: 0.6em; color: #64748b; margin: 0 1px; }
-      .val-new-up { color: var(--color-goal); }
-      .val-new-down { color: #f87171; }
+      .val-old {
+        font-size: 0.75em;
+        opacity: 0.4;
+        text-decoration: line-through;
+      }
+      .val-arrow {
+        font-size: 0.6em;
+        color: #64748b;
+        margin: 0 1px;
+      }
+      .val-new-up {
+        color: var(--color-goal);
+      }
+      .val-new-down {
+        color: #f87171;
+      }
 
       /* --- ZONE 2: GOAL --- */
       .zone-goal {
@@ -207,11 +246,13 @@
         align-items: center;
         justify-content: center;
       }
-      .zone-goal .zone-label { color: var(--color-goal-dim); }
+      .zone-goal .zone-label {
+        color: var(--color-goal-dim);
+      }
       .goal-value {
         font-size: clamp(40px, 25cqh, 56px);
         font-weight: 900;
-        padding-top: 10px; 
+        padding-top: 10px;
         text-shadow: 0 0 15px rgba(52, 211, 153, 0.1);
         line-height: 0.9;
       }
@@ -222,38 +263,39 @@
         grid-column: 2;
         background: var(--bg-accent);
         color: var(--color-logic);
-        
+
         /* Switch to Row layout to put label on left */
         display: flex;
-        flex-direction: row; 
+        flex-direction: row;
         align-items: stretch;
-        padding: 0; 
+        padding: 0;
       }
 
       /* The Vertical Sidebar Label */
       .zone-logic .zone-label {
         /* Reset absolute positioning */
         position: relative;
-        top: auto; left: auto;
-        
+        top: auto;
+        left: auto;
+
         /* Vertical Text Magic */
         writing-mode: vertical-rl;
         transform: rotate(180deg); /* Reads Bottom-to-Top */
-        
+
         /* UPDATED STYLING FOR ATTENTION */
         color: #ffffff; /* Pure white */
-        background: rgba(0,0,0,0.25); /* Darker tab background */
-        border-right: 1px solid rgba(255,255,255,0.2);
-        text-shadow: 0 0 8px rgba(255,255,255,0.4); /* Glow */
-        
+        background: rgba(0, 0, 0, 0.25); /* Darker tab background */
+        border-right: 1px solid rgba(255, 255, 255, 0.2);
+        text-shadow: 0 0 8px rgba(255, 255, 255, 0.4); /* Glow */
+
         /* Layout */
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0 4px; 
+        padding: 0 4px;
         width: auto;
         height: 100%;
-        
+
         /* UPDATED FONT SPECS */
         font-size: clamp(11px, 4cqh, 13px); /* Target ~12px */
         font-weight: 900;
@@ -261,25 +303,25 @@
       }
 
       .logic-content {
-        flex: 1; 
+        flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        
+
         font-size: clamp(14px, 8cqh, 18px);
         font-weight: 800;
         line-height: 1.1;
         text-align: center;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
       }
 
       /* --- ZONE 4: ACTION --- */
       .zone-action {
         grid-row: 3;
         grid-column: 1 / 3;
-        background: #00574B;
-        color: #FFFFFF;
+        background: #00574b;
+        color: #ffffff;
         align-items: center;
         justify-content: center;
       }
@@ -310,8 +352,8 @@
        - #step-current: Currently executing step (auto-scroll target)
     
     [REQ] Section 1.2: Panel Layout Architecture
-       - Visualization panel: flex-[3] (66.67% width)
-       - Steps panel: w-96 (384px fixed width)
+       - Visualization panel: w-2/3 of the total width
+       - Steps panel:  w-1/3 of the total width
     
     [REQ] Section 1.6: Overflow Handling
        - Visualization panel uses items-start + mx-auto pattern
@@ -319,6 +361,10 @@
     ================================================================
     -->
 
+    <!-- 
+    CRITICAL: The x-data Alpine state is applied here to enable Modals/Shortcuts functionality 
+
+    -->
     <div
       id="app-root"
       x-data="{ 
@@ -335,484 +381,722 @@
       @keydown.window.arrow-left="if(currentStep > 1) currentStep--"
       class="w-full h-screen bg-slate-900 flex flex-col overflow-hidden"
     >
-      <!-- ========================================
-             HEADER BAR (#app-header)
-             - Static state: Step 6/9, Watch Mode
-             ======================================== -->
-      <header
-        id="app-header"
-        class="bg-slate-800 border-b border-slate-700 px-4 py-3 flex-shrink-0"
-      >
-        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <!-- LEFT: Algorithm Info + Switcher -->
-          <div class="flex items-center gap-4">
-            <div>
-              <h1 class="text-xl font-bold text-white">Binary Search</h1>
-              <p class="text-slate-400 text-xs" x-text="`Step ${currentStep} / ${totalSteps}`">Step 6 / 9</p>
-            </div>
-
-            <!-- Algorithm Switcher (Dropdown Mockup) -->
-            <div class="pl-4 border-l border-slate-600">
-              <div class="relative">
+      <noscript>You need to enable JavaScript to run this app.</noscript>
+      <div id="root">
+        <div
+          id="app-root"
+          class="flex h-screen w-full flex-col overflow-hidden bg-slate-900"
+        >
+          <div
+            id="app-header"
+            class="border-b border-slate-700 bg-slate-800 px-4 py-3"
+          >
+            <div
+              class="mx-auto flex max-w-7xl items-center justify-between gap-4"
+            >
+              <div class="flex items-center gap-4">
+                <div>
+                  <h1 class="text-xl font-bold text-white">Binary Search</h1>
+                  <p id="step-current" class="text-xs text-slate-400">
+                    Step 6 / 9
+                  </p>
+                </div>
+                <div class="border-l border-slate-600 pl-4">
+                  <div class="relative">
+                    <button
+                      class="group flex items-center gap-2 rounded-lg bg-slate-700 px-3 py-1.5 transition-colors hover:bg-slate-600 disabled:cursor-not-allowed disabled:bg-slate-800"
+                      @click="isAlgoDropdownOpen = !isAlgoDropdownOpen"
+                      aria-expanded="false"
+                      aria-haspopup="true"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="h-4 w-4 text-blue-400"
+                      >
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.3-4.3"></path>
+                      </svg>
+                      <span class="text-sm font-medium text-white"
+                        >Binary Search</span
+                      >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="h-4 w-4 text-slate-400 transition-all group-hover:text-white"
+                        :class="isAlgoDropdownOpen ? 'rotate-180' : ''"
+                      >
+                        <path d="m6 9 6 6 6-6"></path>
+                      </svg>
+                    </button>
+                    <!-- Dropdown content (Re-added Alpine for functionality) -->
+                    <div
+                      x-show="isAlgoDropdownOpen"
+                      @click.away="isAlgoDropdownOpen = false"
+                      x-cloak
+                      class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-slate-800 border border-slate-700 z-50"
+                    >
+                      <div class="py-1">
+                        <a
+                          href="#"
+                          class="block px-4 py-2 text-sm text-white bg-blue-600"
+                          >Binary Search</a
+                        >
+                        <a
+                          href="#"
+                          class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700"
+                          >Sliding Window</a
+                        >
+                        <a
+                          href="#"
+                          class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700"
+                          >Two Pointers</a
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <!-- Watch Button -->
                 <button
-                  @click="isAlgoDropdownOpen = !isAlgoDropdownOpen"
-                  class="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:cursor-not-allowed rounded-lg transition-colors group"
-                  aria-expanded="false"
-                  aria-haspopup="true"
+                  class="flex items-center gap-2 rounded px-3 py-1.5 text-sm font-semibold transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600"
                 >
-                  <!-- Algorithm Icon -->
+                  ⚡ Watch
+                </button>
+                <!-- Reset Button -->
+                <button
+                  class="flex items-center gap-2 rounded-lg bg-slate-700 px-4 py-2 text-white transition-colors hover:bg-slate-600"
+                  @click="currentStep = 1"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
+                    width="20"
+                    height="20"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
                     stroke-width="2"
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                    class="w-4 h-4 text-blue-400"
+                    class="lucide lucide-rotate-ccw"
                   >
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <path d="m21 21-4.3-4.3"></path>
-                  </svg>
-                  <span class="text-white font-medium text-sm"
-                    >Binary Search</span
-                  >
-                  <!-- Dropdown Arrow -->
+                    <path
+                      d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
+                    ></path>
+                    <path d="M3 3v5h5"></path></svg
+                  >Reset
+                </button>
+                <!-- Previous Button -->
+                <button
+                  class="flex items-center gap-2 rounded-lg bg-slate-700 px-4 py-2 text-white transition-colors hover:bg-slate-600 disabled:cursor-not-allowed disabled:bg-slate-800"
+                  @click="if(currentStep > 1) currentStep--"
+                  :disabled="currentStep <= 1"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
+                    width="20"
+                    height="20"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
                     stroke-width="2"
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                    class="w-4 h-4 text-slate-400 group-hover:text-white transition-all"
-                    :class="isAlgoDropdownOpen ? 'rotate-180' : ''"
+                    class="lucide lucide-skip-back"
                   >
-                    <path d="m6 9 6 6 6-6"></path>
+                    <polygon points="19 20 9 12 19 4 19 20"></polygon>
+                    <line x1="5" x2="5" y1="19" y2="5"></line></svg
+                  >Previous
+                </button>
+                <!-- Next Button -->
+                <button
+                  class="flex items-center gap-2 rounded-lg bg-emerald-500 px-6 py-2 font-bold text-black transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-slate-600"
+                  @click="if(currentStep < totalSteps) currentStep++"
+                  :disabled="currentStep >= totalSteps"
+                >
+                  Next Step
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-chevron-right"
+                  >
+                    <path d="m9 18 6-6-6-6"></path>
                   </svg>
                 </button>
-                
-                <!-- Dropdown content -->
-                <div 
-                  x-show="isAlgoDropdownOpen" 
-                  @click.away="isAlgoDropdownOpen = false"
-                  x-cloak
-                  class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-slate-800 border border-slate-700 z-50"
+                <!-- Info/Shortcuts Button (Added from reference template) -->
+                <button
+                  @click="isShortcutsModalOpen = true"
+                  class="bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-lg transition-colors"
+                  title="Shortcuts (?)"
                 >
-                  <div class="py-1">
-                    <a href="#" class="block px-4 py-2 text-sm text-white bg-blue-600">Binary Search</a>
-                    <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">Sliding Window</a>
-                    <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">Two Pointers</a>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                    <path d="M12 17h.01" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div
+            class="flex flex-1 items-center justify-center overflow-hidden p-4"
+          >
+            <div class="flex h-full w-full max-w-7xl gap-4 overflow-hidden">
+              <!-- Panel Visualization (flex-[3]) -->
+              <div
+                id="panel-visualization"
+                class="flex flex-[3] select-none flex-col overflow-hidden rounded-xl border border-slate-700 bg-slate-800 shadow-2xl"
+              >
+                <div
+                  class="flex flex-shrink-0 items-center justify-between border-b border-slate-700 px-4 py-3"
+                >
+                  <h2 class="text-lg font-semibold text-white">
+                    Array Visualization
+                  </h2>
+                  <button
+                    id="algorithm-info-trigger"
+                    @click="isInfoModalOpen = true"
+                    class="group rounded-full bg-slate-700 p-2 transition-colors hover:bg-slate-600"
+                    title="Algorithm Details"
+                  >
+                    <svg
+                      class="h-5 w-5 text-blue-400 group-hover:text-blue-300"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="16" x2="12" y2="12"></line>
+                      <line x1="12" y1="8" x2="12" y2="8"></line>
+                    </svg>
+                  </button>
+                </div>
+                <div class="flex flex-1 flex-col items-start overflow-auto">
+                  <div class="mx-auto h-full w-full">
+                    <div
+                      class="flex h-full flex-col items-start overflow-auto px-6 py-4"
+                    >
+                      <div
+                        class="mx-auto flex min-h-0 w-full flex-col items-center gap-4"
+                      >
+                        <div
+                          class="flex-shrink-0 rounded-lg border border-green-600/50 bg-green-900/30 px-4 py-1.5"
+                        >
+                          <span class="text-sm font-semibold text-green-400"
+                            >🎯 Target:
+                            <span class="text-base font-bold text-white"
+                              >59</span
+                            ></span
+                          >
+                        </div>
+                        <div
+                          class="flex w-full max-w-4xl flex-wrap justify-center gap-2"
+                        >
+                          <div class="flex flex-col items-center">
+                            <div
+                              class="mb-0.5 font-mono text-[10px] text-gray-500"
+                            >
+                              [0]
+                            </div>
+                            <div
+                              class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50"
+                              title="Index 0: 4 (excluded)"
+                            >
+                              4
+                            </div>
+                            <div
+                              class="mt-1 flex h-6 flex-col items-center justify-start"
+                            ></div>
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <div
+                              class="mb-0.5 font-mono text-[10px] text-gray-500"
+                            >
+                              [1]
+                            </div>
+                            <div
+                              class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50"
+                              title="Index 1: 11 (excluded)"
+                            >
+                              11
+                            </div>
+                            <div
+                              class="mt-1 flex h-6 flex-col items-center justify-start"
+                            ></div>
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <div
+                              class="mb-0.5 font-mono text-[10px] text-gray-500"
+                            >
+                              [2]
+                            </div>
+                            <div
+                              class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50"
+                              title="Index 2: 12 (excluded)"
+                            >
+                              12
+                            </div>
+                            <div
+                              class="mt-1 flex h-6 flex-col items-center justify-start"
+                            ></div>
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <div
+                              class="mb-0.5 font-mono text-[10px] text-gray-500"
+                            >
+                              [3]
+                            </div>
+                            <div
+                              class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50"
+                              title="Index 3: 14 (excluded)"
+                            >
+                              14
+                            </div>
+                            <div
+                              class="mt-1 flex h-6 flex-col items-center justify-start"
+                            ></div>
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <div
+                              class="mb-0.5 font-mono text-[10px] text-gray-500"
+                            >
+                              [4]
+                            </div>
+                            <div
+                              class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50"
+                              title="Index 4: 22 (excluded)"
+                            >
+                              22
+                            </div>
+                            <div
+                              class="mt-1 flex h-6 flex-col items-center justify-start"
+                            ></div>
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <div
+                              class="mb-0.5 font-mono text-[10px] text-gray-500"
+                            >
+                              [5]
+                            </div>
+                            <div
+                              class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50"
+                              title="Index 5: 23 (excluded)"
+                            >
+                              23
+                            </div>
+                            <div
+                              class="mt-1 flex h-6 flex-col items-center justify-start"
+                            ></div>
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <div
+                              class="mb-0.5 font-mono text-[10px] text-gray-500"
+                            >
+                              [6]
+                            </div>
+                            <div
+                              class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50"
+                              title="Index 6: 33 (excluded)"
+                            >
+                              33
+                            </div>
+                            <div
+                              class="mt-1 flex h-6 flex-col items-center justify-start"
+                            ></div>
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <div
+                              class="mb-0.5 font-mono text-[10px] text-gray-500"
+                            >
+                              [7]
+                            </div>
+                            <div
+                              class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50"
+                              title="Index 7: 34 (excluded)"
+                            >
+                              34
+                            </div>
+                            <div
+                              class="mt-1 flex h-6 flex-col items-center justify-start"
+                            ></div>
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <div
+                              class="mb-0.5 font-mono text-[10px] text-gray-500"
+                            >
+                              [8]
+                            </div>
+                            <div
+                              class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50"
+                              title="Index 8: 39 (excluded)"
+                            >
+                              39
+                            </div>
+                            <div
+                              class="mt-1 flex h-6 flex-col items-center justify-start"
+                            ></div>
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <div
+                              class="mb-0.5 font-mono text-[10px] text-gray-500"
+                            >
+                              [9]
+                            </div>
+                            <div
+                              class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-blue-600 border-blue-500 text-white shadow-md"
+                              title="Index 9: 48 (active_range)"
+                            >
+                              48
+                            </div>
+                            <div
+                              class="mt-1 flex h-6 flex-col items-center justify-start"
+                            >
+                              <div
+                                class="rounded-[4px] px-1.5 py-0.5 text-[10px] font-bold text-blue-400 bg-blue-900/50 leading-none"
+                              >
+                                L
+                              </div>
+                            </div>
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <div
+                              class="mb-0.5 font-mono text-[10px] text-gray-500"
+                            >
+                              [10]
+                            </div>
+                            <div
+                              class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-yellow-500 border-yellow-400 text-black scale-110 shadow-lg animate-pulse"
+                              title="Index 10: 51 (examining)"
+                            >
+                              51
+                            </div>
+                            <div
+                              class="mt-1 flex h-6 flex-col items-center justify-start"
+                            >
+                              <div
+                                class="rounded-[4px] px-1.5 py-0.5 text-[10px] font-bold text-yellow-400 bg-yellow-900/50 leading-none"
+                              >
+                                M
+                              </div>
+                            </div>
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <div
+                              class="mb-0.5 font-mono text-[10px] text-gray-500"
+                            >
+                              [11]
+                            </div>
+                            <div
+                              class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-blue-600 border-blue-500 text-white shadow-md"
+                              title="Index 11: 59 (active_range)"
+                            >
+                              59
+                            </div>
+                            <div
+                              class="mt-1 flex h-6 flex-col items-center justify-start"
+                            ></div>
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <div
+                              class="mb-0.5 font-mono text-[10px] text-gray-500"
+                            >
+                              [12]
+                            </div>
+                            <div
+                              class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-blue-600 border-blue-500 text-white shadow-md"
+                              title="Index 12: 63 (active_range)"
+                            >
+                              63
+                            </div>
+                            <div
+                              class="mt-1 flex h-6 flex-col items-center justify-start"
+                            >
+                              <div
+                                class="rounded-[4px] px-1.5 py-0.5 text-[10px] font-bold text-red-400 bg-red-900/50 leading-none"
+                              >
+                                R
+                              </div>
+                            </div>
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <div
+                              class="mb-0.5 font-mono text-[10px] text-gray-500"
+                            >
+                              [13]
+                            </div>
+                            <div
+                              class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50"
+                              title="Index 13: 69 (excluded)"
+                            >
+                              69
+                            </div>
+                            <div
+                              class="mt-1 flex h-6 flex-col items-center justify-start"
+                            ></div>
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <div
+                              class="mb-0.5 font-mono text-[10px] text-gray-500"
+                            >
+                              [14]
+                            </div>
+                            <div
+                              class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50"
+                              title="Index 14: 70 (excluded)"
+                            >
+                              70
+                            </div>
+                            <div
+                              class="mt-1 flex h-6 flex-col items-center justify-start"
+                            ></div>
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <div
+                              class="mb-0.5 font-mono text-[10px] text-gray-500"
+                            >
+                              [15]
+                            </div>
+                            <div
+                              class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50"
+                              title="Index 15: 71 (excluded)"
+                            >
+                              71
+                            </div>
+                            <div
+                              class="mt-1 flex h-6 flex-col items-center justify-start"
+                            ></div>
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <div
+                              class="mb-0.5 font-mono text-[10px] text-gray-500"
+                            >
+                              [16]
+                            </div>
+                            <div
+                              class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50"
+                              title="Index 16: 74 (excluded)"
+                            >
+                              74
+                            </div>
+                            <div
+                              class="mt-1 flex h-6 flex-col items-center justify-start"
+                            ></div>
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <div
+                              class="mb-0.5 font-mono text-[10px] text-gray-500"
+                            >
+                              [17]
+                            </div>
+                            <div
+                              class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50"
+                              title="Index 17: 79 (excluded)"
+                            >
+                              79
+                            </div>
+                            <div
+                              class="mt-1 flex h-6 flex-col items-center justify-start"
+                            ></div>
+                          </div>
+                        </div>
+                        <div class="flex-shrink-0 text-xs text-gray-400">
+                          Search space:
+                          <span class="font-semibold text-white">4</span>
+                          elements
+                        </div>
+                        <div
+                          class="flex flex-shrink-0 flex-wrap justify-center gap-3 text-[10px]"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Panel Steps w-1/3 of the total width of parent  -->
+              <div
+                id="panel-steps"
+                class="flex w-1/3 select-none flex-col overflow-hidden rounded-xl border border-slate-700 bg-slate-800 shadow-2xl"
+              >
+                <div
+                  class="mb-4 flex flex-shrink-0 items-center justify-between px-5 pt-5"
+                >
+                  <h2
+                    class="text-xs font-bold uppercase tracking-widest text-slate-400"
+                  >
+                    Algorithm State
+                  </h2>
+                  <button
+                    @click="isShortcutsModalOpen = true"
+                    class="rounded-full bg-slate-700 p-2 text-white shadow-lg transition-all hover:bg-slate-600"
+                    title="Keyboard shortcuts"
+                    aria-label="Show keyboard shortcuts"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <rect
+                        width="20"
+                        height="16"
+                        x="2"
+                        y="4"
+                        rx="2"
+                        ry="2"
+                      ></rect>
+                      <path d="M6 8h.001"></path>
+                      <path d="M10 8h.001"></path>
+                      <path d="M14 8h.001"></path>
+                      <path d="M18 8h.001"></path>
+                      <path d="M8 12h.001"></path>
+                      <path d="M12 12h.001"></path>
+                      <path d="M16 12h.001"></path>
+                      <path d="M7 16h10"></path>
+                    </svg>
+                  </button>
+                </div>
+                <!-- Panel Steps List (flex-[2]) -->
+                <div
+                  id="panel-steps-list"
+                  class="flex flex-[2] flex-col overflow-hidden"
+                >
+                  <div class="flex-1 overflow-hidden">
+                    <div class="dashboard">
+                      <div class="zone zone-primary">
+                        <div class="zone-label">Mid</div>
+                        <div class="zone-meta">IDX 10</div>
+                        <div class="primary-value">51</div>
+                        <div class="zone-boundaries">
+                          <div class="boundary-cell">
+                            <div class="boundary-label">Left</div>
+                            <div class="boundary-value">9</div>
+                          </div>
+                          <div class="boundary-cell">
+                            <div class="boundary-label">Right</div>
+                            <div class="boundary-value">12</div>
+                          </div>
+                          <div class="boundary-cell">
+                            <div class="boundary-label">Space</div>
+                            <div class="boundary-value">4</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="zone zone-goal">
+                        <div class="zone-label">Target</div>
+                        <div class="goal-value">59</div>
+                      </div>
+                      <div class="zone zone-logic">
+                        <div class="zone-label">LOGIC</div>
+                        <div class="logic-content">
+                          <div class="text-white zone3-long-text">CALC MID</div>
+                          <div class="mt-1 text-[12px] font-normal text-white">
+                            (9 + 12) / 2 = 10
+                          </div>
+                        </div>
+                      </div>
+                      <div class="zone zone-action">
+                        <div class="action-text text-slate-300">
+                          COMPARE MID WITH TARGET
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Panel Step Description (flex-[1]) -->
+                <div
+                  id="panel-step-description"
+                  class="flex flex-[1] flex-col overflow-hidden border-t border-slate-700 bg-gradient-to-br from-slate-700/60 to-slate-800/60 px-4 py-2"
+                >
+                  <div class="custom-scrollbar flex-1 overflow-y-auto">
+                    <p class="text-base font-medium leading-relaxed text-white">
+                      <span
+                        class="mr-2 inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-bold bg-slate-600/50 text-slate-300 align-middle"
+                        >CALCULATE MID</span
+                      >📍 Calculate middle: index 10 (value = 51)
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- RIGHT: Control Buttons -->
-          <div class="flex items-center gap-2">
-            <button
-              class="px-3 py-1.5 rounded text-sm flex items-center gap-2 transition-colors font-semibold bg-slate-700 hover:bg-slate-600 text-slate-300"
-              :class="mode === 'watch' ? 'bg-blue-600 text-white' : ''"
-            >
-              ⚡ Watch
-            </button>
-
-            <button
-              @click="currentStep = 1"
-              class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-              title="Reset (R)"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                <path d="M3 3v5h5" />
-              </svg>
-            </button>
-
-            <button
-              @click="if(currentStep > 1) currentStep--"
-              :disabled="currentStep <= 1"
-              class="bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-              title="Previous (←)"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="m15 18-6-6 6-6" />
-              </svg>
-            </button>
-
-            <button
-              @click="if(currentStep < totalSteps) currentStep++"
-              :disabled="currentStep >= totalSteps"
-              class="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-800 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors font-semibold"
-              title="Next (→)"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="m9 18 6-6-6-6" />
-              </svg>
-            </button>
-
-            <button
-              @click="isShortcutsModalOpen = true"
-              class="bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-lg transition-colors"
-              title="Shortcuts (?)"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                <path d="M12 17h.01" />
-              </svg>
-            </button>
-
-
           </div>
         </div>
-      </header>
+      </div>
 
-      <!-- ========================================
-             MAIN CONTENT AREA
-             - 3:1.5 panel ratio (LOCKED)
-             - Visualization (left): flex-[3]
-             - Steps (right): w-96 (384px)
-             ======================================== -->
-      <main class="flex-1 flex items-center justify-center p-4 overflow-hidden">
-        <div class="w-full h-full max-w-7xl flex gap-4 overflow-hidden">
-          <!-- LEFT PANEL: VISUALIZATION 
-                   [REQ] LOCKED: flex-[3] ratio (66.67% width)
-                   [REQ] LOCKED: Must have #panel-visualization ID
-                   [REQ] LOCKED: Use items-start + mx-auto for overflow (Section 1.6)
-              -->
-          <div
-            id="panel-visualization"
-            class="flex-[3] bg-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden select-none border border-slate-700"
-          >
-            <!-- Visualization Header -->
-            <div
-              class="px-4 py-3 border-b border-slate-700 flex items-center justify-between flex-shrink-0"
-            >
-              <h2 class="text-lg font-semibold text-white">
-                Array Visualization
-              </h2>
+      <!-- MODALS (Restored from reference template for full UX) -->
 
-              <!-- Algorithm Info Trigger -->
-              <button
-                id="algorithm-info-trigger"
-                @click="isInfoModalOpen = true"
-                class="p-2 bg-slate-700 hover:bg-slate-600 rounded-full transition-colors group"
-                title="Algorithm Details"
-              >
-                <svg
-                  class="w-5 h-5 text-blue-400 group-hover:text-blue-300"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="16" x2="12" y2="12"></line>
-                  <line x1="12" y1="8" x2="12" y2="8"></line>
-                </svg>
-              </button>
-            </div>
-
-            <!-- Visualization Content (Copied from body.txt) -->
-            <div class="flex-1 flex flex-col items-start overflow-auto p-6">
-              <div class="mx-auto h-full w-full">
-                <div class="h-full flex flex-col items-start overflow-auto py-4 px-6">
-                  <div class="mx-auto flex flex-col items-center gap-4 min-h-0 w-full">
-                    <div class="px-4 py-1.5 bg-green-900/30 border border-green-600/50 rounded-lg flex-shrink-0">
-                      <span class="text-green-400 font-semibold text-sm">🎯 Target: <span class="text-white text-base font-bold">59</span></span>
-                    </div>
-                    <div class="flex flex-wrap justify-center gap-2 w-full max-w-4xl">
-                      <div class="flex flex-col items-center"><div class="text-gray-500 text-[10px] font-mono mb-0.5">[0]</div><div class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50" title="Index 0: 4 (excluded)">4</div><div class="h-6 flex flex-col items-center justify-start mt-1"></div></div>
-                      <div class="flex flex-col items-center"><div class="text-gray-500 text-[10px] font-mono mb-0.5">[1]</div><div class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50" title="Index 1: 11 (excluded)">11</div><div class="h-6 flex flex-col items-center justify-start mt-1"></div></div>
-                      <div class="flex flex-col items-center"><div class="text-gray-500 text-[10px] font-mono mb-0.5">[2]</div><div class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50" title="Index 2: 12 (excluded)">12</div><div class="h-6 flex flex-col items-center justify-start mt-1"></div></div>
-                      <div class="flex flex-col items-center"><div class="text-gray-500 text-[10px] font-mono mb-0.5">[3]</div><div class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50" title="Index 3: 14 (excluded)">14</div><div class="h-6 flex flex-col items-center justify-start mt-1"></div></div>
-                      <div class="flex flex-col items-center"><div class="text-gray-500 text-[10px] font-mono mb-0.5">[4]</div><div class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50" title="Index 4: 22 (excluded)">22</div><div class="h-6 flex flex-col items-center justify-start mt-1"></div></div>
-                      <div class="flex flex-col items-center"><div class="text-gray-500 text-[10px] font-mono mb-0.5">[5]</div><div class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50" title="Index 5: 23 (excluded)">23</div><div class="h-6 flex flex-col items-center justify-start mt-1"></div></div>
-                      <div class="flex flex-col items-center"><div class="text-gray-500 text-[10px] font-mono mb-0.5">[6]</div><div class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50" title="Index 6: 33 (excluded)">33</div><div class="h-6 flex flex-col items-center justify-start mt-1"></div></div>
-                      <div class="flex flex-col items-center"><div class="text-gray-500 text-[10px] font-mono mb-0.5">[7]</div><div class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50" title="Index 7: 34 (excluded)">34</div><div class="h-6 flex flex-col items-center justify-start mt-1"></div></div>
-                      <div class="flex flex-col items-center"><div class="text-gray-500 text-[10px] font-mono mb-0.5">[8]</div><div class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50" title="Index 8: 39 (excluded)">39</div><div class="h-6 flex flex-col items-center justify-start mt-1"></div></div>
-                      <div class="flex flex-col items-center"><div class="text-gray-500 text-[10px] font-mono mb-0.5">[9]</div><div class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-blue-600 border-blue-500 text-white shadow-md" title="Index 9: 48 (active_range)">48</div><div class="h-6 flex flex-col items-center justify-start mt-1"><div class="px-1.5 py-0.5 rounded-[4px] text-[10px] font-bold text-blue-400 bg-blue-900/50 leading-none">L</div></div></div>
-                      <div class="flex flex-col items-center"><div class="text-gray-500 text-[10px] font-mono mb-0.5">[10]</div><div class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-yellow-500 border-yellow-400 text-black scale-110 shadow-lg animate-pulse" title="Index 10: 51 (examining)">51</div><div class="h-6 flex flex-col items-center justify-start mt-1"><div class="px-1.5 py-0.5 rounded-[4px] text-[10px] font-bold text-yellow-400 bg-yellow-900/50 leading-none">M</div></div></div>
-                      <div class="flex flex-col items-center"><div class="text-gray-500 text-[10px] font-mono mb-0.5">[11]</div><div class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-blue-600 border-blue-500 text-white shadow-md" title="Index 11: 59 (active_range)">59</div><div class="h-6 flex flex-col items-center justify-start mt-1"></div></div>
-                      <div class="flex flex-col items-center"><div class="text-gray-500 text-[10px] font-mono mb-0.5">[12]</div><div class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-blue-600 border-blue-500 text-white shadow-md" title="Index 12: 63 (active_range)">63</div><div class="h-6 flex flex-col items-center justify-start mt-1"><div class="px-1.5 py-0.5 rounded-[4px] text-[10px] font-bold text-red-400 bg-red-900/50 leading-none">R</div></div></div>
-                      <div class="flex flex-col items-center"><div class="text-gray-500 text-[10px] font-mono mb-0.5">[13]</div><div class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50" title="Index 13: 69 (excluded)">69</div><div class="h-6 flex flex-col items-center justify-start mt-1"></div></div>
-                      <div class="flex flex-col items-center"><div class="text-gray-500 text-[10px] font-mono mb-0.5">[14]</div><div class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50" title="Index 14: 70 (excluded)">70</div><div class="h-6 flex flex-col items-center justify-start mt-1"></div></div>
-                      <div class="flex flex-col items-center"><div class="text-gray-500 text-[10px] font-mono mb-0.5">[15]</div><div class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50" title="Index 15: 71 (excluded)">71</div><div class="h-6 flex flex-col items-center justify-start mt-1"></div></div>
-                      <div class="flex flex-col items-center"><div class="text-gray-500 text-[10px] font-mono mb-0.5">[16]</div><div class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50" title="Index 16: 74 (excluded)">74</div><div class="h-6 flex flex-col items-center justify-start mt-1"></div></div>
-                      <div class="flex flex-col items-center"><div class="text-gray-500 text-[10px] font-mono mb-0.5">[17]</div><div class="w-12 h-12 flex items-center justify-center rounded-md font-bold text-base transition-all duration-300 border-2 flex-shrink-0 bg-gray-700 border-gray-600 text-gray-500 opacity-50" title="Index 17: 79 (excluded)">79</div><div class="h-6 flex flex-col items-center justify-start mt-1"></div></div>
-                    </div>
-                    <div class="text-xs text-gray-400 flex-shrink-0">Search space: <span class="text-white font-semibold">4</span> elements</div>
-                    <div class="flex flex-wrap gap-3 text-[10px] justify-center flex-shrink-0"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        <!-- RIGHT PANEL: Algorithm State Display 
-                 [REQ] CRITICAL: Must have #panel-steps ID
-                 [REQ] CRITICAL: Must use w-96 (384px fixed width)
-            -->
-        <div
-          id="panel-steps"
-          class="w-96 bg-slate-800 flex flex-col overflow-hidden rounded-xl shadow-2xl border border-slate-700"
-        >
-          <!-- 
-              ================================================================
-              PANEL SECTIONS (2:1 RATIO)
-              ================================================================
-              The right panel is divided into TWO sections with a 2:1 ratio:
-              1. Algorithm State Dashboard (flex-[2]) - Top 2/3
-              2. Step Description (flex-1) - Bottom 1/3
-              This is achieved using flexbox: `flex-[2]` for the top and `flex-1`
-              for the bottom within the parent flex container.
-              ================================================================
-          -->
-
-          <!-- SECTION 1: Algorithm State Dashboard (Top 2/3) 
-                   [REQ] CRITICAL: Must have #panel-steps-list ID
-                   [REQ] UPDATED: flex-[2] for 2/3 height ratio
-              -->
-          <div
-            id="panel-steps-list"
-            class="flex-[2] flex flex-col overflow-hidden custom-scrollbar relative bg-slate-800"
-          >
-            <div class="flex justify-between px-5 pt-5 items-center mb-4">
-              <h2
-                class="text-xs font-bold text-slate-400 uppercase tracking-widest"
-              >
-                Algorithm State
-              </h2>
-              <!-- Keyboard Shortcuts Button -->
-              <button
-                @click="isShortcutsModalOpen = true"
-                class="bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-full shadow-lg transition-all"
-                title="Keyboard shortcuts"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <rect width="20" height="16" x="2" y="4" rx="2" ry="2"></rect>
-                  <path d="M6 8h.001"></path>
-                  <path d="M10 8h.001"></path>
-                  <path d="M14 8h.001"></path>
-                  <path d="M18 8h.001"></path>
-                  <path d="M8 12h.001"></path>
-                  <path d="M12 12h.001"></path>
-                  <path d="M16 12h.001"></path>
-                  <path d="M7 16h10"></path>
-                </svg>
-              </button>
-            </div>
-
-            <!-- MAIN DASHBOARD (Single, Updates Per Step) 
-            
-                 ================================================================
-                 DASHBOARD DESIGN PHILOSOPHY & IMPLEMENTATION GUIDE
-                 ================================================================
-                 
-                 This dashboard represents the CURRENT STATE of the algorithm at each step.
-                 Unlike recursive algorithms (which stack multiple call frames), iterative 
-                 algorithms have a SINGLE dashboard that UPDATES as you progress through steps.
-                 
-                 CRITICAL DESIGN PRINCIPLES:
-                 
-                 1. EDGE-TO-EDGE FILLING:
-                    - Dashboard wrapper has NO padding (removed px-5 pb-5)
-                    - Dashboard uses width: 100%, height: 100%
-                    - Maximizes space for container query units → larger fonts
-                    - Every pixel counts for legibility!
-                 
-                 2. CONTAINER QUERY SCALING:
-                    - All typography uses clamp() with cqh units
-                    - Dashboard scales proportionally to available space
-                    - No fixed dimensions or scale factors
-                    - Completely fluid and responsive
-                 
-                 3. STRUCTURAL HIERARCHY:
-                    - Header OUTSIDE dashboard (px-5 pt-5 mb-4)
-                    - Dashboard wrapper uses flex-1 (fills remaining space)
-                    - Dashboard itself uses h-full (fills wrapper)
-                    - Clean separation without artificial constraints
-                 
-                 4. VISUAL INTEGRATION:
-                    - No borders or box-shadows on dashboard
-                    - Blends naturally with panel background
-                    - Feels native, not imported
-                    - Organic part of the interface
-                 
-                 ALGORITHM-SPECIFIC CUSTOMIZATION:
-                 
-                 This Binary Search implementation uses:
-                 - Zone 1 (Primary): Current mid value & index
-                 - Zone 2 (Goal): Target value
-                 - Zone 3 (Logic): Comparison expression (e.g., "42 == 42")
-                 - Zone 4 (Action): Next operation (e.g., "RETURN Index 5")
-                 - Zone 5 (Overlay): Left/Right/Range boundaries
-                 
-                 FOR OTHER ITERATIVE ALGORITHMS:
-                 - This is a STARTING POINT, not a universal template
-                 - Adapt zone content to your algorithm's key metrics
-                 - Keep the structural pattern (5 zones, grid layout)
-                 - Modify labels, values, and logic to match your domain
-                 - Examples: Sliding Window (window bounds), Two Pointers (left/right), etc.
-                 
-                 COMMON PITFALLS TO AVOID:
-                 
-                 ❌ DON'T add padding to dashboard wrapper (loses space)
-                 ❌ DON'T use fixed pixel dimensions (breaks responsiveness)
-                 ❌ DON'T add borders/shadows (feels imported, not native)
-                 ❌ DON'T use absolute positioning for zones (breaks grid logic)
-                 ❌ DON'T stack multiple dashboards (that's for recursive algos)
-                 
-                 ✅ DO let dashboard fill edge-to-edge
-                 ✅ DO use container query units (cqh) for all sizing
-                 ✅ DO keep header separate from dashboard content
-                 ✅ DO maintain the "Iron Logic" grid system
-                 ✅ DO update content dynamically, not create new instances
-                 
-                 See dashboard_design_philosophy.md for complete documentation.
-                 ================================================================
-            -->
-            <div class="flex-1">
-              <div class="dashboard h-full">
-                <!-- ZONE 1: PRIMARY FOCUS -->
-                <div class="zone zone-primary">
-                  <div class="zone-label">Mid</div>
-                  <div class="zone-meta">IDX 10</div>
-                  <div class="primary-value">51</div>
-
-                  <!-- ZONE 5: OVERLAY -->
-                  <div class="zone-boundaries">
-                    <div class="boundary-cell">
-                      <div class="boundary-label">Left</div>
-                      <div class="boundary-value">9</div>
-                    </div>
-                    <div class="boundary-cell">
-                      <div class="boundary-label">Right</div>
-                      <div class="boundary-value">12</div>
-                    </div>
-                    <div class="boundary-cell">
-                      <div class="boundary-label">Range</div>
-                      <div class="boundary-value">4</div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- ZONE 2: GOAL -->
-                <div class="zone zone-goal">
-                  <div class="zone-label">Target</div>
-                  <div class="goal-value">59</div>
-                </div>
-
-                <!-- ZONE 3: LOGIC (VERTICAL LABEL) -->
-                <div class="zone zone-logic">
-                  <div class="zone-label">LOGIC</div>
-                  <div class="logic-content">
-                     <p>CALC MID</p>
-                     <p class="text-[0.75em]">(9 + 12) / 2 = 10</p>
-                    
-
-                  </div>
-                </div>
-
-                <!-- ZONE 4: ACTION -->
-                <div class="zone zone-action">
-                  <div class="action-text">
-                    RETURN Index 5
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- SECTION 2: Current Step Description (Bottom 1/3) 
-                   [REQ] CRITICAL: Must have #panel-step-description ID
-                   [REQ] UPDATED: flex-[1] for 1/3 height ratio
-              -->
-          <div
-            id="panel-step-description"
-            class="flex-[1] border-t border-slate-700 py-3 px-4 bg-gradient-to-br from-slate-700/60 to-slate-800/60 overflow-hidden flex flex-col"
-          >
-
-<div class="flex-1 overflow-y-auto custom-scrollbar"><p class="text-white text-base font-medium leading-relaxed"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 mr-2 rounded-md text-xs font-bold bg-fuchsia-800 text-slate-300 align-middle">CALCULATE MID</span>📍 Calculate middle: index 10 (value = 51)</p></div>
-
-          </div>
-        </div>
-      </main>
-
-      <!-- MODALS -->
-      
       <!-- Keyboard Shortcuts Modal -->
-      <div 
-        x-show="isShortcutsModalOpen" 
+      <div
+        x-show="isShortcutsModalOpen"
         x-cloak
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm"
       >
-        <div 
+        <div
           @click.away="isShortcutsModalOpen = false"
           class="bg-slate-800 border border-slate-700 rounded-xl shadow-2xl w-full max-w-md overflow-hidden"
         >
-          <div class="px-6 py-4 border-b border-slate-700 flex justify-between items-center">
+          <div
+            class="px-6 py-4 border-b border-slate-700 flex justify-between items-center"
+          >
             <h3 class="text-xl font-bold text-white">Keyboard Shortcuts</h3>
-            <button @click="isShortcutsModalOpen = false" class="text-slate-400 hover:text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            <button
+              @click="isShortcutsModalOpen = false"
+              class="text-slate-400 hover:text-white"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+              </svg>
             </button>
           </div>
           <div class="p-6 space-y-4">
@@ -837,36 +1121,73 @@
       </div>
 
       <!-- Algorithm Info Modal -->
-      <div 
-        x-show="isInfoModalOpen" 
+      <div
+        x-show="isInfoModalOpen"
         x-cloak
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm"
       >
-        <div 
+        <div
           @click.away="isInfoModalOpen = false"
           class="bg-slate-800 border border-slate-700 rounded-xl shadow-2xl w-full max-w-2xl max-h-85vh overflow-hidden flex flex-col"
         >
-          <div class="px-6 py-4 border-b border-slate-700 flex justify-between items-center flex-shrink-0">
+          <div
+            class="px-6 py-4 border-b border-slate-700 flex justify-between items-center flex-shrink-0"
+          >
             <h3 class="text-xl font-bold text-white">About Binary Search</h3>
-            <button @click="isInfoModalOpen = false" class="text-slate-400 hover:text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            <button
+              @click="isInfoModalOpen = false"
+              class="text-slate-400 hover:text-white"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+              </svg>
             </button>
           </div>
-          <div class="p-6 overflow-y-auto custom-scrollbar space-y-4 text-slate-300">
+          <div
+            class="p-6 overflow-y-auto custom-scrollbar space-y-4 text-slate-300"
+          >
             <p>
-              <strong class="text-blue-400">Binary Search</strong> is an efficient algorithm for finding an item from a sorted list of items. It works by repeatedly dividing the search interval in half. This visualization demonstrates the iterative approach.
+              <strong class="text-blue-400">Binary Search</strong> is an
+              efficient algorithm for finding an item from a sorted list of
+              items. It works by repeatedly dividing the search interval in
+              half. This visualization demonstrates the iterative approach.
             </p>
             <h4 class="text-white font-semibold">How it works:</h4>
             <ul class="list-disc pl-5 space-y-2">
-              <li>Start with two pointers: left (L) at the beginning and right (R) at the end of the array.</li>
-              <li>Calculate the middle index (M) as the floor of (L + R) / 2.</li>
-              <li>If the middle element equals the target, return the index.</li>
-              <li>If the middle element is less than the target, move L to M + 1.</li>
-              <li>If the middle element is greater than the target, move R to M - 1.</li>
+              <li>
+                Start with two pointers: left (L) at the beginning and right (R)
+                at the end of the array.
+              </li>
+              <li>
+                Calculate the middle index (M) as the floor of (L + R) / 2.
+              </li>
+              <li>
+                If the middle element equals the target, return the index.
+              </li>
+              <li>
+                If the middle element is less than the target, move L to M + 1.
+              </li>
+              <li>
+                If the middle element is greater than the target, move R to M -
+                1.
+              </li>
               <li>Repeat until the target is found or L exceeds R.</li>
             </ul>
             <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
-              <h5 class="text-xs font-bold text-slate-500 uppercase mb-2">Complexity</h5>
+              <h5 class="text-xs font-bold text-slate-500 uppercase mb-2">
+                Complexity
+              </h5>
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <p class="text-xs text-slate-400">Time Complexity</p>
@@ -882,25 +1203,33 @@
             <div class="space-y-2 text-sm">
               <div>
                 <span class="text-slate-400">L (Left):</span>
-                <span class="text-white"> The starting boundary of the current search range.</span>
+                <span class="text-white">
+                  The starting boundary of the current search range.</span
+                >
               </div>
               <div>
                 <span class="text-slate-400">R (Right):</span>
-                <span class="text-white"> The ending boundary of the current search range.</span>
+                <span class="text-white">
+                  The ending boundary of the current search range.</span
+                >
               </div>
               <div>
                 <span class="text-slate-400">M (Mid):</span>
-                <span class="text-white"> The central element currently being compared to the target.</span>
+                <span class="text-white">
+                  The central element currently being compared to the
+                  target.</span
+                >
               </div>
               <div>
                 <span class="text-slate-400">Target:</span>
-                <span class="text-white"> The specific value the algorithm is trying to locate.</span>
+                <span class="text-white">
+                  The specific value the algorithm is trying to locate.</span
+                >
               </div>
             </div>
           </div>
         </div>
       </div>
-
     </div>
   </body>
 </html>

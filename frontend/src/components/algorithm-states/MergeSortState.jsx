@@ -1,3 +1,5 @@
+// frontend/src/components/algorithm-states/MergeSortState.jsx
+
 import React from "react";
 import PropTypes from "prop-types";
 
@@ -13,7 +15,7 @@ import PropTypes from "prop-types";
  * 4. Action: The "What" (e.g., "Take Left", "Split Array")
  * 5. Overlay: Context (Depth, Comparisons, Operation Type)
  */
-const LONG_TEXT = 4;
+const Z1_LONG_TEXT = 4;
 const MergeSortState = ({ step }) => {
   // Graceful degradation
   if (!step?.data) {
@@ -180,7 +182,7 @@ const MergeSortState = ({ step }) => {
         <div
           className={`primary-value ${
             // typeof primaryValue === "string" && primaryValue.includes("vs")
-            typeof primaryValue === "string" && primaryValue.length > LONG_TEXT
+            typeof primaryValue === "string" && primaryValue.length > Z1_LONG_TEXT
               ? "long-text"
               : ""
           }`}
@@ -220,7 +222,7 @@ const MergeSortState = ({ step }) => {
             typeof logicText === "string" && logicText.length > Z3_LONG_TEXT
               ? "zone3-long-text"
               : ""
-            } 
+            }
           `}>{logicText}</div>
           <div
             className={`mt-1 text-[12px] font-normal ${logicColor}`}

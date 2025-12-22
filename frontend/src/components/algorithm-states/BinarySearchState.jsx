@@ -1,3 +1,5 @@
+// frontend/src/components/algorithm-states/BinarySearchState.jsx
+
 import React from "react";
 import PropTypes from "prop-types";
 
@@ -40,7 +42,8 @@ const BinarySearchState = ({ step }) => {
   let logicText = "INITIALIZE";
   let logicSubtext = "Waiting to start";
   let actionText = "PREPARE SEARCH";
-  let logicColor = "text-white"; // CHECK WHO IS USING THIS <-- !!!
+  let logicColor = "text-white";
+  let actionColor = "text-slate-300";
   const Z3_LONG_TEXT = 5
 
 
@@ -52,22 +55,37 @@ const BinarySearchState = ({ step }) => {
     if (midValue < target) {
       logicText = `${midValue} < ${target}`;
       logicSubtext = "Mid is smaller";
+      logicColor = "text-blue-300";
       actionText = "SEARCH RIGHT →";
+      actionColor = "text-blue-200";
     } else if (midValue > target) {
       logicText = `${midValue} > ${target}`;
       logicSubtext = "Mid is larger";
+      logicColor = "text-amber-300";
       actionText = "← SEARCH LEFT";
+      actionColor = "text-amber-200";
     } else {
       logicText = `${midValue} == ${target}`;
       logicSubtext = "Match found!";
+      logicColor = "text-emerald-300";
       actionText = "RETURN INDEX";
+      actionColor = "text-emerald-200";
     }
   }
 
   // Override action text based on specific step types if needed
-  if (step.type === "SEARCH_RIGHT") actionText = "ELIMINATE LEFT HALF";
-  if (step.type === "SEARCH_LEFT") actionText = "ELIMINATE RIGHT HALF";
-  if (step.type === "FOUND") actionText = "TARGET FOUND";
+  if (step.type === "SEARCH_RIGHT") {
+    actionText = "ELIMINATE LEFT HALF";
+    actionColor = "text-blue-200";
+  }
+  if (step.type === "SEARCH_LEFT") {
+    actionText = "ELIMINATE RIGHT HALF";
+    actionColor = "text-amber-200";
+  }
+  if (step.type === "FOUND") {
+    actionText = "TARGET FOUND";
+    actionColor = "text-emerald-200";
+  }
 
   return (
     <div className="dashboard">
@@ -111,15 +129,15 @@ const BinarySearchState = ({ step }) => {
       <div className="zone zone-logic">
         <div className="zone-label">LOGIC</div>
         <div className="logic-content">
-          <div className={`${
+          <div className={`${logicColor} ${
             // Reduce font size for long text
             typeof logicText === "string" && logicText.length > Z3_LONG_TEXT
               ? "zone3-long-text"
               : ""
-            } 
+            }
           `}>{logicText}</div>
           <div
-            className={`mt-1 text-[12px] font-normal`}
+            className={`mt-1 text-[12px] font-normal ${logicColor}`}
           >
             {logicSubtext}
           </div>
@@ -128,7 +146,7 @@ const BinarySearchState = ({ step }) => {
 
       {/* ZONE 4: ACTION */}
       <div className="zone zone-action">
-        <div className="action-text">{actionText}</div>
+        <div className={`action-text ${actionColor}`}>{actionText}</div>
       </div>
     </div>
   );

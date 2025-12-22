@@ -1,3 +1,4 @@
+/* START CUSTOM CSS */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -304,3 +305,4 @@ code {
   padding-right: 4px;
 }
 
+/* END OF CUSTOM CSS */

@@ -1,3 +1,5 @@
+// frontend/src/components/algorithm-states/TwoPointerState.jsx
+
 import React from "react";
 import PropTypes from "prop-types";
 
@@ -33,6 +35,9 @@ const TwoPointerState = ({ step }) => {
 
   const isComplete = step.type === "ALGORITHM_COMPLETE";
   const isInitial = step.type === "INITIAL_STATE";
+  
+  const Z1_LONG_TEXT = 4;
+  const Z3_LONG_TEXT = 5;
 
   // Logic Derivation
   let logicText = "START";
@@ -40,8 +45,6 @@ const TwoPointerState = ({ step }) => {
   let logicColor = "text-white";
   let actionText = "INITIALIZE POINTERS";
   let actionColor = "text-slate-300";
-
-  const Z3_LONG_TEXT = 5;
 
   if (isComplete) {
     logicText = "DONE";
@@ -80,7 +83,14 @@ const TwoPointerState = ({ step }) => {
       <div className="zone zone-primary">
         <div className="zone-label">Fast (Read)</div>
         <div className="zone-meta">IDX {fast}</div>
-        <div className="primary-value">{fastValue}</div>
+        <div
+          className={`primary-value ${
+            // Reduce font size for long text
+            String(fastValue).length > Z1_LONG_TEXT ? "long-text" : ""
+          }`}
+        >
+          {fastValue}
+        </div>
 
         {/* ZONE 5: OVERLAY (Context) */}
         <div className="zone-boundaries">
