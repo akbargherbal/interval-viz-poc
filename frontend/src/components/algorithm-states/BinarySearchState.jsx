@@ -23,9 +23,11 @@ const BinarySearchState = ({ step }) => {
 
   // Safe data extraction
   const leftIdx = pointers?.left ?? "-";
-  const rightIdx = pointers?.right ?? "-";
+  const rightIdx = pointers?.right ?? "-"; // aka primaryValue
   const midIdx = pointers?.mid; // Can be null/undefined initially
   const target = pointers?.target ?? "?";
+  const Z1_LONG_TEXT = 4;
+
 
   // Resolve Mid Value
   let midValue = "-";
@@ -38,6 +40,9 @@ const BinarySearchState = ({ step }) => {
   let logicText = "INITIALIZE";
   let logicSubtext = "Waiting to start";
   let actionText = "PREPARE SEARCH";
+  let logicColor = "text-white"; // CHECK WHO IS USING THIS <-- !!!
+  const Z3_LONG_TEXT = 5
+
 
   if (step.type === "CALCULATE_MID") {
     logicText = "CALC MID";
@@ -70,7 +75,14 @@ const BinarySearchState = ({ step }) => {
       <div className="zone zone-primary">
         <div className="zone-label">Mid</div>
         <div className="zone-meta">IDX {midIdx ?? "-"}</div>
-        <div className="primary-value">{midValue}</div>
+        <div
+          className={`primary-value ${
+            // Reduce font size for long text
+            typeof rightIdx === "string" && rightIdx.length > Z1_LONG_TEXT
+              ? "long-text"
+              : ""
+          }`}
+        >{midValue}</div>
 
         {/* ZONE 5: OVERLAY (Boundaries) */}
         <div className="zone-boundaries">
@@ -99,8 +111,16 @@ const BinarySearchState = ({ step }) => {
       <div className="zone zone-logic">
         <div className="zone-label">LOGIC</div>
         <div className="logic-content">
-          <div>{logicText}</div>
-          <div className="mt-1 text-[0.6em] font-normal opacity-70">
+          <div className={`${
+            // Reduce font size for long text
+            typeof logicText === "string" && logicText.length > Z3_LONG_TEXT
+              ? "zone3-long-text"
+              : ""
+            } 
+          `}>{logicText}</div>
+          <div
+            className={`mt-1 text-[12px] font-normal`}
+          >
             {logicSubtext}
           </div>
         </div>

@@ -118,7 +118,6 @@ const IntervalCoverageState = ({ step }) => {
   let logicColor = "text-white";
 
   const Z3_LONG_TEXT = 5
-  const Z3_LONGSUBTEXT = 8
 
   if (decision) {
     const maxEndDisplay =
@@ -167,8 +166,7 @@ const IntervalCoverageState = ({ step }) => {
               ? "long-text"
               : ""
           }`}
-        >
-          {primaryValue}
+        >{primaryValue}
         </div>
 
         {/* ZONE 5: OVERLAY (Context) */}

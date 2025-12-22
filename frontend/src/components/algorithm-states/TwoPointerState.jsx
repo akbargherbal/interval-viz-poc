@@ -41,6 +41,8 @@ const TwoPointerState = ({ step }) => {
   let actionText = "INITIALIZE POINTERS";
   let actionColor = "text-slate-300";
 
+  const Z3_LONG_TEXT = 5;
+
   if (isComplete) {
     logicText = "DONE";
     logicSub = "Complete";
@@ -107,10 +109,17 @@ const TwoPointerState = ({ step }) => {
       <div className="zone zone-logic">
         <div className="zone-label">LOGIC</div>
         <div className="logic-content">
-          <div className={logicColor}>{logicText}</div>
           <div
-            className={`mt-1 text-[0.6em] font-normal opacity-70 ${logicColor}`}
+            className={`${logicColor} ${
+              // Reduce font size for long text
+              typeof logicText === "string" && logicText.length > Z3_LONG_TEXT
+                ? "zone3-long-text"
+                : ""
+            } `}
           >
+            {logicText}
+          </div>
+          <div className={`mt-1 text-[12px] font-normal ${logicColor}`}>
             {logicSub}
           </div>
         </div>
