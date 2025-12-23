@@ -1,4 +1,3 @@
-# /home/akbar/Jupyter_Notebooks/interval-viz-poc/backend/algorithms/registry.py
 """
 Algorithm Registry for automatic discovery and routing.
 
@@ -8,6 +7,7 @@ with metadata that drives the frontend UI and routing logic.
 
 Phase 2: Dynamic algorithm discovery and unified routing
 """
+
 import os
 from pathlib import Path
 from typing import Dict, Type, List, Any, Optional
@@ -217,7 +217,6 @@ def register_algorithms():
     from .sliding_window import SlidingWindowTracer
     from .merge_sort import MergeSortTracer
     from .depth_first_search import DepthFirstSearchTracer
-
 
     # -------------------------------------------------------------------------
     # Interval Coverage (PoC Algorithm - Now Refactored!)
@@ -495,7 +494,6 @@ def register_algorithms():
             },
         )
 
-
     # -------------------------------------------------------------------------
     # Depth-First Search (DFS)
     # -------------------------------------------------------------------------
@@ -559,7 +557,6 @@ def register_algorithms():
                 },
             },
         )
-
 
 
 # Auto-register algorithms on module import

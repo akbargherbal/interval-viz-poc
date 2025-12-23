@@ -1,8 +1,8 @@
-# Backend Tracer Generation - User Prompt Template
+# Backend Tracer Generation - User Prompt Template v2.5
 
 ## Task Definition
 
-Generate Stage 1 Backend Artifacts (production-ready, single-shot) for the following algorithm:
+Generate **Stage 1 Backend Artifacts** (production-ready, single-shot) for the following algorithm:
 
 **Target Algorithm:** `{{ALGORITHM_NAME}}`  
 **Visualization Type:** `{{VISUALIZATION_TYPE}}`
@@ -11,7 +11,7 @@ Generate Stage 1 Backend Artifacts (production-ready, single-shot) for the follo
 
 ## Context Materials
 
-You have been provided with complete context in your system prompt and the following reference materials:
+You have complete context in your system prompt and the following reference materials:
 
 ### A. Algorithm Specification
 ```json
@@ -25,7 +25,7 @@ You have been provided with complete context in your system prompt and the follo
 ```
 
 ### C. Compliance Checklist
-*Your implementation must satisfy all LOCKED and CONSTRAINED requirements.*
+*Satisfy all ARCHITECTURAL CONSTRAINTS and LOCKED requirements. Apply Universal Principles + extensions.*
 ```markdown
 {{BACKEND_CHECKLIST_EXCERPT}}
 ```
@@ -44,39 +44,51 @@ You have been provided with complete context in your system prompt and the follo
 
 ---
 
-## Core Operating Principles (Reminder)
+## Generation Instructions
 
-### Universal Pedagogical Principles (ALL Algorithms)
+### Implementation Requirements
 
-1. **Operation Atomicity** - Unify logically-related operations in single steps
-2. **State Display Efficiency** - Show each variable once per step (header OR body)
-3. **Explicit Comparison Logic** - Show operands, operators, results: `X (value) op Y (value) → outcome`
-4. **Term Definition Protocol** - Define jargon at first use or use descriptive language
-5. **Data Structure Presentation** - Use ordered collections for narrative display; avoid unexplained ordering changes
-6. **Result Field Traceability** - Every result field must have narrative trail showing when/why computed
+1. **Inherit from `AlgorithmTracer`** and implement 3 required abstract methods:
+   - `execute(input_data)` - Algorithm logic + trace recording via `_add_step()`
+   - `get_prediction_points()` - Prediction moments (≤3 choices per question)
+   - `generate_narrative(trace_result)` - Convert trace to markdown (fail loudly if data incomplete)
 
-### Algorithm-Specific Extensions
+2. **Use base class helpers**:
+   - `_add_step(type, data, description)` - Records all steps (enforces MAX_STEPS=10,000)
+   - `_build_trace_result(result)` - Constructs final output (auto-generates prediction_points)
+   - Optionally override `_get_visualization_state()` for automatic enrichment
 
-{{#if_graph_algorithm}}
-**Graph Algorithm Requirements:**
-- Apply all 6 universal principles PLUS graph-specific extensions
-- Multi-element filtering: Show full collection, filter criteria, explicit comparisons, filtered result
-- Traversal structure visibility: Stack/queue/priority queue with directional indicators
-- Multi-variable state tables: Use markdown tables for distances, indegrees, previous pointers
-- Multi-step result construction: Make tracking decisions explicit with purpose statements
-- Conditional logic: Use IF/THEN/ELSE format for branches
-- Edge operations: Show complete arithmetic for weighted graphs
-- Graph topology: Markdown lists/tables (never ASCII art), show once in Step 0
-{{/if_graph_algorithm}}
+3. **Follow checklist**:
+   - Apply 6 Universal Pedagogical Principles to narrative
+   - Apply algorithm-specific extensions (graph algorithms have 7 additional patterns)
+   - Include "🎨 Frontend Visualization Hints" section (LOCKED requirement)
+   - Ensure result field traceability (all output fields mentioned before final summary)
 
-### Quality Gates (Self-Check Before Output)
+### Narrative Quality Standards
 
-- [ ] Atomicity: No fragmented operations across step boundaries
-- [ ] Efficiency: No redundant state display (header AND body)
-- [ ] Explicit Logic: All decisions show comparison data with values
-- [ ] Terms: All jargon defined at/before first use
-- [ ] Data Structures: No confusing unordered collection display
-- [ ] Traceability: All result fields have narrative trail
+Your `generate_narrative()` implementation must produce markdown that demonstrates:
+
+- **Explicit Logic**: All decisions show operands, operator, result: `X (value) op Y (value) → outcome`
+- **Arithmetic Correctness**: Show calculations: `max(660, 720) = 720` not just "update to 720"
+- **Term Definitions**: Define jargon at first use or use descriptive language
+- **Result Traceability**: Three-part pattern for each result field (purpose → update → application)
+- **Graph-Specific** (if applicable):
+  - Graph topology shown once in Step 0 (markdown lists/tables, no ASCII art)
+  - Multi-element filtering: full collection → criteria → explicit comparisons → result
+  - Traversal structures with directional indicators: `[A, B, C] ← C on top`
+  - Multi-variable state tables (markdown tables for 3+ variables per node)
+  - Edge weight calculations shown explicitly
+
+### Self-Check Before Output
+
+Verify your `generate_narrative()` CODE will produce output passing these checks:
+
+1. Can readers follow logic step-by-step? (Atomicity)
+2. Is state displayed efficiently? (No redundancy)
+3. Are comparisons backed by visible data? (Explicit Logic)
+4. Are terms defined? (Term Definition)
+5. Could unordered collections cause confusion? (Data Structure)
+6. Can readers predict all result fields? (Traceability)
 
 ---
 
@@ -87,64 +99,32 @@ Generate exactly **three files** in XML format with CDATA sections:
 ### 1. Tracer Implementation
 **Path:** `backend/algorithms/{{ALGORITHM_NAME_KEBAB}}_tracer.py`
 
-**Requirements:**
-- Inherit from `AlgorithmTracer` base class
-- Implement all abstract methods: `execute()`, `get_prediction_points()`, `generate_narrative()`
-- Use helper methods: `_add_step()`, `_build_trace_result()`
-- Maximum 3 choices per prediction question
-- Fail loudly (KeyError) if visualization data incomplete
-- Complete implementation (no TODOs or placeholders)
+**Must include:**
+- Complete class inheriting from `AlgorithmTracer`
+- All 3 abstract methods implemented
+- `_add_step()` for ALL trace recording
+- `_build_trace_result()` for final output
+- No TODOs or placeholders
 
 ### 2. Unit Tests
 **Path:** `backend/algorithms/tests/test_{{ALGORITHM_NAME_KEBAB}}_tracer.py`
 
-**Requirements:**
+**Must include:**
 - Valid trace structure verification
 - Visualization data completeness checks
 - Edge case handling (empty input, single element, boundary conditions)
-- Narrative generation tests (verify no KeyError exceptions)
+- Narrative generation tests (verify `generate_narrative()` executes without KeyError exceptions)
 - Prediction points validation (if applicable)
 
 ### 3. Algorithm Documentation
 **Path:** `docs/algorithm-info/{{ALGORITHM_NAME_KEBAB}}.md`
 
-**Requirements:**
-- Educational overview: What it is, why it matters, how it works
-- Complexity analysis (time/space)
-- Common applications
-- **Word count: 150-250 words**
-- Focus on conceptual understanding (not code-heavy)
+**Must include:**
+- Focus on WHY algorithm exists (conceptual understanding)
+- What it is, why it matters, where used, complexity, applications
+- **Word count: 150-250 words** (strictly enforced)
+- No code-heavy content
 - Valid markdown formatting
-
----
-
-## Narrative Generation Requirements
-
-Your `generate_narrative()` implementation must:
-
-### Structural Requirements
-- Convert trace JSON to self-contained markdown explanation
-- Include standardized "🎨 Frontend Visualization Hints" section with:
-  - Primary Metrics to Emphasize
-  - Visualization Priorities
-  - Key JSON Paths
-  - Algorithm-Specific Guidance
-
-### Content Requirements
-- Show ALL decision data with actual values
-- Make comparisons explicit: `X (5) vs Y (3) → 5 > 3`
-- Explain decision outcomes clearly
-- Include result field traceability (all output fields must appear in narrative before final summary)
-- Define algorithm-specific terms at first use
-
-### Error Handling
-- Fail loudly (raise KeyError) if visualization data incomplete
-- This is by design—catches bugs during generation
-
-### FAA Readiness
-- All arithmetic must be correct (human audit happens after generation)
-- Show calculations: `max(660, 720) = 720` not just "update to 720"
-- No undefined variable references
 
 ---
 
@@ -182,15 +162,24 @@ Start immediately with:
 </project>
 ```
 
+### XML Rules (Unchanged)
+
+1. Start immediately with `<?xml version="1.0" encoding="UTF-8"?>`
+2. Wrap ALL code/content in `<![CDATA[...]]>` sections
+3. No escaping needed inside CDATA—quotes, newlines, special chars are all safe
+4. Order files: tracer implementation → tests → documentation
+5. No text outside XML—no explanations, no preamble, no markdown blocks
+6. Complete implementations only—no TODOs, no placeholders
+
 ---
 
-## Final Reminders
+## Critical Reminders
 
-- **Single-shot execution** - This is your only chance; generate production-ready code
-- **No iterative refinement** - Code must execute without errors on first generation
-- **Pedagogical first** - Optimize for learner understanding, not code elegance
-- **Fail loudly** - KeyErrors on missing data are better than incomplete narratives
-- **Universal principles always apply** - Even for graph algorithms (extensions build on, not replace)
+- **Single-shot execution** - Generate production-ready CODE on first attempt
+- **Pedagogical first** - Your `generate_narrative()` code should optimize for learner understanding
+- **Fail loudly** - Code should raise KeyErrors on missing data (better than incomplete narratives when executed)
+- **Universal principles always apply** - Your narrative generation code must follow all 6 principles
+- **FAA-ready code** - Your `generate_narrative()` must show arithmetic correctly when executed (human audit in Stage 1.5)
 - **Complete implementations only** - No TODOs, no placeholders, no commented-out sections
 - **XML output only** - No text before `<?xml` or after `</project>`
 
