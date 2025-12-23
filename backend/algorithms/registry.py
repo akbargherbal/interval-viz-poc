@@ -216,6 +216,8 @@ def register_algorithms():
     from .two_pointer import TwoPointerTracer
     from .sliding_window import SlidingWindowTracer
     from .merge_sort import MergeSortTracer
+    from .depth_first_search import DepthFirstSearchTracer
+
 
     # -------------------------------------------------------------------------
     # Interval Coverage (PoC Algorithm - Now Refactored!)
@@ -492,6 +494,72 @@ def register_algorithms():
                 },
             },
         )
+
+
+    # -------------------------------------------------------------------------
+    # Depth-First Search (DFS)
+    # -------------------------------------------------------------------------
+    if not registry.is_registered("depth-first-search"):
+        registry.register(
+            name="depth-first-search",
+            tracer_class=DepthFirstSearchTracer,
+            display_name="Depth-First Search",
+            description="Graph traversal algorithm that explores as far as possible along each branch before backtracking",
+            example_inputs=[
+                {
+                    "name": "Basic 5-Node Graph",
+                    "input": {
+                        "nodes": ["A", "B", "C", "D", "E"],
+                        "edges": [("A", "B"), ("A", "C"), ("B", "D"), ("B", "E")],
+                        "start_node": "A",
+                    },
+                },
+                {
+                    "name": "Linear Chain",
+                    "input": {
+                        "nodes": ["A", "B", "C", "D"],
+                        "edges": [("A", "B"), ("B", "C"), ("C", "D")],
+                        "start_node": "A",
+                    },
+                },
+                {
+                    "name": "Disconnected Components",
+                    "input": {
+                        "nodes": ["A", "B", "C", "D", "E"],
+                        "edges": [("A", "B"), ("C", "D")],
+                        "start_node": "A",
+                    },
+                },
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["nodes", "edges", "start_node"],
+                "properties": {
+                    "nodes": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "minItems": 1,
+                        "maxItems": 20,
+                        "description": "List of node identifiers",
+                    },
+                    "edges": {
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "minItems": 2,
+                            "maxItems": 2,
+                        },
+                        "description": "List of edges as [from, to] pairs (undirected)",
+                    },
+                    "start_node": {
+                        "type": "string",
+                        "description": "Node to start traversal from",
+                    },
+                },
+            },
+        )
+
 
 
 # Auto-register algorithms on module import
