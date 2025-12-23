@@ -4,9 +4,17 @@ Depth-First Search (DFS) Algorithm Tracer
 Implements graph traversal that explores as far as possible along each branch
 before backtracking, using an explicit stack data structure.
 
+Refined for v2.4 Compliance and PE Feedback:
+- Unified EXPLORE_NODE steps (Atomicity)
+- Explicit neighbor filtering logic
+- Consistent stack/visited display
+- Disconnected component awareness
+- Chronological sub-steps in narrative
+- Intermediate stack states visible
+
 Author: Backend Development Team
 Date: December 23, 2025
-Checklist Version: v2.3
+Checklist Version: v2.4
 """
 
 from typing import Any, Dict, List, Set
@@ -16,36 +24,24 @@ from .base_tracer import AlgorithmTracer
 class DepthFirstSearchTracer(AlgorithmTracer):
     """
     Depth-First Search (DFS) Tracer
-    
+
     Explores graph by going as deep as possible along each branch before backtracking.
     Uses explicit stack to track traversal path.
-    
-    Compliance: BACKEND_CHECKLIST.md v2.3
     """
-    
+
     def __init__(self):
         super().__init__()
         self.graph = {}  # Adjacency list representation
         self.nodes = []
         self.start_node = None
         self.visited = set()
+        self.visited_list = []  # To maintain order for visualization
         self.stack = []
         self.visit_order = []  # Track order of visits
-
 
     def execute(self, input_data: Dict) -> dict:
         """
         Execute DFS algorithm with full trace generation.
-
-        Args:
-            input_data: {
-                'nodes': List[str] - Node identifiers
-                'edges': List[Tuple[str, str]] - Edge pairs (undirected)
-                'start_node': str - Starting node for traversal
-            }
-
-        Returns:
-            Standardized trace result with graph visualization data
         """
         # Validate input
         self.nodes = input_data.get("nodes", [])
@@ -71,13 +67,17 @@ class DepthFirstSearchTracer(AlgorithmTracer):
         for node in self.graph:
             self.graph[node].sort()
 
-        # Set required metadata (v2.3 compliance)
+        # Set required metadata (v2.4 compliance)
         self.metadata = {
             "algorithm": "depth-first-search",
             "display_name": "Depth-First Search",
             "visualization_type": "graph",
             "input_size": len(self.nodes),
-            "visualization_config": {"directed": False, "weighted": False},
+            "visualization_config": {
+                "directed": False,
+                "weighted": False,
+                "layout_hints": "hierarchical",
+            },
         }
 
         # Step 0: Show initial graph structure
@@ -87,16 +87,18 @@ class DepthFirstSearchTracer(AlgorithmTracer):
                 "visualization": self._get_visualization_state(),
                 "adjacency_list": dict(self.graph),
             },
-            f"Starting DFS from node {self.start_node}",
+            f"Initialize DFS with start node '{self.start_node}'",
         )
 
         # Initialize: Push start node onto stack
         self.stack.append(self.start_node)
+        
         self._add_step(
-            "PUSH_STACK",
+            "INITIALIZATION",
             {
                 "visualization": self._get_visualization_state(),
-                "pushed_node": self.start_node,
+                "action": "push_start",
+                "node": self.start_node,
             },
             f"Push start node '{self.start_node}' onto stack",
         )
@@ -105,6 +107,9 @@ class DepthFirstSearchTracer(AlgorithmTracer):
         while self.stack:
             # Pop node from stack
             current = self.stack.pop()
+            
+            # Capture intermediate stack state (after pop, before push)
+            stack_after_pop = list(self.stack)
 
             # Check if already visited
             if current in self.visited:
@@ -112,62 +117,83 @@ class DepthFirstSearchTracer(AlgorithmTracer):
                     "SKIP_VISITED",
                     {
                         "visualization": self._get_visualization_state(),
-                        "skipped_node": current,
+                        "node": current,
+                        "reason": "already_visited",
+                        "stack_after_pop": stack_after_pop
                     },
-                    f"Node '{current}' already visited, skip",
+                    f"Pop '{current}' - Already visited, skipping",
                 )
                 continue
 
             # Visit node
             self.visited.add(current)
+            self.visited_list.append(current)
             self.visit_order.append(current)
 
+            # Process Neighbors
+            all_neighbors = self.graph[current]
+            filtering_log = []
+            unvisited_to_push = []
+            
+            # Analyze neighbors (Explicit Logic)
+            for neighbor in all_neighbors:
+                is_visited = neighbor in self.visited
+                status = "visited" if is_visited else "unvisited"
+                
+                if is_visited:
+                    action = "skip"
+                elif neighbor in self.stack:
+                    action = "push (duplicate)"
+                    unvisited_to_push.append(neighbor)
+                else:
+                    action = "push"
+                    unvisited_to_push.append(neighbor)
+                
+                filtering_log.append({
+                    "neighbor": neighbor,
+                    "status": status,
+                    "action": action
+                })
+
+            # Push unvisited neighbors onto stack (reverse order for alphabetical traversal)
+            pushed_neighbors = []
+            for neighbor in reversed(unvisited_to_push):
+                self.stack.append(neighbor)
+                pushed_neighbors.append(neighbor)
+
+            # Unified Step (Atomicity)
+            step_desc = f"Visit '{current}'"
+            if pushed_neighbors:
+                step_desc += f", push neighbors {pushed_neighbors}"
+            else:
+                step_desc += " (Backtrack point)"
+
             self._add_step(
-                "VISIT_NODE",
+                "EXPLORE_NODE",
                 {
                     "visualization": self._get_visualization_state(),
                     "current_node": current,
+                    "stack_after_pop": stack_after_pop, # Intermediate state
                     "visit_number": len(self.visit_order),
+                    "filtering_log": filtering_log,
+                    "pushed_neighbors": pushed_neighbors,
+                    "all_neighbors": all_neighbors
                 },
-                f"Visit node '{current}' (#{len(self.visit_order)})",
+                step_desc,
             )
 
-            # Get unvisited neighbors
-            neighbors = self.graph[current]
-            unvisited_neighbors = [n for n in neighbors if n not in self.visited]
-
-            if unvisited_neighbors:
-                # Push unvisited neighbors onto stack (reverse order for proper traversal)
-                for neighbor in reversed(unvisited_neighbors):
-                    if neighbor not in self.stack:  # Avoid duplicates
-                        self.stack.append(neighbor)
-
-                self._add_step(
-                    "PUSH_NEIGHBORS",
-                    {
-                        "visualization": self._get_visualization_state(),
-                        "from_node": current,
-                        "pushed_neighbors": unvisited_neighbors,
-                    },
-                    f"Push unvisited neighbors {unvisited_neighbors} from '{current}' onto stack",
-                )
-            else:
-                # No unvisited neighbors - backtracking will happen on next iteration
-                self._add_step(
-                    "BACKTRACK",
-                    {
-                        "visualization": self._get_visualization_state(),
-                        "from_node": current,
-                    },
-                    f"No unvisited neighbors from '{current}', backtrack",
-                )
-
         # Final state
+        unreachable = [n for n in self.nodes if n not in self.visited]
+        
         self._add_step(
             "ALGORITHM_COMPLETE",
             {
                 "visualization": self._get_visualization_state(),
-                "final_visit_order": self.visit_order,
+                "stats": {
+                    "total": len(self.nodes),
+                    "visited": len(self.visited),
+                    "unreachable": unreachable
+                },
             },
             f"DFS complete - visited {len(self.visited)} nodes",
         )
@@ -177,7 +203,7 @@ class DepthFirstSearchTracer(AlgorithmTracer):
             "visit_order": self.visit_order,
             "visited_count": len(self.visited),
             "total_nodes": len(self.nodes),
-            "unreachable_nodes": [n for n in self.nodes if n not in self.visited],
+            "unreachable_nodes": unreachable,
         }
 
         return self._build_trace_result(result)
@@ -185,12 +211,6 @@ class DepthFirstSearchTracer(AlgorithmTracer):
     def _get_visualization_state(self) -> dict:
         """
         Generate current visualization state for graph.
-
-        Complies with v2.3 Graph Algorithms requirements:
-        - graph.nodes (with id, label, state)
-        - graph.edges (with from, to)
-        - stack (traversal structure)
-        - visited_set (algorithm-specific state)
         """
         return {
             "graph": {
@@ -206,73 +226,52 @@ class DepthFirstSearchTracer(AlgorithmTracer):
                 ],
             },
             "stack": list(self.stack),  # Current stack state
-            "visited_set": list(self.visited),  # Nodes visited so far
+            "visited_set": list(self.visited_list),  # Ordered list for display
         }
 
     def _get_node_state(self, node: str) -> str:
         """
         Determine visualization state for a node.
-
-        States:
-        - 'visiting': Currently on top of stack (next to be processed)
-        - 'visited': Already visited
-        - 'unvisited': Not yet visited
         """
         if node in self.visited:
             return "visited"
-        elif self.stack and self.stack[-1] == node:
-            return "visiting"
+        elif node in self.stack:
+            return "visiting" # Pending in stack
         else:
             return "unvisited"
 
     def get_prediction_points(self) -> List[Dict[str, Any]]:
         """
         Identify prediction moments for active learning.
-
-        Critical: Maximum 3 choices per question (v2.3 requirement)
         """
         predictions = []
 
         for i, step in enumerate(self.trace):
             # Prediction: Which neighbor will be visited next?
-            if step.type == "PUSH_NEIGHBORS" and "pushed_neighbors" in step.data:
-                neighbors = step.data["pushed_neighbors"]
+            if step.type == "EXPLORE_NODE" and step.data.get("pushed_neighbors"):
+                pushed = step.data["pushed_neighbors"]
+                # Pushed in reverse, so last pushed is top of stack (visited next)
+                next_node = pushed[-1]
+                
+                if len(pushed) >= 2:
+                    predictions.append({
+                        "step_index": i,
+                        "question": "Which node will be visited next?",
+                        "choices": [
+                            {"id": next_node, "label": f"Node {next_node}"},
+                            {"id": pushed[0], "label": f"Node {pushed[0]}"},
+                            {"id": "backtrack", "label": "Backtrack"},
+                        ][:3],
+                        "correct_answer": next_node,
+                        "hint": "DFS uses a stack (Last-In-First-Out). The last node pushed is popped first.",
+                        "explanation": f"We pushed {pushed}. Since it's a stack (LIFO), {next_node} is at the top and will be visited next."
+                    })
 
-                if len(neighbors) >= 2:
-                    # Create prediction question
-                    # Note: Neighbors are pushed in reverse, so first in list is popped first
-                    predictions.append(
-                        {
-                            "step_index": i,
-                            "question": "Which neighbor will be visited next?",
-                            "choices": [
-                                {"id": neighbors[0], "label": f"Node {neighbors[0]}"},
-                                {"id": neighbors[1], "label": f"Node {neighbors[1]}"},
-                                {"id": "backtrack", "label": "Backtrack"},
-                            ][
-                                :3
-                            ],  # Hard limit: 3 choices
-                            "correct_answer": neighbors[
-                                0
-                            ],  # First in list (popped first due to LIFO)
-                            "hint": "DFS uses a stack (Last-In-First-Out)",
-                            "explanation": f"The neighbors are pushed in reverse order. '{neighbors[0]}' is popped first (LIFO), so it will be visited next.",
-                        }
-                    )
-
-        return predictions[:5]  # Limit to ~5 prediction points
+        return predictions[:5]
 
     def generate_narrative(self, trace_result: dict) -> str:
         """
-        Generate human-readable markdown narrative following v2.3 graph requirements.
-
-        Requirements:
-        - Graph structure shown at Step 0 using markdown lists
-        - Stack contents visible at each step
-        - Multi-variable state (visited set) tracked
-        - Conditional logic explained with decision tree format
-        - No ASCII art for topology
-        - Adjacency overhead minimized after Step 0
+        Generate human-readable markdown narrative following v2.4 graph requirements.
         """
         steps = trace_result["trace"]["steps"]
         result = trace_result["result"]
@@ -289,12 +288,15 @@ class DepthFirstSearchTracer(AlgorithmTracer):
             f"**Total Edges:** {len([e for u in self.graph for e in self.graph[u]]) // 2}\n"
         )
 
-        # Show graph structure at Step 0 (v2.3 requirement: markdown lists, not ASCII art)
+        # Show graph structure at Step 0
         lines.append("**Graph Structure (Adjacency List):**\n")
         for node in sorted(self.graph.keys()):
             neighbors = self.graph[node]
             lines.append(f"- {node} → {neighbors}")
         lines.append("")
+
+        # Track if we've defined "Backtrack"
+        backtrack_defined = False
 
         # Step-by-step narrative
         for step in steps:
@@ -305,61 +307,92 @@ class DepthFirstSearchTracer(AlgorithmTracer):
 
             lines.append(f"## Step {step_num}: {description}\n")
 
-            # Show visualization state
+            # Show visualization state (Consistent Display)
             if "visualization" in data:
                 viz = data["visualization"]
+                
+                # Stack
+                stack_display = viz["stack"] if viz["stack"] else "(empty)"
+                lines.append(f"**Stack:** {stack_display}")
+                
+                # Visited (Ordered)
+                visited_display = viz["visited_set"] if viz["visited_set"] else "(none)"
+                lines.append(f"**Visited:** {visited_display}")
+                lines.append("") # Spacer
 
-                # Show stack state (v2.3 requirement: traversal structure visible)
-                if "stack" in viz:
-                    stack_display = viz["stack"] if viz["stack"] else "(empty)"
-                    lines.append(f"**Stack:** {stack_display}")
+            # Step-specific details
+            if step_type == "INITIALIZATION":
+                lines.append(f"**Action:** Push start node '{data['node']}' onto stack to begin traversal.")
 
-                # Show visited set (v2.3 requirement: algorithm-specific state)
-                if "visited_set" in viz:
-                    visited_display = (
-                        viz["visited_set"] if viz["visited_set"] else "(none)"
-                    )
-                    lines.append(f"**Visited:** {visited_display}")
-
-            # Step-specific details with complete decision data
-            if step_type == "VISIT_NODE":
+            elif step_type == "EXPLORE_NODE":
                 current = data.get("current_node")
                 visit_num = data.get("visit_number")
-                lines.append(
-                    f"\n**Action:** Mark '{current}' as visited (visit #{visit_num})"
-                )
-                lines.append(f"**Decision:** Add '{current}' to visited set")
-
-            elif step_type == "PUSH_NEIGHBORS":
-                from_node = data.get("from_node")
+                stack_after_pop = data.get("stack_after_pop", [])
                 pushed = data.get("pushed_neighbors", [])
-                lines.append(f"\n**From Node:** '{from_node}'")
-                lines.append(f"**Neighbors:** {pushed}")
-                lines.append(
-                    f"**Decision:** Push {len(pushed)} unvisited neighbor(s) onto stack"
-                )
-                lines.append(
-                    f"**Order:** {pushed} (pushed in reverse for alphabetical traversal)"
-                )
+                filtering = data.get("filtering_log", [])
+                
+                # Sub-step 1: Pop
+                lines.append(f"**1. Pop Operation:**")
+                lines.append(f"- Pop '{current}' from stack.")
+                lines.append(f"- **Intermediate Stack:** {stack_after_pop if stack_after_pop else '(empty)'}")
+                lines.append(f"- Mark '{current}' as visited (Visit #{visit_num}).")
+                
+                # Sub-step 2: Analyze
+                lines.append(f"\n**2. Neighbor Analysis:**")
+                if filtering:
+                    lines.append(f"Check neighbors of '{current}' (in alphabetical order):")
+                    for entry in filtering:
+                        n = entry['neighbor']
+                        status = entry['status']
+                        action = entry['action']
+                        
+                        # Explicit "Skip" language
+                        if action == 'push':
+                            action_desc = "Push to stack"
+                        elif action == 'push (duplicate)':
+                            action_desc = "Push to stack (duplicate)"
+                        elif action == 'skip':
+                            action_desc = "Already visited (do not push)"
+                        else:
+                            action_desc = action
+                            
+                        lines.append(f"- Node {n}: {status} → {action_desc}")
+                else:
+                    lines.append(f"'{current}' has no neighbors.")
+
+                # Sub-step 3: Push
+                lines.append(f"\n**3. Stack Update:**")
+                if pushed:
+                    lines.append(f"- Neighbors to push: {pushed}")
+                    lines.append(f"- **Push Order:** Pushed in reverse {pushed} so that {pushed[-1]} is at top.")
+                    lines.append(f"- **Result:** Next pop will visit '{pushed[-1]}'.")
+                else:
+                    lines.append(f"- No neighbors pushed.")
+                    if not backtrack_defined:
+                        lines.append(f"- **Result:** No unvisited neighbors found. **Backtracking** (returning to previous node).")
+                        backtrack_defined = True
+                    else:
+                        lines.append(f"- **Result:** No unvisited neighbors found. Backtracking.")
 
             elif step_type == "SKIP_VISITED":
-                skipped = data.get("skipped_node")
-                lines.append(f"\n**Condition:** IF '{skipped}' in visited set")
-                lines.append(f"**Result:** TRUE → Skip '{skipped}'")
-                lines.append(f"**Rationale:** Avoid revisiting nodes")
+                node = data.get("node")
+                stack_after_pop = data.get("stack_after_pop", [])
+                lines.append(f"**1. Pop Operation:**")
+                lines.append(f"- Pop '{node}' from stack.")
+                lines.append(f"- **Intermediate Stack:** {stack_after_pop if stack_after_pop else '(empty)'}")
+                lines.append(f"\n**2. Check Visited:**")
+                lines.append(f"- '{node}' is already in visited set.")
+                lines.append(f"- **Action:** Skip to avoid cycles/redundancy.")
 
-            elif step_type == "BACKTRACK":
-                from_node = data.get("from_node")
-                lines.append(
-                    f"\n**Condition:** IF '{from_node}' has unvisited neighbors"
-                )
-                lines.append(f"**Result:** FALSE → No unvisited neighbors")
-                lines.append(f"**Action:** Backtrack (pop next node from stack)")
-
-            elif step_type == "PUSH_STACK":
-                pushed = data.get("pushed_node")
-                lines.append(f"\n**Action:** Initialize stack with start node")
-                lines.append(f"**Stack becomes:** ['{pushed}']")
+            elif step_type == "ALGORITHM_COMPLETE":
+                stats = data.get("stats", {})
+                unreachable = stats.get("unreachable", [])
+                
+                lines.append(f"**Completion:** Stack is empty.")
+                if unreachable:
+                    lines.append(f"**Note:** Nodes {unreachable} remain unvisited.")
+                    lines.append("This indicates the graph has **disconnected components**.")
+                    lines.append("DFS only explores the component containing the start node.")
 
             lines.append("")  # Blank line between steps
 
@@ -372,7 +405,6 @@ class DepthFirstSearchTracer(AlgorithmTracer):
 
         if result["unreachable_nodes"]:
             lines.append(f"**Unreachable Nodes:** {result['unreachable_nodes']}")
-            lines.append("*(These nodes are not connected to the start node)*")
         else:
             lines.append(
                 "**Graph Connectivity:** All nodes reachable from start node ✓"
@@ -380,7 +412,7 @@ class DepthFirstSearchTracer(AlgorithmTracer):
 
         lines.append(f"\n**Total Steps:** {trace_result['trace']['total_steps']}")
 
-        # Frontend Visualization Hints (v2.3 requirement)
+        # Frontend Visualization Hints
         lines.append("\n---\n")
         lines.append("## 🎨 Frontend Visualization Hints\n")
 
@@ -408,9 +440,9 @@ class DepthFirstSearchTracer(AlgorithmTracer):
         lines.append("### Key JSON Paths\n")
         lines.append("- Node states: `step.data.visualization.graph.nodes[*].state`")
         lines.append("- Stack contents: `step.data.visualization.stack`")
-        lines.append("- Current node: Infer from stack top or `step.data.current_node`")
+        lines.append("- Current node: `step.data.current_node`")
         lines.append("- Visited set: `step.data.visualization.visited_set`")
-        lines.append("- Visit order: `step.data.visit_number` at VISIT_NODE steps\n")
+        lines.append("- Neighbor analysis: `step.data.filtering_log` (for detailed tooltips)\n")
 
         lines.append("### Algorithm-Specific Guidance\n")
         lines.append(
@@ -425,44 +457,3 @@ class DepthFirstSearchTracer(AlgorithmTracer):
         )
 
         return "\n".join(lines)
-
-
-# Example usage and testing
-if __name__ == "__main__":
-    # Example 1: Basic 5-node graph
-    tracer = DepthFirstSearchTracer()
-
-    input_data = {
-        "nodes": ["A", "B", "C", "D", "E"],
-        "edges": [("A", "B"), ("A", "C"), ("B", "D"), ("B", "E")],
-        "start_node": "A",
-    }
-
-    result = tracer.execute(input_data)
-
-    print("=" * 60)
-    print("TRACE RESULT")
-    print("=" * 60)
-    print(f"Visit Order: {result['result']['visit_order']}")
-    print(f"Total Steps: {result['trace']['total_steps']}")
-    print(
-        f"Visited: {result['result']['visited_count']} / {result['result']['total_nodes']}"
-    )
-
-    print("\n" + "=" * 60)
-    print("NARRATIVE")
-    print("=" * 60)
-    narrative = tracer.generate_narrative(result)
-    print(narrative)
-
-    print("\n" + "=" * 60)
-    print("PREDICTION POINTS")
-    print("=" * 60)
-    predictions = tracer.get_prediction_points()
-    print(f"Generated {len(predictions)} prediction points")
-    for i, pred in enumerate(predictions, 1):
-        print(f"\nPrediction {i}:")
-        print(f"  Step: {pred['step_index']}")
-        print(f"  Question: {pred['question']}")
-        print(f"  Choices: {[c['label'] for c in pred['choices']]}")
-        print(f"  Answer: {pred['correct_answer']}")

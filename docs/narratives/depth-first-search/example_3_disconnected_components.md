@@ -14,67 +14,73 @@
 - D → ['C']
 - E → []
 
-## Step 0: Starting DFS from node A
+## Step 0: Initialize DFS with start node 'A'
 
 **Stack:** (empty)
 **Visited:** (none)
+
 
 ## Step 1: Push start node 'A' onto stack
 
 **Stack:** ['A']
 **Visited:** (none)
 
-**Action:** Initialize stack with start node
-**Stack becomes:** ['A']
+**Action:** Push start node 'A' onto stack to begin traversal.
 
-## Step 2: Visit node 'A' (#1)
-
-**Stack:** (empty)
-**Visited:** ['A']
-
-**Action:** Mark 'A' as visited (visit #1)
-**Decision:** Add 'A' to visited set
-
-## Step 3: Push unvisited neighbors ['B'] from 'A' onto stack
+## Step 2: Visit 'A', push neighbors ['B']
 
 **Stack:** ['B']
 **Visited:** ['A']
 
-**From Node:** 'A'
-**Neighbors:** ['B']
-**Decision:** Push 1 unvisited neighbor(s) onto stack
-**Order:** ['B'] (pushed in reverse for alphabetical traversal)
+**1. Pop Operation:**
+- Pop 'A' from stack.
+- **Intermediate Stack:** (empty)
+- Mark 'A' as visited (Visit #1).
 
-## Step 4: Visit node 'B' (#2)
+**2. Neighbor Analysis:**
+Check neighbors of 'A' (in alphabetical order):
+- Node B: unvisited → Push to stack
 
-**Stack:** (empty)
-**Visited:** ['B', 'A']
+**3. Stack Update:**
+- Neighbors to push: ['B']
+- **Push Order:** Pushed in reverse ['B'] so that B is at top.
+- **Result:** Next pop will visit 'B'.
 
-**Action:** Mark 'B' as visited (visit #2)
-**Decision:** Add 'B' to visited set
-
-## Step 5: No unvisited neighbors from 'B', backtrack
-
-**Stack:** (empty)
-**Visited:** ['B', 'A']
-
-**Condition:** IF 'B' has unvisited neighbors
-**Result:** FALSE → No unvisited neighbors
-**Action:** Backtrack (pop next node from stack)
-
-## Step 6: DFS complete - visited 2 nodes
+## Step 3: Visit 'B' (Backtrack point)
 
 **Stack:** (empty)
-**Visited:** ['B', 'A']
+**Visited:** ['A', 'B']
+
+**1. Pop Operation:**
+- Pop 'B' from stack.
+- **Intermediate Stack:** (empty)
+- Mark 'B' as visited (Visit #2).
+
+**2. Neighbor Analysis:**
+Check neighbors of 'B' (in alphabetical order):
+- Node A: visited → Already visited (do not push)
+
+**3. Stack Update:**
+- No neighbors pushed.
+- **Result:** No unvisited neighbors found. **Backtracking** (returning to previous node).
+
+## Step 4: DFS complete - visited 2 nodes
+
+**Stack:** (empty)
+**Visited:** ['A', 'B']
+
+**Completion:** Stack is empty.
+**Note:** Nodes ['C', 'D', 'E'] remain unvisited.
+This indicates the graph has **disconnected components**.
+DFS only explores the component containing the start node.
 
 ## Final Result
 
 **Visit Order:** ['A', 'B']
 **Visited Count:** 2 / 5 nodes
 **Unreachable Nodes:** ['C', 'D', 'E']
-*(These nodes are not connected to the start node)*
 
-**Total Steps:** 7
+**Total Steps:** 5
 
 ---
 
@@ -99,9 +105,9 @@
 
 - Node states: `step.data.visualization.graph.nodes[*].state`
 - Stack contents: `step.data.visualization.stack`
-- Current node: Infer from stack top or `step.data.current_node`
+- Current node: `step.data.current_node`
 - Visited set: `step.data.visualization.visited_set`
-- Visit order: `step.data.visit_number` at VISIT_NODE steps
+- Neighbor analysis: `step.data.filtering_log` (for detailed tooltips)
 
 ### Algorithm-Specific Guidance
 

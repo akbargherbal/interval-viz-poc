@@ -5,75 +5,6 @@
 
 ---
 
-## Changelog
-
-### v2.4 (December 23, 2025) - Universal Pedagogical Principles
-
-**Context:** Post-DFS Proof-of-Concept Pedagogical Refinement
-
-**Major Update:**
-
-- **Universal Pedagogical Principles (NEW):** Added comprehensive section applying to ALL algorithm types
-  - Operation Atomicity: Present logically-related operations as unified steps
-  - State Display Efficiency: Display each variable once per step consistently
-  - Explicit Comparison Logic: Show operands, operators, and results for all decisions
-  - Term Definition Protocol: Define algorithm-specific terminology before use
-  - Data Structure Presentation: Handle unordered collections (sets, dicts) appropriately
-  - Result Field Traceability: Reinforced as universal requirement (previously scattered)
-
-**Refinements:**
-
-- **Graph Algorithm Requirements:** Reframed as EXTENSIONS of universal principles (not replacements)
-  - Clarified that graph algorithms must follow universal principles PLUS graph-specific patterns
-  - Added preface explaining why extensions are needed
-  - Maintained all Tier 3 requirements from v2.3
-
-**Impact:**
-
-- Fixes DFS pedagogical issues identified by PE review
-- Establishes foundation for ALL future algorithms (Tiers 0-3)
-- Benefits existing algorithms retroactively (binary search, interval coverage, etc.)
-- Reduces PE review iterations by encoding universal patterns upfront
-
-**Lines Added:** ~85 lines (50 universal + 5 graph preface + 30 refinements)
-
----
-
-### v2.3 (December 23, 2025) - Graph Algorithm Support
-
-**Context:** Pre-Tier 3 Graph Algorithm Sprint Preparation
-
-**Critical Updates:**
-
-- **Graph Algorithms (CONSTRAINED):** Removed "Future" designation, added comprehensive graph visualization requirements
-
-  - Added weighted edge support (`edge.weight`)
-  - Added traversal structure fields (`stack`, `queue`, `priority_queue`)
-  - Added algorithm-specific state maps (`distance_map`, `previous_map`, `indegree_map`, `visited_set`)
-  - Added graph configuration metadata (`directed`, `weighted`)
-
-- **Narrative Generation:** Added "Graph Algorithm Narrative Requirements (Tier 3+)" subsection
-  - Graph structure representation patterns (markdown lists, not ASCII art)
-  - Multi-variable state table requirements
-  - Traversal structure visibility rules
-  - Multi-step result construction tracking
-  - Conditional logic decision tree format
-  - Edge operation calculation display
-  - Adjacency information overhead minimization
-
-**Supporting Updates:**
-
-- **Frontend Visualization Guidance:** Added graph-specific hint examples (DFS example)
-- **Narrative Anti-Patterns:** Added graph-specific anti-patterns subsection
-- **Testing Checklist:** Added graph algorithm narrative tests
-- **FREE CHOICES:** Added graph algorithm customization options
-
-**Impact:** Enables compliant implementation of DFS, BFS, Topological Sort, and Dijkstra's algorithm (Tier 3 roadmap)
-
-**Lines Added:** ~140 lines of guidance and requirements
-
----
-
 ## LOCKED REQUIREMENTS (Mandatory)
 
 ### Metadata Structure
@@ -747,8 +678,6 @@ If implementing prediction mode:
 
 ### Algorithm-Specific Narrative Anti-Patterns
 
-#### Legacy Anti-Patterns (Pre-v2.4, Now Covered by Universal Principles)
-
 The items below are now subsumed by Universal Pedagogical Principles but retained for historical reference:
 
 - [ ] ✅ **NOT referencing undefined variables in narrative**
@@ -817,20 +746,20 @@ The items below are now subsumed by Universal Pedagogical Principles but retaine
 
 ---
 
-### Deprecated Anti-Patterns
+### Architectural Anti-Patterns
 
-- [ ] ✅ **NOT using centralized narrative generator** (Deprecated - architectural, not pedagogical)
+- [ ] ✅ **NOT using centralized narrative generator**
 
   - Each algorithm narrates ITSELF
   - No shared generator with if/elif chains
 
-- [ ] ✅ **NOT including arithmetic errors in narratives** (Deprecated - covered by FAA audit requirement)
+- [ ] ✅ **NOT including arithmetic errors in narratives** (covered by FAA audit requirement)
 
   - Example ❌: "20 - 10 = 20 elements remain"
   - Example ✅: "20 - 10 = 10 elements remain"
   - FAA will catch these before QA review
 
-- [ ] ✅ **NOT omitting visualization guidance** (Deprecated - now LOCKED requirement)
+- [ ] ✅ **NOT omitting visualization guidance**
   - Example ❌: Narrative ends without helping frontend understand data priorities
   - Example ✅: Include standardized visualization hints section with backend insights
 
