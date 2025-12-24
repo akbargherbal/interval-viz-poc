@@ -1,86 +1,168 @@
-# Depth-First Search (DFS) Execution Narrative
+# Depth-First Search (Iterative) Execution Narrative
 
-## Input Summary
-
+**Algorithm:** Depth-First Search (Iterative)
 **Start Node:** A
-**Total Nodes:** 5
-**Total Edges:** 2
+**Graph Size:** 5 nodes
+**Traversal Order:** A → B
+**Nodes Visited:** 2/5
+
+---
+
+## Step 0: 🔍 Initialize DFS from node A
 
 **Graph Structure (Adjacency List):**
+- A: [B]
+- B: [A]
+- C: [D]
+- D: [C]
+- E: []
 
-- A → ['B']
-- B → ['A']
-- C → ['D']
-- D → ['C']
-- E → []
+**Initial Configuration:**
+- Start node: **A**
+- Stack: Empty (will push start node)
+- Visited set: Empty
+- Goal: Explore all reachable nodes depth-first
 
-## Step 0: Initialize DFS with start node 'A'
+---
 
-**Stack:** (empty)
-**Visited:** (none)
+## Step 1: 📥 Push start node A onto stack
 
+**Action:** Push node **A** onto stack
 
-## Step 1: Push start node 'A' onto stack
+**Reason:** Starting node for traversal
 
-**Stack:** ['A']
-**Visited:** (none)
+**Stack State:**
+```
+[A] ← A on top (processed next)
+```
 
-**Action:** Push start node 'A' onto stack to begin traversal.
+**Visited Set:** {empty}
 
-## Step 2: Visit 'A', push neighbors ['B']
+---
 
-**Stack:** ['B']
-**Visited:** ['A']
+## Step 2: 📤 Pop node A from stack
 
-**1. Pop Operation:**
-- Pop 'A' from stack.
-- **Intermediate Stack:** (empty)
-- Mark 'A' as visited (Visit #1).
+**Action:** Pop node **A** from stack for processing
 
-**2. Neighbor Analysis:**
-Check neighbors of 'A' (in alphabetical order):
-- Node B: unvisited → Push to stack
+**Stack Before Pop:**
+```
+[A] ← A on top
+```
 
-**3. Stack Update:**
-- Neighbors to push: ['B']
-- **Push Order:** Pushed in reverse ['B'] so that B is at top.
-- **Result:** Next pop will visit 'B'.
+**Stack After Pop:**
+```
+Empty
+```
 
-## Step 3: Visit 'B' (Backtrack point)
+---
 
-**Stack:** (empty)
-**Visited:** ['A', 'B']
+## Step 3: ✅ Visit node A (neighbor count: 1)
 
-**1. Pop Operation:**
-- Pop 'B' from stack.
-- **Intermediate Stack:** (empty)
-- Mark 'B' as visited (Visit #2).
+**Processing Node:** A
 
-**2. Neighbor Analysis:**
-Check neighbors of 'B' (in alphabetical order):
-- Node A: visited → Already visited (do not push)
+**Check Visited Status:**
+- Visited set before: {empty}
+- Is A in visited set? **No** ✓
+- Action: Mark A as visited
 
-**3. Stack Update:**
-- No neighbors pushed.
-- **Result:** No unvisited neighbors found. **Backtracking** (returning to previous node).
+**Updated Visited Set:** {A}
 
-## Step 4: DFS complete - visited 2 nodes
+**Neighbors of A:** [B]
 
-**Stack:** (empty)
-**Visited:** ['A', 'B']
+**Neighbor Processing:**
+We will examine each neighbor to determine if it should be added to the stack.
 
-**Completion:** Stack is empty.
-**Note:** Nodes ['C', 'D', 'E'] remain unvisited.
-This indicates the graph has **disconnected components**.
-DFS only explores the component containing the start node.
+---
 
-## Final Result
+## Step 4: 📥 Push neighbor B onto stack
 
-**Visit Order:** ['A', 'B']
-**Visited Count:** 2 / 5 nodes
-**Unreachable Nodes:** ['C', 'D', 'E']
+**Action:** Push node **B** onto stack
 
-**Total Steps:** 5
+**Reason:** Unvisited neighbor of A
+
+**Stack State:**
+```
+[B] ← B on top (processed next)
+```
+
+**Visited Set:** {A}
+
+---
+
+## Step 5: 📤 Pop node B from stack
+
+**Action:** Pop node **B** from stack for processing
+
+**Stack Before Pop:**
+```
+[B] ← B on top
+```
+
+**Stack After Pop:**
+```
+Empty
+```
+
+---
+
+## Step 6: ✅ Visit node B (neighbor count: 1)
+
+**Processing Node:** B
+
+**Check Visited Status:**
+- Visited set before: {A}
+- Is B in visited set? **No** ✓
+- Action: Mark B as visited
+
+**Updated Visited Set:** {A, B}
+
+**Neighbors of B:** [A]
+
+**Neighbor Processing:**
+We will examine each neighbor to determine if it should be added to the stack.
+
+---
+
+## Step 7: ⏭️ Skip neighbor A (already visited)
+
+**Examining Neighbor:** A (from node B)
+
+**Check Visited Status:**
+- Current visited set: {A, B}
+- Is A in visited set? **Yes** ✓
+- Decision: **Skip** A (already explored)
+
+**Reason:** DFS only visits each node once. Since A is already in the visited set, we don't need to explore it again.
+
+---
+
+## Step 8: ⬅️ Backtrack from B (all neighbors visited)
+
+**Backtracking:**
+
+- Finished exploring all neighbors of **B**
+- No unvisited neighbors remain
+- Return to previous node in stack (if any)
+
+**Stack State:**
+```
+Empty (traversal complete)
+```
+
+---
+
+## Execution Summary
+
+**Traversal Complete:**
+- Nodes visited: **2** out of 5
+- Traversal order: A → B
+- Unreachable nodes: C, D, E
+  *(Graph is disconnected - these nodes cannot be reached from A)*
+
+**Algorithm Characteristics:**
+- Time Complexity: O(V + E) where V = vertices, E = edges
+- Space Complexity: O(V) for stack and visited set
+- Traversal Strategy: Depth-first (explore as far as possible before backtracking)
 
 ---
 
@@ -88,30 +170,32 @@ DFS only explores the component containing the start node.
 
 ### Primary Metrics to Emphasize
 
-- Current node being visited (top of stack)
-- Stack contents (showing exploration path)
-- Visited vs unvisited nodes count
-- Visit order numbering (1, 2, 3...)
+- **Stack Contents** (`stack`) - Shows the exploration frontier and backtracking path
+- **Visited Set Size** (`visited.length`) - Demonstrates progress through the graph
+- **Current Node** (`current_node`) - The active exploration point
 
 ### Visualization Priorities
 
-1. **Topology context** - Use force-directed or hierarchical layout
-2. **Traversal order** - Number nodes as visited (1, 2, 3...)
-3. **Active structure** - Show stack as vertical sidebar with LIFO animations
-4. **State transitions** - Node color changes (unvisited→visiting→visited)
-5. **Backtracking visualization** - Highlight when popping from stack with no unvisited neighbors
+1. **Highlight the stack's LIFO behavior** - Use vertical stack visualization with top clearly marked
+2. **Emphasize depth-first exploration** - Animate following one path to its end before backtracking
+3. **Show visited vs. unvisited distinction** - Use distinct colors for `visited` vs `unvisited` node states
+4. **Animate backtracking moments** - When stack pops without new pushes, show return to previous node
+5. **Track traversal order** - Display the sequence of visited nodes to show exploration path
 
 ### Key JSON Paths
 
-- Node states: `step.data.visualization.graph.nodes[*].state`
-- Stack contents: `step.data.visualization.stack`
-- Current node: `step.data.current_node`
-- Visited set: `step.data.visualization.visited_set`
-- Neighbor analysis: `step.data.filtering_log` (for detailed tooltips)
+```
+step.data.visualization.nodes[*].id
+step.data.visualization.nodes[*].state  // 'unvisited' | 'examining' | 'visited'
+step.data.visualization.edges[*].from
+step.data.visualization.edges[*].to
+step.data.visualization.edges[*].state  // 'unexplored' | 'traversed' | 'backtrack'
+step.data.visualization.stack  // Array with top at end: [..., top]
+step.data.visualization.visited  // Sorted array of visited node IDs
+step.data.visualization.current_node  // Currently processing node
+step.data.visualization.traversal_order  // Sequence of visited nodes
+```
 
 ### Algorithm-Specific Guidance
 
-DFS is about exploring "as deep as possible" before backtracking. 
-Emphasize the stack's role in remembering where to return. 
-The moment of backtracking (stack pop with no unvisited neighbors) is crucial to highlight. 
-Consider animating the "dive deep" vs "climb back up" phases distinctly.
+DFS's defining characteristic is its **depth-first exploration strategy** - it follows one path as far as possible before backtracking. The most pedagogically important visualization is the **stack's LIFO behavior**: when we push neighbors onto the stack, the last one pushed is the first one explored (creating the depth-first pattern). Consider using a **vertical stack visualization** with clear directional indicators (arrows pointing to top). When backtracking occurs (popping without pushing), animate the 'return' to show we're unwinding the exploration path. The contrast between DFS and BFS becomes clear when students see the stack (LIFO) vs. queue (FIFO) - emphasize this by showing how the stack's top element determines the next exploration direction. For disconnected graphs, clearly show when the stack empties with unvisited nodes remaining, demonstrating that DFS only explores the connected component containing the start node.

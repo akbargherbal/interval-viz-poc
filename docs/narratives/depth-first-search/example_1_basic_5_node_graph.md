@@ -1,141 +1,383 @@
-# Depth-First Search (DFS) Execution Narrative
+# Depth-First Search (Iterative) Execution Narrative
 
-## Input Summary
-
+**Algorithm:** Depth-First Search (Iterative)
 **Start Node:** A
-**Total Nodes:** 5
-**Total Edges:** 4
+**Graph Size:** 5 nodes
+**Traversal Order:** A → B → D → E → C
+**Nodes Visited:** 5/5
+
+---
+
+## Step 0: 🔍 Initialize DFS from node A
 
 **Graph Structure (Adjacency List):**
+- A: [B, C]
+- B: [A, D, E]
+- C: [A]
+- D: [B]
+- E: [B]
 
-- A → ['B', 'C']
-- B → ['A', 'D', 'E']
-- C → ['A']
-- D → ['B']
-- E → ['B']
+**Initial Configuration:**
+- Start node: **A**
+- Stack: Empty (will push start node)
+- Visited set: Empty
+- Goal: Explore all reachable nodes depth-first
 
-## Step 0: Initialize DFS with start node 'A'
+---
 
-**Stack:** (empty)
-**Visited:** (none)
+## Step 1: 📥 Push start node A onto stack
 
+**Action:** Push node **A** onto stack
 
-## Step 1: Push start node 'A' onto stack
+**Reason:** Starting node for traversal
 
-**Stack:** ['A']
-**Visited:** (none)
+**Stack State:**
+```
+[A] ← A on top (processed next)
+```
 
-**Action:** Push start node 'A' onto stack to begin traversal.
+**Visited Set:** {empty}
 
-## Step 2: Visit 'A', push neighbors ['C', 'B']
+---
 
-**Stack:** ['C', 'B']
-**Visited:** ['A']
+## Step 2: 📤 Pop node A from stack
 
-**1. Pop Operation:**
-- Pop 'A' from stack.
-- **Intermediate Stack:** (empty)
-- Mark 'A' as visited (Visit #1).
+**Action:** Pop node **A** from stack for processing
 
-**2. Neighbor Analysis:**
-Check neighbors of 'A' (in alphabetical order):
-- Node B: unvisited → Push to stack
-- Node C: unvisited → Push to stack
+**Stack Before Pop:**
+```
+[A] ← A on top
+```
 
-**3. Stack Update:**
-- Neighbors to push: ['C', 'B']
-- **Push Order:** Pushed in reverse ['C', 'B'] so that B is at top.
-- **Result:** Next pop will visit 'B'.
+**Stack After Pop:**
+```
+Empty
+```
 
-## Step 3: Visit 'B', push neighbors ['E', 'D']
+---
 
-**Stack:** ['C', 'E', 'D']
-**Visited:** ['A', 'B']
+## Step 3: ✅ Visit node A (neighbor count: 2)
 
-**1. Pop Operation:**
-- Pop 'B' from stack.
-- **Intermediate Stack:** ['C']
-- Mark 'B' as visited (Visit #2).
+**Processing Node:** A
 
-**2. Neighbor Analysis:**
-Check neighbors of 'B' (in alphabetical order):
-- Node A: visited → Already visited (do not push)
-- Node D: unvisited → Push to stack
-- Node E: unvisited → Push to stack
+**Check Visited Status:**
+- Visited set before: {empty}
+- Is A in visited set? **No** ✓
+- Action: Mark A as visited
 
-**3. Stack Update:**
-- Neighbors to push: ['E', 'D']
-- **Push Order:** Pushed in reverse ['E', 'D'] so that D is at top.
-- **Result:** Next pop will visit 'D'.
+**Updated Visited Set:** {A}
 
-## Step 4: Visit 'D' (Backtrack point)
+**Neighbors of A:** [B, C]
 
-**Stack:** ['C', 'E']
-**Visited:** ['A', 'B', 'D']
+**Neighbor Processing:**
+We will examine each neighbor to determine if it should be added to the stack.
 
-**1. Pop Operation:**
-- Pop 'D' from stack.
-- **Intermediate Stack:** ['C', 'E']
-- Mark 'D' as visited (Visit #3).
+---
 
-**2. Neighbor Analysis:**
-Check neighbors of 'D' (in alphabetical order):
-- Node B: visited → Already visited (do not push)
+## Step 4: 📥 Push neighbor C onto stack
 
-**3. Stack Update:**
-- No neighbors pushed.
-- **Result:** No unvisited neighbors found. **Backtracking** (returning to previous node).
+**Action:** Push node **C** onto stack
 
-## Step 5: Visit 'E' (Backtrack point)
+**Reason:** Unvisited neighbor of A
 
-**Stack:** ['C']
-**Visited:** ['A', 'B', 'D', 'E']
+**Stack State:**
+```
+[C] ← C on top (processed next)
+```
 
-**1. Pop Operation:**
-- Pop 'E' from stack.
-- **Intermediate Stack:** ['C']
-- Mark 'E' as visited (Visit #4).
+**Visited Set:** {A}
 
-**2. Neighbor Analysis:**
-Check neighbors of 'E' (in alphabetical order):
-- Node B: visited → Already visited (do not push)
+---
 
-**3. Stack Update:**
-- No neighbors pushed.
-- **Result:** No unvisited neighbors found. Backtracking.
+## Step 5: 📥 Push neighbor B onto stack
 
-## Step 6: Visit 'C' (Backtrack point)
+**Action:** Push node **B** onto stack
 
-**Stack:** (empty)
-**Visited:** ['A', 'B', 'D', 'E', 'C']
+**Reason:** Unvisited neighbor of A
 
-**1. Pop Operation:**
-- Pop 'C' from stack.
-- **Intermediate Stack:** (empty)
-- Mark 'C' as visited (Visit #5).
+**Stack State:**
+```
+[C, B] ← B on top (processed next)
+```
 
-**2. Neighbor Analysis:**
-Check neighbors of 'C' (in alphabetical order):
-- Node A: visited → Already visited (do not push)
+**Visited Set:** {A}
 
-**3. Stack Update:**
-- No neighbors pushed.
-- **Result:** No unvisited neighbors found. Backtracking.
+---
 
-## Step 7: DFS complete - visited 5 nodes
+## Step 6: 📤 Pop node B from stack
 
-**Stack:** (empty)
-**Visited:** ['A', 'B', 'D', 'E', 'C']
+**Action:** Pop node **B** from stack for processing
 
-**Completion:** Stack is empty.
+**Stack Before Pop:**
+```
+[C, B] ← B on top
+```
 
-## Final Result
+**Stack After Pop:**
+```
+[C] ← C on top (processed next)
+```
 
-**Visit Order:** ['A', 'B', 'D', 'E', 'C']
-**Visited Count:** 5 / 5 nodes
-**Graph Connectivity:** All nodes reachable from start node ✓
+---
 
-**Total Steps:** 8
+## Step 7: ✅ Visit node B (neighbor count: 3)
+
+**Processing Node:** B
+
+**Check Visited Status:**
+- Visited set before: {A}
+- Is B in visited set? **No** ✓
+- Action: Mark B as visited
+
+**Updated Visited Set:** {A, B}
+
+**Neighbors of B:** [A, D, E]
+
+**Neighbor Processing:**
+We will examine each neighbor to determine if it should be added to the stack.
+
+---
+
+## Step 8: 📥 Push neighbor E onto stack
+
+**Action:** Push node **E** onto stack
+
+**Reason:** Unvisited neighbor of B
+
+**Stack State:**
+```
+[C, E] ← E on top (processed next)
+```
+
+**Visited Set:** {A, B}
+
+---
+
+## Step 9: 📥 Push neighbor D onto stack
+
+**Action:** Push node **D** onto stack
+
+**Reason:** Unvisited neighbor of B
+
+**Stack State:**
+```
+[C, E, D] ← D on top (processed next)
+```
+
+**Visited Set:** {A, B}
+
+---
+
+## Step 10: ⏭️ Skip neighbor A (already visited)
+
+**Examining Neighbor:** A (from node B)
+
+**Check Visited Status:**
+- Current visited set: {A, B}
+- Is A in visited set? **Yes** ✓
+- Decision: **Skip** A (already explored)
+
+**Reason:** DFS only visits each node once. Since A is already in the visited set, we don't need to explore it again.
+
+---
+
+## Step 11: 📤 Pop node D from stack
+
+**Action:** Pop node **D** from stack for processing
+
+**Stack Before Pop:**
+```
+[C, E, D] ← D on top
+```
+
+**Stack After Pop:**
+```
+[C, E] ← E on top (processed next)
+```
+
+---
+
+## Step 12: ✅ Visit node D (neighbor count: 1)
+
+**Processing Node:** D
+
+**Check Visited Status:**
+- Visited set before: {A, B}
+- Is D in visited set? **No** ✓
+- Action: Mark D as visited
+
+**Updated Visited Set:** {A, B, D}
+
+**Neighbors of D:** [B]
+
+**Neighbor Processing:**
+We will examine each neighbor to determine if it should be added to the stack.
+
+---
+
+## Step 13: ⏭️ Skip neighbor B (already visited)
+
+**Examining Neighbor:** B (from node D)
+
+**Check Visited Status:**
+- Current visited set: {A, B, D}
+- Is B in visited set? **Yes** ✓
+- Decision: **Skip** B (already explored)
+
+**Reason:** DFS only visits each node once. Since B is already in the visited set, we don't need to explore it again.
+
+---
+
+## Step 14: ⬅️ Backtrack from D (all neighbors visited)
+
+**Backtracking:**
+
+- Finished exploring all neighbors of **D**
+- No unvisited neighbors remain
+- Return to previous node in stack (if any)
+
+**Stack State:**
+```
+[C, E] ← E on top (processed next)
+```
+
+---
+
+## Step 15: 📤 Pop node E from stack
+
+**Action:** Pop node **E** from stack for processing
+
+**Stack Before Pop:**
+```
+[C, E] ← E on top
+```
+
+**Stack After Pop:**
+```
+[C] ← C on top (processed next)
+```
+
+---
+
+## Step 16: ✅ Visit node E (neighbor count: 1)
+
+**Processing Node:** E
+
+**Check Visited Status:**
+- Visited set before: {A, B, D}
+- Is E in visited set? **No** ✓
+- Action: Mark E as visited
+
+**Updated Visited Set:** {A, B, D, E}
+
+**Neighbors of E:** [B]
+
+**Neighbor Processing:**
+We will examine each neighbor to determine if it should be added to the stack.
+
+---
+
+## Step 17: ⏭️ Skip neighbor B (already visited)
+
+**Examining Neighbor:** B (from node E)
+
+**Check Visited Status:**
+- Current visited set: {A, B, D, E}
+- Is B in visited set? **Yes** ✓
+- Decision: **Skip** B (already explored)
+
+**Reason:** DFS only visits each node once. Since B is already in the visited set, we don't need to explore it again.
+
+---
+
+## Step 18: ⬅️ Backtrack from E (all neighbors visited)
+
+**Backtracking:**
+
+- Finished exploring all neighbors of **E**
+- No unvisited neighbors remain
+- Return to previous node in stack (if any)
+
+**Stack State:**
+```
+[C] ← C on top (processed next)
+```
+
+---
+
+## Step 19: 📤 Pop node C from stack
+
+**Action:** Pop node **C** from stack for processing
+
+**Stack Before Pop:**
+```
+[C] ← C on top
+```
+
+**Stack After Pop:**
+```
+Empty
+```
+
+---
+
+## Step 20: ✅ Visit node C (neighbor count: 1)
+
+**Processing Node:** C
+
+**Check Visited Status:**
+- Visited set before: {A, B, D, E}
+- Is C in visited set? **No** ✓
+- Action: Mark C as visited
+
+**Updated Visited Set:** {A, B, C, D, E}
+
+**Neighbors of C:** [A]
+
+**Neighbor Processing:**
+We will examine each neighbor to determine if it should be added to the stack.
+
+---
+
+## Step 21: ⏭️ Skip neighbor A (already visited)
+
+**Examining Neighbor:** A (from node C)
+
+**Check Visited Status:**
+- Current visited set: {A, B, C, D, E}
+- Is A in visited set? **Yes** ✓
+- Decision: **Skip** A (already explored)
+
+**Reason:** DFS only visits each node once. Since A is already in the visited set, we don't need to explore it again.
+
+---
+
+## Step 22: ⬅️ Backtrack from C (all neighbors visited)
+
+**Backtracking:**
+
+- Finished exploring all neighbors of **C**
+- No unvisited neighbors remain
+- Return to previous node in stack (if any)
+
+**Stack State:**
+```
+Empty (traversal complete)
+```
+
+---
+
+## Execution Summary
+
+**Traversal Complete:**
+- Nodes visited: **5** out of 5
+- Traversal order: A → B → D → E → C
+- All nodes reachable from start node A
+
+**Algorithm Characteristics:**
+- Time Complexity: O(V + E) where V = vertices, E = edges
+- Space Complexity: O(V) for stack and visited set
+- Traversal Strategy: Depth-first (explore as far as possible before backtracking)
 
 ---
 
@@ -143,30 +385,32 @@ Check neighbors of 'C' (in alphabetical order):
 
 ### Primary Metrics to Emphasize
 
-- Current node being visited (top of stack)
-- Stack contents (showing exploration path)
-- Visited vs unvisited nodes count
-- Visit order numbering (1, 2, 3...)
+- **Stack Contents** (`stack`) - Shows the exploration frontier and backtracking path
+- **Visited Set Size** (`visited.length`) - Demonstrates progress through the graph
+- **Current Node** (`current_node`) - The active exploration point
 
 ### Visualization Priorities
 
-1. **Topology context** - Use force-directed or hierarchical layout
-2. **Traversal order** - Number nodes as visited (1, 2, 3...)
-3. **Active structure** - Show stack as vertical sidebar with LIFO animations
-4. **State transitions** - Node color changes (unvisited→visiting→visited)
-5. **Backtracking visualization** - Highlight when popping from stack with no unvisited neighbors
+1. **Highlight the stack's LIFO behavior** - Use vertical stack visualization with top clearly marked
+2. **Emphasize depth-first exploration** - Animate following one path to its end before backtracking
+3. **Show visited vs. unvisited distinction** - Use distinct colors for `visited` vs `unvisited` node states
+4. **Animate backtracking moments** - When stack pops without new pushes, show return to previous node
+5. **Track traversal order** - Display the sequence of visited nodes to show exploration path
 
 ### Key JSON Paths
 
-- Node states: `step.data.visualization.graph.nodes[*].state`
-- Stack contents: `step.data.visualization.stack`
-- Current node: `step.data.current_node`
-- Visited set: `step.data.visualization.visited_set`
-- Neighbor analysis: `step.data.filtering_log` (for detailed tooltips)
+```
+step.data.visualization.nodes[*].id
+step.data.visualization.nodes[*].state  // 'unvisited' | 'examining' | 'visited'
+step.data.visualization.edges[*].from
+step.data.visualization.edges[*].to
+step.data.visualization.edges[*].state  // 'unexplored' | 'traversed' | 'backtrack'
+step.data.visualization.stack  // Array with top at end: [..., top]
+step.data.visualization.visited  // Sorted array of visited node IDs
+step.data.visualization.current_node  // Currently processing node
+step.data.visualization.traversal_order  // Sequence of visited nodes
+```
 
 ### Algorithm-Specific Guidance
 
-DFS is about exploring "as deep as possible" before backtracking. 
-Emphasize the stack's role in remembering where to return. 
-The moment of backtracking (stack pop with no unvisited neighbors) is crucial to highlight. 
-Consider animating the "dive deep" vs "climb back up" phases distinctly.
+DFS's defining characteristic is its **depth-first exploration strategy** - it follows one path as far as possible before backtracking. The most pedagogically important visualization is the **stack's LIFO behavior**: when we push neighbors onto the stack, the last one pushed is the first one explored (creating the depth-first pattern). Consider using a **vertical stack visualization** with clear directional indicators (arrows pointing to top). When backtracking occurs (popping without pushing), animate the 'return' to show we're unwinding the exploration path. The contrast between DFS and BFS becomes clear when students see the stack (LIFO) vs. queue (FIFO) - emphasize this by showing how the stack's top element determines the next exploration direction. For disconnected graphs, clearly show when the stack empties with unvisited nodes remaining, demonstrating that DFS only explores the connected component containing the start node.
