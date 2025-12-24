@@ -1,4 +1,3 @@
-# /home/akbar/Jupyter_Notebooks/interval-viz-poc/backend/algorithms/registry.py
 """
 Algorithm Registry for automatic discovery and routing.
 
@@ -8,6 +7,7 @@ with metadata that drives the frontend UI and routing logic.
 
 Phase 2: Dynamic algorithm discovery and unified routing
 """
+
 import os
 from pathlib import Path
 from typing import Dict, Type, List, Any, Optional
@@ -92,7 +92,8 @@ class AlgorithmRegistry:
         if name not in self._algorithms:
             available = ", ".join(self._algorithms.keys())
             raise KeyError(
-                f"Algorithm '{name}' not found. " f"Available algorithms: {available}"
+                f"Algorithm '{name}' is not registered. "
+                f"Available algorithms: {available}"
             )
 
         return self._algorithms[name]["tracer_class"]
@@ -211,10 +212,25 @@ def register_algorithms():
     """
 
     # Import algorithm tracers
-    from .binary_search import BinarySearchTracer
     from .interval_coverage import IntervalCoverageTracer
+    from .binary_search import BinarySearchTracer
     from .two_pointer import TwoPointerTracer
     from .sliding_window import SlidingWindowTracer
+    from .merge_sort import MergeSortTracer
+    from .depth_first_search_tracer import DepthFirstSearchTracer
+    from .boyer_moore_voting_tracer import BoyerMooreVotingTracer
+    from .breadth_first_search_tracer import BreadthFirstSearchTracer
+    from .bubble_sort_tracer import BubbleSortTracer
+    from .container_with_most_water_tracer import ContainerWithMostWaterTracer
+    from .dijkstras_algorithm_tracer import DijkstrasAlgorithmTracer
+    from .dutch_national_flag_tracer import DutchNationalFlagTracer
+    from .insertion_sort_tracer import InsertionSortTracer
+    from .kadanes_algorithm_tracer import KadanesAlgorithmTracer
+    from .longest_increasing_subsequence_tracer import LongestIncreasingSubsequenceTracer
+    from .meeting_rooms_tracer import MeetingRoomsTracer
+    from .merge_intervals_tracer import MergeIntervalsTracer
+    from .quick_sort_tracer import QuickSortTracer
+    from .topological_sort_tracer import TopologicalSortTracer
 
     # -------------------------------------------------------------------------
     # Interval Coverage (PoC Algorithm - Now Refactored!)
@@ -343,7 +359,10 @@ def register_algorithms():
                         "target": 51,
                     },
                 },
-                {"name": "Single Element - Found", "input": {"array": [42], "target": 42}},
+                {
+                    "name": "Single Element - Found",
+                    "input": {"array": [42], "target": 42},
+                },
                 {
                     "name": "Target at Start",
                     "input": {"array": [10, 20, 30, 40, 50], "target": 10},
@@ -401,18 +420,27 @@ def register_algorithms():
         )
 
     # -------------------------------------------------------------------------
-    # Sliding Window Pattern (NEW)
+    # Sliding Window Pattern
     # -------------------------------------------------------------------------
     if not registry.is_registered("sliding-window"):
         registry.register(
-            name='sliding-window',
+            name="sliding-window",
             tracer_class=SlidingWindowTracer,
-            display_name='Sliding Window Pattern',
-            description='Find maximum sum subarray of a fixed size k',
+            display_name="Sliding Window Pattern",
+            description="Find maximum sum subarray of a fixed size k",
             example_inputs=[
-                {'name': 'Basic', 'input': {'array': [1, 5, 1, 3, 2,5,1,6,7,0,5], 'k': 3}},
-                {'name': 'Increasing Trend', 'input': {'array': [1, 2, 3, 4, 5, 6], 'k': 3}},
-                {'name': 'Decreasing Trend', 'input': {'array': [6, 5, 4, 3, 2, 1], 'k': 4}},
+                {
+                    "name": "Basic",
+                    "input": {"array": [1, 5, 1, 3, 2, 5, 1, 6, 7, 0, 5], "k": 3},
+                },
+                {
+                    "name": "Increasing Trend",
+                    "input": {"array": [1, 2, 3, 4, 5, 6], "k": 3},
+                },
+                {
+                    "name": "Decreasing Trend",
+                    "input": {"array": [6, 5, 4, 3, 2, 1], "k": 4},
+                },
             ],
             input_schema={
                 "type": "object",
@@ -423,7 +451,709 @@ def register_algorithms():
                         "items": {"type": "integer"},
                         "description": "Array of integers",
                     },
-                    "k": {"type": "integer", "description": "The size of the sliding window"},
+                    "k": {
+                        "type": "integer",
+                        "description": "The size of the sliding window",
+                    },
+                },
+            },
+        )
+
+    # -------------------------------------------------------------------------
+    # Merge Sort
+    # -------------------------------------------------------------------------
+    if not registry.is_registered("merge-sort"):
+        registry.register(
+            name="merge-sort",
+            tracer_class=MergeSortTracer,
+            display_name="Merge Sort",
+            description="Recursive divide-and-conquer sorting algorithm with O(n log n) guaranteed time complexity",
+            example_inputs=[
+                {
+                    "name": "Basic - 8 Elements",
+                    "input": {"array": [38, 27, 43, 3, 9, 82, 10, 5]},
+                },
+                {
+                    "name": "Already Sorted",
+                    "input": {"array": [1, 2, 3, 4, 5, 6, 7, 8]},
+                },
+                {
+                    "name": "Reverse Sorted",
+                    "input": {"array": [8, 7, 6, 5, 4, 3, 2, 1]},
+                },
+                {
+                    "name": "With Duplicates",
+                    "input": {"array": [5, 2, 8, 2, 9, 1, 5, 5]},
+                },
+                {"name": "Small Array", "input": {"array": [3, 1, 4, 1, 5]}},
+                {
+                    "name": "Larger Array - 12 Elements",
+                    "input": {
+                        "array": [64, 34, 25, 12, 22, 11, 90, 88, 45, 50, 33, 17]
+                    },
+                },
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["array"],
+                "properties": {
+                    "array": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "minItems": 1,
+                        "maxItems": 12,
+                        "description": "Array of numbers to sort (8-12 elements recommended)",
+                    }
+                },
+            },
+        )
+
+    # -------------------------------------------------------------------------
+    # Depth-First Search (Iterative) - REPLACED VERSION
+    # -------------------------------------------------------------------------
+    if not registry.is_registered("depth-first-search"):
+        registry.register(
+            name="depth-first-search",
+            tracer_class=DepthFirstSearchTracer,
+            display_name="Depth-First Search (Iterative)",
+            description="Graph traversal algorithm that explores as far as possible along each branch before backtracking using an iterative approach",
+            example_inputs=[
+                {
+                    "name": "Basic 5-Node Graph",
+                    "input": {
+                        "nodes": ["A", "B", "C", "D", "E"],
+                        "edges": [("A", "B"), ("A", "C"), ("B", "D"), ("B", "E")],
+                        "start_node": "A",
+                    },
+                },
+                {
+                    "name": "Linear Chain",
+                    "input": {
+                        "nodes": ["A", "B", "C", "D"],
+                        "edges": [("A", "B"), ("B", "C"), ("C", "D")],
+                        "start_node": "A",
+                    },
+                },
+                {
+                    "name": "Disconnected Components",
+                    "input": {
+                        "nodes": ["A", "B", "C", "D", "E"],
+                        "edges": [("A", "B"), ("C", "D")],
+                        "start_node": "A",
+                    },
+                },
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["nodes", "edges", "start_node"],
+                "properties": {
+                    "nodes": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "minItems": 1,
+                        "maxItems": 20,
+                        "description": "List of node identifiers",
+                    },
+                    "edges": {
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "minItems": 2,
+                            "maxItems": 2,
+                        },
+                        "description": "List of edges as [from, to] pairs (undirected)",
+                    },
+                    "start_node": {
+                        "type": "string",
+                        "description": "Node to start traversal from",
+                    },
+                },
+            },
+        )
+
+    # -------------------------------------------------------------------------
+    # Boyer-Moore Voting
+    # -------------------------------------------------------------------------
+    if not registry.is_registered("boyer-moore-voting"):
+        registry.register(
+            name="boyer-moore-voting",
+            tracer_class=BoyerMooreVotingTracer,
+            display_name="Boyer-Moore Voting",
+            description="Find majority element (appears > n/2 times) in O(n) time and O(1) space",
+            example_inputs=[
+                {
+                    "name": "Basic - Majority Exists",
+                    "input": {"array": [2, 2, 1, 1, 1, 2, 2]},
+                },
+                {
+                    "name": "No Majority",
+                    "input": {"array": [1, 2, 3, 1, 2, 3, 1]},
+                },
+                {
+                    "name": "All Same",
+                    "input": {"array": [5, 5, 5, 5, 5]},
+                },
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["array"],
+                "properties": {
+                    "array": {
+                        "type": "array",
+                        "items": {"type": "integer"},
+                        "minItems": 1,
+                        "maxItems": 100,
+                        "description": "List of integers to find majority element in",
+                    }
+                },
+            },
+        )
+
+    # -------------------------------------------------------------------------
+    # Breadth-First Search
+    # -------------------------------------------------------------------------
+    if not registry.is_registered("breadth-first-search"):
+        registry.register(
+            name="breadth-first-search",
+            tracer_class=BreadthFirstSearchTracer,
+            display_name="Breadth-First Search",
+            description="Graph traversal algorithm that explores neighbors at current depth before moving to next level",
+            example_inputs=[
+                {
+                    "name": "Basic Connected Graph",
+                    "input": {
+                        "nodes": ["A", "B", "C", "D", "E", "F"],
+                        "edges": [
+                            ("A", "B"),
+                            ("A", "C"),
+                            ("B", "D"),
+                            ("B", "E"),
+                            ("C", "F"),
+                        ],
+                        "start_node": "A",
+                    },
+                },
+                {
+                    "name": "Disconnected Graph",
+                    "input": {
+                        "nodes": ["A", "B", "C", "D"],
+                        "edges": [("A", "B"), ("C", "D")],
+                        "start_node": "A",
+                    },
+                },
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["nodes", "edges", "start_node"],
+                "properties": {
+                    "nodes": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "minItems": 1,
+                        "maxItems": 20,
+                        "description": "List of node identifiers",
+                    },
+                    "edges": {
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "minItems": 2,
+                            "maxItems": 2,
+                        },
+                        "description": "List of edges as [from, to] pairs",
+                    },
+                    "start_node": {
+                        "type": "string",
+                        "description": "Node to start traversal from",
+                    },
+                },
+            },
+        )
+
+    # -------------------------------------------------------------------------
+    # Bubble Sort
+    # -------------------------------------------------------------------------
+    if not registry.is_registered("bubble-sort"):
+        registry.register(
+            name="bubble-sort",
+            tracer_class=BubbleSortTracer,
+            display_name="Bubble Sort",
+            description="Simple sorting algorithm that repeatedly steps through the list, compares adjacent elements and swaps them",
+            example_inputs=[
+                {
+                    "name": "Basic Unsorted",
+                    "input": {"array": [64, 34, 25, 12, 22, 11, 90]},
+                },
+                {
+                    "name": "Already Sorted",
+                    "input": {"array": [1, 2, 3, 4, 5]},
+                },
+                {
+                    "name": "Reverse Sorted",
+                    "input": {"array": [5, 4, 3, 2, 1]},
+                },
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["array"],
+                "properties": {
+                    "array": {
+                        "type": "array",
+                        "items": {"type": "integer"},
+                        "minItems": 1,
+                        "maxItems": 20,
+                        "description": "List of integers to sort",
+                    }
+                },
+            },
+        )
+
+    # -------------------------------------------------------------------------
+    # Container With Most Water
+    # -------------------------------------------------------------------------
+    if not registry.is_registered("container-with-most-water"):
+        registry.register(
+            name="container-with-most-water",
+            tracer_class=ContainerWithMostWaterTracer,
+            display_name="Container With Most Water",
+            description="Find two lines that together with the x-axis form a container, such that the container contains the most water",
+            example_inputs=[
+                {
+                    "name": "Basic Example",
+                    "input": {"heights": [1, 8, 6, 2, 5, 4, 8, 3, 7]},
+                },
+                {
+                    "name": "Increasing Heights",
+                    "input": {"heights": [1, 2, 3, 4, 5]},
+                },
+                {
+                    "name": "Decreasing Heights",
+                    "input": {"heights": [5, 4, 3, 2, 1]},
+                },
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["heights"],
+                "properties": {
+                    "heights": {
+                        "type": "array",
+                        "items": {"type": "integer", "minimum": 0},
+                        "minItems": 2,
+                        "maxItems": 20,
+                        "description": "List of non-negative integers representing heights",
+                    }
+                },
+            },
+        )
+
+    # -------------------------------------------------------------------------
+    # Dijkstra's Algorithm
+    # -------------------------------------------------------------------------
+    if not registry.is_registered("dijkstras-algorithm"):
+        registry.register(
+            name="dijkstras-algorithm",
+            tracer_class=DijkstrasAlgorithmTracer,
+            display_name="Dijkstra's Algorithm",
+            description="Find shortest paths from a starting node to all other nodes in a weighted graph",
+            example_inputs=[
+                {
+                    "name": "Basic Weighted Graph",
+                    "input": {
+                        "nodes": ["A", "B", "C", "D", "E"],
+                        "edges": [
+                            ["A", "B", 4],
+                            ["A", "C", 2],
+                            ["B", "C", 1],
+                            ["B", "D", 5],
+                            ["C", "D", 8],
+                            ["C", "E", 10],
+                            ["D", "E", 2],
+                        ],
+                        "start_node": "A",
+                    },
+                },
+                {
+                    "name": "Simple Triangle",
+                    "input": {
+                        "nodes": ["X", "Y", "Z"],
+                        "edges": [["X", "Y", 5], ["Y", "Z", 3], ["X", "Z", 10]],
+                        "start_node": "X",
+                    },
+                },
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["nodes", "edges", "start_node"],
+                "properties": {
+                    "nodes": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "minItems": 1,
+                        "maxItems": 20,
+                        "description": "List of node identifiers",
+                    },
+                    "edges": {
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {"oneOf": [{"type": "string"}, {"type": "integer"}]},
+                            "minItems": 3,
+                            "maxItems": 3,
+                            "description": "[from, to, weight]",
+                        },
+                        "description": "List of edges with weights",
+                    },
+                    "start_node": {
+                        "type": "string",
+                        "description": "Node to start traversal from",
+                    },
+                },
+            },
+        )
+
+    # -------------------------------------------------------------------------
+    # Dutch National Flag
+    # -------------------------------------------------------------------------
+    if not registry.is_registered("dutch-national-flag"):
+        registry.register(
+            name="dutch-national-flag",
+            tracer_class=DutchNationalFlagTracer,
+            display_name="Sort Colors (Dutch National Flag)",
+            description="Sort an array of 0s, 1s, and 2s in linear time and constant space",
+            example_inputs=[
+                {
+                    "name": "Mixed Colors",
+                    "input": {"array": [2, 0, 2, 1, 1, 0]},
+                },
+                {
+                    "name": "Reverse Sorted",
+                    "input": {"array": [2, 2, 1, 1, 0, 0]},
+                },
+                {
+                    "name": "Sorted",
+                    "input": {"array": [0, 0, 1, 1, 2, 2]},
+                },
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["array"],
+                "properties": {
+                    "array": {
+                        "type": "array",
+                        "items": {"type": "integer", "enum": [0, 1, 2]},
+                        "minItems": 1,
+                        "maxItems": 20,
+                        "description": "Array containing only 0s, 1s, and 2s",
+                    }
+                },
+            },
+        )
+
+    # -------------------------------------------------------------------------
+    # Insertion Sort
+    # -------------------------------------------------------------------------
+    if not registry.is_registered("insertion-sort"):
+        registry.register(
+            name="insertion-sort",
+            tracer_class=InsertionSortTracer,
+            display_name="Insertion Sort",
+            description="Builds the final sorted array one item at a time",
+            example_inputs=[
+                {
+                    "name": "Basic Unsorted",
+                    "input": {"array": [12, 11, 13, 5, 6]},
+                },
+                {
+                    "name": "Reverse Sorted",
+                    "input": {"array": [5, 4, 3, 2, 1]},
+                },
+                {
+                    "name": "Nearly Sorted",
+                    "input": {"array": [2, 1, 3, 4, 5]},
+                },
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["array"],
+                "properties": {
+                    "array": {
+                        "type": "array",
+                        "items": {"type": "integer"},
+                        "minItems": 1,
+                        "maxItems": 20,
+                        "description": "List of integers to sort",
+                    }
+                },
+            },
+        )
+
+    # -------------------------------------------------------------------------
+    # Kadane's Algorithm
+    # -------------------------------------------------------------------------
+    if not registry.is_registered("kadanes-algorithm"):
+        registry.register(
+            name="kadanes-algorithm",
+            tracer_class=KadanesAlgorithmTracer,
+            display_name="Kadane's Algorithm",
+            description="Find the contiguous subarray within a one-dimensional array of numbers which has the largest sum",
+            example_inputs=[
+                {
+                    "name": "Mixed Values",
+                    "input": {"array": [-2, 1, -3, 4, -1, 2, 1, -5, 4]},
+                },
+                {
+                    "name": "All Negative",
+                    "input": {"array": [-5, -2, -9, -1, -4]},
+                },
+                {
+                    "name": "All Positive",
+                    "input": {"array": [1, 2, 3, 4, 5]},
+                },
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["array"],
+                "properties": {
+                    "array": {
+                        "type": "array",
+                        "items": {"type": "integer"},
+                        "minItems": 1,
+                        "maxItems": 20,
+                        "description": "List of integers",
+                    }
+                },
+            },
+        )
+
+    # -------------------------------------------------------------------------
+    # Longest Increasing Subsequence
+    # -------------------------------------------------------------------------
+    if not registry.is_registered("longest-increasing-subsequence"):
+        registry.register(
+            name="longest-increasing-subsequence",
+            tracer_class=LongestIncreasingSubsequenceTracer,
+            display_name="Longest Increasing Subsequence (Patience Sorting)",
+            description="Find the length of the longest subsequence of a given sequence such that all elements of the subsequence are sorted in increasing order",
+            example_inputs=[
+                {
+                    "name": "Basic Example",
+                    "input": {"array": [10, 9, 2, 5, 3, 7, 101, 18]},
+                },
+                {
+                    "name": "Already Sorted",
+                    "input": {"array": [1, 2, 3, 4, 5]},
+                },
+                {
+                    "name": "Reverse Sorted",
+                    "input": {"array": [5, 4, 3, 2, 1]},
+                },
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["array"],
+                "properties": {
+                    "array": {
+                        "type": "array",
+                        "items": {"type": "integer"},
+                        "minItems": 1,
+                        "maxItems": 20,
+                        "description": "List of integers",
+                    }
+                },
+            },
+        )
+
+    # -------------------------------------------------------------------------
+    # Meeting Rooms II
+    # -------------------------------------------------------------------------
+    if not registry.is_registered("meeting-rooms"):
+        registry.register(
+            name="meeting-rooms",
+            tracer_class=MeetingRoomsTracer,
+            display_name="Meeting Rooms II",
+            description="Find the minimum number of conference rooms required for a given set of meetings",
+            example_inputs=[
+                {
+                    "name": "Basic Overlap",
+                    "input": {
+                        "intervals": [[0, 30], [5, 10], [15, 20]],
+                    },
+                },
+                {
+                    "name": "Nested Meetings",
+                    "input": {
+                        "intervals": [[1, 10], [2, 7], [3, 19], [8, 12], [10, 20], [11, 30]],
+                    },
+                },
+                {
+                    "name": "No Overlap",
+                    "input": {
+                        "intervals": [[7, 10], [2, 4]],
+                    },
+                },
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["intervals"],
+                "properties": {
+                    "intervals": {
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {"type": "integer"},
+                            "minItems": 2,
+                            "maxItems": 2,
+                        },
+                        "minItems": 1,
+                        "maxItems": 20,
+                        "description": "List of [start, end] time intervals",
+                    }
+                },
+            },
+        )
+
+    # -------------------------------------------------------------------------
+    # Merge Intervals
+    # -------------------------------------------------------------------------
+    if not registry.is_registered("merge-intervals"):
+        registry.register(
+            name="merge-intervals",
+            tracer_class=MergeIntervalsTracer,
+            display_name="Merge Intervals",
+            description="Merge all overlapping intervals",
+            example_inputs=[
+                {
+                    "name": "Basic Overlap",
+                    "input": {
+                        "intervals": [[1, 3], [2, 6], [8, 10], [15, 18]],
+                    },
+                },
+                {
+                    "name": "Merge All",
+                    "input": {
+                        "intervals": [[1, 4], [4, 5]],
+                    },
+                },
+                {
+                    "name": "No Overlap",
+                    "input": {
+                        "intervals": [[1, 2], [3, 4], [5, 6]],
+                    },
+                },
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["intervals"],
+                "properties": {
+                    "intervals": {
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {"type": "integer"},
+                            "minItems": 2,
+                            "maxItems": 2,
+                        },
+                        "minItems": 1,
+                        "maxItems": 20,
+                        "description": "List of [start, end] time intervals",
+                    }
+                },
+            },
+        )
+
+    # -------------------------------------------------------------------------
+    # Quick Sort
+    # -------------------------------------------------------------------------
+    if not registry.is_registered("quick-sort"):
+        registry.register(
+            name="quick-sort",
+            tracer_class=QuickSortTracer,
+            display_name="Quick Sort",
+            description="Divide-and-conquer sorting algorithm that uses partitioning",
+            example_inputs=[
+                {
+                    "name": "Basic Unsorted",
+                    "input": {"array": [10, 7, 8, 9, 1, 5]},
+                },
+                {
+                    "name": "Already Sorted",
+                    "input": {"array": [1, 2, 3, 4, 5]},
+                },
+                {
+                    "name": "Reverse Sorted",
+                    "input": {"array": [5, 4, 3, 2, 1]},
+                },
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["array"],
+                "properties": {
+                    "array": {
+                        "type": "array",
+                        "items": {"type": "integer"},
+                        "minItems": 1,
+                        "maxItems": 20,
+                        "description": "List of integers to sort",
+                    }
+                },
+            },
+        )
+
+    # -------------------------------------------------------------------------
+    # Topological Sort
+    # -------------------------------------------------------------------------
+    if not registry.is_registered("topological-sort"):
+        registry.register(
+            name="topological-sort",
+            tracer_class=TopologicalSortTracer,
+            display_name="Topological Sort (Kahn's Algorithm)",
+            description="Linear ordering of vertices in a directed graph such that for every directed edge u -> v, vertex u comes before v",
+            example_inputs=[
+                {
+                    "name": "Basic DAG",
+                    "input": {
+                        "nodes": ["A", "B", "C", "D", "E"],
+                        "edges": [["A", "B"], ["A", "C"], ["B", "D"], ["C", "D"], ["D", "E"]],
+                    },
+                },
+                {
+                    "name": "Disconnected Components",
+                    "input": {
+                        "nodes": ["A", "B", "C", "D"],
+                        "edges": [["A", "B"], ["C", "D"]],
+                    },
+                },
+                {
+                    "name": "Cycle Detection",
+                    "input": {
+                        "nodes": ["A", "B", "C"],
+                        "edges": [["A", "B"], ["B", "C"], ["C", "A"]],
+                    },
+                },
+            ],
+            input_schema={
+                "type": "object",
+                "required": ["nodes", "edges"],
+                "properties": {
+                    "nodes": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "minItems": 1,
+                        "maxItems": 10,
+                        "description": "List of node identifiers",
+                    },
+                    "edges": {
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "minItems": 2,
+                            "maxItems": 2,
+                        },
+                        "description": "List of directed edges [from, to]",
+                    },
                 },
             },
         )

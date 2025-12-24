@@ -1,5 +1,6 @@
 # Frontend Developer Checklist: Algorithm Integration Compliance
 
+**Version:** 2.1.0  
 **Authority:** Derived from project workflow documentation  
 **Purpose:** Verify new algorithm frontend components comply with platform architecture and design standards  
 **Scope:** Frontend-specific requirements only - focus on this checklist and Frontend ADRs
@@ -38,56 +39,94 @@
   - Examples: `ArrayView.jsx`, `TimelineView.jsx`, `GraphView.jsx`
   - Only create if no existing visualization fits your needs
 
-### Static Mockup Compliance & Template Philosophy
+### Unified Dashboard Architecture
 
-#### Template Selection & Usage
+#### Dashboard Structure Compliance
 
-- [ ] **Correct template identified**
+- [ ] **Unified dashboard structure applied**
 
-  - Determine if algorithm is recursive or iterative
-  - Iterative algorithms → `iterative_metrics_algorithm_mockup.html` (loop-based, ≤6 numeric state variables)
-  - Recursive algorithms → `recursive_context_algorithm_mockup.html` (self-calling, call stack context)
-  - Template studied thoroughly before implementation
+  - All algorithms use the same 5-zone grid layout (RSP)
+  - Zone 1 (Primary): Main focus value, spans rows 1-2
+  - Zone 2 (Goal): Target/objective value, top-right
+  - Zone 3 (Logic): Comparison expression, middle-right
+  - Zone 4 (Action): Next operation, bottom-right
+  - Zone 5 (Overlay): Metadata strip (2-3 cells) at bottom of Zone 1
 
-- [ ] **Existing template dashboard reviewed thoroughly**
+- [ ] **Dashboard CSS classes used correctly**
 
-  - ⚠️ **CRITICAL:** Review existing dashboard in template BEFORE designing alternatives
-  - Most algorithms fit existing dashboard structure (5-zone iterative or call stack recursive)
-  - Existing dashboard is often better than initial custom designs
-  - Only propose alternatives if existing dashboard genuinely doesn't fit
-  - Document why existing dashboard is insufficient (if creating custom)
+  - `.dashboard` wrapper with `h-full`
+  - `.zone` for all zone containers
+  - `.zone-primary`, `.zone-goal`, `.zone-logic`, `.zone-action` for specific zones
+  - `.zone-boundaries` for Zone 5 overlay
+  - `.boundary-cell` for individual metadata cells
 
-- [ ] **Template philosophy understood**
+- [ ] **Container query sizing applied**
 
-  - Templates are foundation, not rigid constraint
-  - Templates provide architectural locking and design consistency
-  - Deviations allowed when pedagogical clarity requires it
-  - All deviations must be documented with reasoning
+  - Dashboard uses `container-type: size`
+  - All sizing uses container query units (`cqh`)
+  - Primary value: `clamp(40px, 26cqh, 60px)` or similar
+  - Zone labels: `clamp(10px, 3.5cqh, 14px)` or similar
+  - Boundary values: `clamp(12px, 7.5cqh, 16px)` or similar
 
-- [ ] **Template adaptation documented** (if deviating from base)
-  - Why does this algorithm need deviation?
-  - What pedagogical goal does deviation serve?
-  - What template elements remain unchanged?
-  - What template elements modified and why?
-  - Deviation approved by team/PM before implementation
+- [ ] **Visual compliance verified**
 
-#### Visual Design Compliance
+  - Dashboard fills 100% of `#panel-steps` height
+  - Edge-to-edge filling (no padding on `.dashboard` wrapper)
+  - No borders or box-shadows on dashboard container
+  - Zone labels positioned consistently (top-left, 6px inset)
+  - Metadata labels positioned consistently (top-right, 6px inset)
 
-- [ ] **Visual design matches approved templates**
+#### Dashboard Content Mapping
 
-  - Reference: `docs/static_mockup/algorithm_page_mockup.html`
-  - Theme consistency verified (slate-800 background, slate-700 panels)
-  - Color palette matches existing algorithms
-  - Font sizes and spacing match mockup
-  - Typography correct (font-mono for values, font-sans for labels)
+- [ ] **Zone content mapped appropriately**
+
+  - Zone 1: Main algorithm value with label and metadata
+  - Zone 2: Goal/target value with label
+  - Zone 3: Logic expression (two-line format: expression + result)
+  - Zone 4: Action description (verb phrase)
+  - Zone 5: 2-3 metadata cells (no more, no less)
+
+- [ ] **Content mapping documented**
+  - Zone assignments justified in implementation notes
+  - Alternative approaches considered and rejected (if applicable)
+  - Content fits within spatial constraints
+
+#### Visualization Pattern Selection
+
+- [ ] **LSP visualization pattern identified**
+
+  - Iterative algorithm → Array/pointer or sliding window visualization
+  - Recursive algorithm → Timeline/call stack visualization
+  - Pattern documented in implementation notes
+
+- [ ] **Visualization component chosen**
+  - Existing component reused (ArrayView, TimelineView) if possible
+  - New component created only if existing patterns don't fit
+  - Component registered in `visualizationRegistry.js` if new
+
+#### Reference Mockup Compliance
+
+- [ ] **Dashboard structure matches reference**
+
+  - Reference: `docs/static_mockup/unified_dashboard_reference.html`
+  - Grid layout identical (only content differs)
+  - Container query behavior matches
+  - Zone positioning and sizing matches
+
+- [ ] **Color palette aligned**
+  - Primary value color matches algorithm theme
+  - Goal zone uses emerald-400 (`#34d399`)
+  - Logic zone uses white/blue tones
+  - Action zone uses slate tones
+
+### Static Mockup Compliance
 
 - [ ] **Algorithm-specific mockup created and approved**
 
-  - File location: `docs/static_mockup/{algorithm-name}-{template-type}.html`
-  - Mockup uses base template as starting point
+  - File location: `docs/static_mockup/{algorithm-name}-mockup.html`
+  - Mockup uses unified dashboard as base
   - Mockup populated with real data from JSON payload
   - Mockup demonstrates representative algorithm state
-  - Side-by-side comparison with base template performed
   - Approval obtained before implementation
 
 - [ ] **Prediction modal matches mockup**
@@ -127,14 +166,14 @@
   - Check KeyboardContext priority levels if implementing new shortcuts
   - Document any new shortcuts to avoid future conflicts
 
-### Panel Ratio and Overflow Pattern (LOCKED Elements - INV-4)
+### Panel Dimensions and Overflow Pattern (LOCKED Elements - INV-4)
 
-- [ ] **Panel ratio preserved: 60/40 (Left/Right)**
+- [ ] **Panel dimensions preserved**
 
-  - Left panel (visualization): 60% width
-  - Right panel (state): 40% width
+  - Left panel (visualization): `flex-[3]` (responsive - fills remaining space)
+  - Right panel (state): `w-96` (384px fixed width)
   - Verify responsive behavior at different screen sizes
-  - NO modifications to ratio without full team approval
+  - NO modifications to dimensions without full team approval
 
 - [ ] **Overflow pattern implemented correctly**
   - Panel content uses `overflow-y-auto` for vertical scrolling
@@ -203,500 +242,250 @@
   - ⚠️ **WARNING:** JSON is the driving engine and source of truth
   - ⚠️ **BALANCE:** Don't ignore narrative—use it to understand pedagogical intent
   - Pull complete trace data for analysis
-  - Review `step.data.visualization` structure for ALL step types
-  - Review `step.data` fields beyond visualization
-  - Cross-reference JSON structure with narrative descriptions
-  - Document what's available vs. what narrative suggests
-  - Identify gaps between narrative and actual data
-
-- [ ] **Narrative-JSON synthesis completed**
-
-  - Use narrative to understand "why" (pedagogical goals)
-  - Use JSON to understand "what" (available data)
-  - Don't duplicate work—if narrative clearly explains something, use it
-  - Don't blindly trust narrative—always verify against JSON
-  - Leverage backend engineer's work (narratives are carefully crafted)
-
-- [ ] **Data-driven visualization plan created**
-  - List metrics emphasized (from JSON, validated by narrative)
-  - List transitions to communicate (based on JSON progression)
-  - List data relationships to show (pointers, ranges, comparisons)
-  - Map JSON fields to visual components
-  - Verify no algorithm logic reimplementation in frontend
-
-#### Component Design Validation
-
-- [ ] **Component design supports narrative flow**
-  - Visual states match narrative descriptions
-  - Transitions reflect narrative temporal coherence
-  - Data visibility matches narrative references
-  - No visual elements without narrative justification
-  - Pedagogical clarity prioritized over template compliance
-
-### Per-Algorithm Deep Dive Workflow (CRITICAL)
-
-**⚠️ MANDATORY PROCESS - Complete BEFORE touching any code**
-
-For each algorithm, follow this exact sequence:
-
-#### Step 1: Read Backend Narrative Thoroughly
-
-- [ ] **Narrative reviewed for pedagogical intent**
-  - File location: `docs/narratives/{algorithm-name}/`
-  - ⚠️ **IMPORTANT:** Backend engineer invested significant effort in narrative quality
-  - Review self-checks, mathematical accuracy, pedagogical explanations
-  - Identify algorithm's pedagogical goals (what should students learn?)
-  - Document key decision points (where does algorithm make choices?)
-  - Note state transitions (how does algorithm progress?)
-  - Extract learning moments (what's the "aha!" for students?)
-  - Use narrative to understand the "why" behind the algorithm
-
-#### Step 2: Analyze JSON Payload Deeply (MOST CRITICAL STEP)
-
-- [ ] **JSON structure analyzed completely**
-
-  - Pull live trace data: `curl -X POST http://localhost:5000/api/trace/unified -H "Content-Type: application/json" -d '{"algorithm": "{algorithm-name}", "input": {...}}' | jq '.' > /tmp/{algorithm-name}-trace.json`
-  - Review all available fields in `step.data.visualization`
-  - Review all available fields in `step.data` (beyond visualization)
-  - Document what data is available at each step type
-  - Identify edge cases (null values, initial state, completion state)
-
-- [ ] **Data availability mapped to visualization needs**
-
-  - List all metrics available in JSON payload
-  - Categorize metrics: essential vs. nice-to-have
-  - Identify which metrics serve pedagogical goals
-  - Document missing data (if any) and impact on visualization
-  - Verify backend contract matches narrative descriptions
-
-- [ ] **Critical pitfalls avoided**
-
-  - [ ] Not saying too little (underwhelming student with sparse visualization)
-  - [ ] Not saying too much (overwhelming student with excessive information)
-  - [ ] Not reimplementing algorithm logic in frontend (use JSON data, don't recalculate)
-  - [ ] Not ignoring spatial constraints (dashboard is ~384px × 400px)
-
-- [ ] **Strategic balance achieved**
-  - Visualization tells the algorithm's story (not just displays data)
-  - Information density appropriate for space constraints
-  - Pedagogical narrative clear from visual progression
-  - JSON payload utilized effectively (don't reinvent the wheel)
-
-#### Step 3: Review Existing Templates & Create Visualization Outline
-
-- [ ] **Existing template dashboard reviewed first**
-
-  - ⚠️ **MANDATORY:** Review existing dashboard in template BEFORE sketching anything new
-  - Open `iterative_metrics_algorithm_mockup.html` or `recursive_context_algorithm_mockup.html`
-  - Study the 5-zone dashboard (iterative) or call stack structure (recursive)
-  - Determine if existing dashboard meets your algorithm's needs
-  - Existing solutions are often superior to initial custom designs
-  - Only proceed with custom design if existing dashboard genuinely doesn't fit
-
-- [ ] **Written outline created (if using existing template)**
-
-  - What data will be displayed in each zone?
-  - How will algorithm-specific data map to the 5 zones (iterative)?
-  - What's the pedagogical narrative at each step type?
-  - Which metrics deserve visual emphasis?
-  - How will state transitions be communicated?
-
-- [ ] **Custom design justification documented (if deviating)**
-
-  - Why doesn't the existing dashboard fit?
-  - What specific pedagogical need requires custom design?
-  - What elements from existing template will be preserved?
-  - What new elements are being introduced and why?
-
-- [ ] **Outline answers key questions**
-  - Does this visualization teach the algorithm effectively?
-  - Is cognitive load reasonable for target audience?
-  - Are spatial constraints respected?
-  - Does every visual element serve a pedagogical purpose?
-
-#### Step 4: Create Static Mockup
-
-- [ ] **Standalone HTML mockup created**
-
-  - File location: `docs/static_mockup/{algorithm-name}-{template-type}.html`
-  - Use representative step from narrative (typically mid-algorithm)
-  - Populate with actual data from JSON payload (not placeholder data)
-  - Verify mockup renders correctly in browser
-  - Side-by-side comparison with base template
-
-- [ ] **Mockup quality standards met**
-  - All zones/sections populated with real data
-  - Typography hierarchy clear and readable
-  - Color semantics appropriate for algorithm
-  - No visual clutter or confusion
-  - Spatial constraints respected
-
-#### Step 5: Get Approval & Proceed
-
-- [ ] **Mockup approval obtained**
-
-  - Team/PM review scheduled
-  - Visualization outline reviewed
-  - Design decisions documented
-  - Approval documented (meeting notes, chat, etc.)
-
-- [ ] **Implementation gate passed**
-  - Static mockup approved
-  - All questions about JSON data resolved
-  - Clear understanding of what to show vs. omit
-  - Ready to write component code
-
-**⚠️ DO NOT PROCEED TO IMPLEMENTATION WITHOUT COMPLETING ALL STEPS ABOVE**
-
-### Component Props Interface (ADR-003)
-
-- [ ] **State component receives standard props**
-
-  - `step` (object, required): Current step data from NavigationContext
-  - `trace` (object, optional): Full trace data from TraceContext
-  - Additional algorithm-specific props as needed
-  - PropTypes defined for all props
-
-- [ ] **Props accessed safely with fallbacks**
-  - Check `step?.data?.visualization` before access
-  - Check `trace?.metadata` before access
-  - Provide fallback UI if data missing
-  - No crashes on null/undefined data
-
-### Context Usage Patterns (ADR-003)
-
-- [ ] **Use contexts appropriately**
-
-  - `useTrace()` for raw trace data and metadata
-  - `useNavigation()` for current step and navigation controls
-  - `usePrediction()` for prediction mode state
-  - `useHighlight()` for cross-panel visual coordination
-  - `useKeyboard()` for keyboard shortcut registration
-
-- [ ] **Avoid prop drilling**
-  - Use context hooks instead of passing props through multiple layers
-  - Example: Get `currentStep` from `useNavigation()` directly in component
-  - Example: Get `trace.metadata` from `useTrace()` directly in component
-
-### Visualization Component Selection (ADR-001)
-
-- [ ] **Reuse existing visualization components when possible**
-
-  - Array algorithms → Use `ArrayView` (visualization_type: "array")
-  - Timeline algorithms → Use `TimelineView` (visualization_type: "timeline")
-  - Only create new visualization if existing don't fit
-
-- [ ] **Follow visualization component contract**
-  - `step` prop: Contains `data.visualization` with visualization-specific data
-  - `config` prop (optional): Contains `metadata.visualization_config`
-  - Render current state based on `step.data.visualization`
-  - Handle missing data gracefully
-
-### Data Access Patterns
-
-- [ ] **Access visualization data correctly**
-
-  - Array algorithms: `step.data.visualization.array` (array of element objects)
-  - Timeline algorithms: `step.data.visualization.all_intervals` (array of intervals)
-  - Pointers: `step.data.visualization.pointers` (object with pointer names/values)
-  - State: `step.data.visualization.{algorithm_specific_state}`
-
-- [ ] **Access metadata correctly**
-  - Algorithm name: `trace.metadata.algorithm`
-  - Input parameters: `trace.metadata.input`
-  - Visualization config: `trace.metadata.visualization_config`
-  - Prediction config: `trace.metadata.prediction_config`
-
-### Error Handling and Edge Cases
-
-- [ ] **Graceful degradation implemented**
-
-  - Handle missing `step.data.visualization` gracefully
-  - Display fallback UI when data unavailable
-  - No crashes on null/undefined data
-  - User-friendly error messages (avoid technical jargon)
-
-- [ ] **Edge cases handled**
-  - Initial step (before algorithm starts)
-  - Final step (after algorithm completes)
-  - Empty input arrays
-  - Single-element arrays
-  - Null/undefined pointers
-
-### Performance Considerations
-
-- [ ] **Rendering performance optimized**
-
-  - Use `React.memo()` for expensive components
-  - Avoid unnecessary re-renders (check dependencies in hooks)
-  - Use `useMemo()` for expensive calculations
-  - Use `useCallback()` for callback props
-
-- [ ] **Data transformation efficient**
-  - Transform data once, not on every render
-  - Cache derived values with `useMemo()`
-  - Avoid deep object copying in render
-
-### Accessibility (a11y)
-
-- [ ] **Keyboard navigation supported**
-
-  - All interactive elements keyboard accessible
-  - Focus states visible
-  - Tab order logical
-  - Keyboard shortcuts documented
-
-- [ ] **Screen reader support**
-  - Semantic HTML elements used
-  - ARIA labels provided where needed
-  - Important state changes announced
-  - Visual information has text alternatives
-
-### Styling and Visual Consistency
-
-- [ ] **Tailwind CSS used consistently**
-
-  - Use existing utility classes
-  - Follow project color palette (slate-700, slate-800)
-  - Use existing spacing scale (p-4, mb-2, etc.)
-  - Avoid inline styles unless necessary
-
-- [ ] **Typography hierarchy maintained**
-
-  - Headers: `text-white font-semibold`
-  - Labels: `text-gray-400 text-sm`
-  - Values: `text-white font-mono`
-  - Descriptions: `text-gray-300 text-sm`
-
-- [ ] **Color semantics appropriate**
-  - Success/positive: green-500
-  - Error/negative: red-500
-  - Warning: yellow-500
-  - Info/neutral: blue-500
-  - Current/active: amber-400
-
----
-
-## TESTING REQUIREMENTS
-
-### Unit Testing
-
-- [ ] **Component unit tests created**
-
-  - File location: `frontend/src/components/algorithm-states/__tests__/{AlgorithmName}State.test.jsx`
-  - Test component renders without crashing
-  - Test with valid step data
-  - Test with missing data (graceful degradation)
-  - Test edge cases (null pointers, empty arrays)
-
-- [ ] **PropTypes validation tested**
-  - Test required props missing (should not crash)
-  - Test optional props missing (should use defaults)
-  - Test invalid prop types (should show console warning in dev)
-
-### Integration Testing
-
-- [ ] **Registry integration verified**
-
-  - Component accessible via `getStateComponent('algorithm-name')`
-  - No errors when component loaded dynamically
-  - Component receives correct props from StatePanel
-
-- [ ] **Context integration verified**
-
-  - Component receives data from TraceContext
-  - Component receives navigation state from NavigationContext
-  - Component responds to prediction mode changes (if applicable)
-
-- [ ] **Visualization integration verified**
-  - Visualization component renders correctly
-  - Data flows from state component to visualization
-  - Highlight coordination works (if applicable)
-
-### Manual Testing Checklist
-
-- [ ] **Visual regression testing**
-
-  - Compare side-by-side with static mockup
-  - Verify colors, spacing, typography match
-  - Test at different viewport sizes (1920x1080, 1366x768)
-  - No layout shifts or visual glitches
-
-- [ ] **Functional testing**
-
-  - Algorithm executes without errors
-  - Step navigation works (next/prev/first/last)
-  - Keyboard shortcuts work
-  - Prediction modal integration works (if applicable)
-  - Completion modal shows correctly
-
-- [ ] **Data accuracy testing**
-  - Visual state matches backend trace data
-  - Pointers update correctly
-  - Metrics display correct values
-  - State transitions match narrative
-
-### Cross-Browser Testing
-
-- [ ] **Browser compatibility verified**
-  - Chrome (latest)
-  - Firefox (latest)
-  - Safari (latest, if possible)
-  - Edge (latest, if possible)
-
-### Testing Matrix
-
-Test with multiple input scenarios:
-
-- [ ] **Typical case** (medium-sized input, target found/goal achieved)
-- [ ] **Edge case: Small input** (1-3 elements)
-- [ ] **Edge case: Large input** (20+ elements)
-- [ ] **Edge case: Empty input** (if applicable)
-- [ ] **Edge case: Target not found** (if applicable - search algorithms)
-- [ ] **Edge case: Already sorted** (if applicable - sorting algorithms)
-
-### Navigation Testing
-
-- [ ] **Step navigation verified**
-
-  - Next step button works
-  - Previous step button works
-  - First step button works
-  - Last step button works
-  - Jump to step works
-  - Keyboard shortcuts (Arrow keys) work
-
-- [ ] **Prediction modal integration** (if algorithm has predictions)
-  - Modal opens at correct steps
-  - Choices render correctly (2-3 max)
-  - Selection and submission work
-  - Keyboard shortcuts (`1`, `2`, `3`, `Enter`) work
-
-### Narrative Alignment Testing
-
-- [ ] **Visual-narrative correspondence verified**
-
-  - Each narrative step has corresponding visual state
-  - Key data points from narrative are visible in UI
-  - Transitions match narrative flow
-  - No visual elements contradict narrative
-
-- [ ] **Pedagogical effectiveness validated**
-  - Can user follow algorithm logic from visualization alone?
-  - Are decision points visually clear?
-  - Does visual emphasis match narrative emphasis?
-  - Is cognitive load reasonable?
-
----
-
-## Example: Component Implementation Pattern
+  - Inspect trace structure, steps array, metadata
+  - Document all fields in `data.visualization`
+  - Identify state transitions across steps
+  - Map how narrative concepts appear in JSON
+  - List all unique `step.type` values
+  - Note any optional vs. required fields
+
+- [ ] **Visualization outline created**
+
+  - Document what to show (which JSON fields)
+  - Document how to map (dashboard zones, LSP visualization)
+  - Document what to omit (unnecessary details)
+  - Justify each decision with narrative + JSON evidence
+  - Get outline approved before mockup creation
+
+#### Data Contract Understanding
+
+- [ ] **Trace structure documented**
+
+  - Understand `trace.metadata` structure
+  - Understand `trace.steps` array structure
+  - Understand `step.data.visualization` contract
+  - Identify algorithm-specific fields
+  - Document edge cases (missing data, first/last steps)
+
+- [ ] **Backend contract verified**
+  - Confirm `metadata.algorithm` matches registry key
+  - Confirm `metadata.visualization_type` is correct
+  - Verify prediction points structure (if applicable)
+  - Check example traces for consistency
+
+### Dashboard Implementation Pattern
+
+- [ ] **Unified dashboard structure implemented**
 
 ```jsx
-import React from "react";
-import PropTypes from "prop-types";
-
-/**
- * MergeSortState - Displays algorithm-specific state for Merge Sort
- *
- * Shows:
- * - Current recursion depth
- * - Active subarray boundaries
- * - Merge operation progress
- *
- * Narrative-Driven Design:
- * - Emphasizes divide-and-conquer phases (from narrative)
- * - Highlights comparison operations (from narrative)
- * - Shows merge progress visually (from narrative hints)
- */
-const MergeSortState = ({ step, trace }) => {
-  // Early return for missing data (graceful degradation)
-  if (!step?.data?.visualization) {
-    return (
-      <div className="text-gray-400 text-sm">
-        No state data available for this step
-      </div>
-    );
-  }
-
-  // Extract visualization data (safe access with optional chaining)
-  const { recursion_depth, subarray_bounds, merge_progress } =
-    step.data.visualization;
-
+export const {Algorithm}State = ({ step, trace }) => {
+  // Extract visualization data
+  const visualizationData = step.data.visualization;
+  
+  // Map to dashboard zones
+  const zone1 = {
+    label: "...",
+    meta: "...",
+    value: "..."
+  };
+  
+  const zone2 = { label: "...", value: "..." };
+  const zone3 = { label: "...", content: "..." };
+  const zone4 = { text: "..." };
+  const zone5 = [
+    { label: "...", value: "..." },
+    { label: "...", value: "..." }
+  ];
+  
   return (
-    <div className="space-y-4">
-      {/* Recursion Depth - From narrative: "Track depth for divide phase" */}
-      {recursion_depth !== undefined && (
-        <div className="bg-slate-700/50 rounded-lg p-4">
-          <h3 className="text-white font-semibold mb-2">Recursion Depth</h3>
-          <div className="text-sm">
-            <span className="text-gray-400">Current Level:</span>
-            <span className="text-white font-mono ml-2">{recursion_depth}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Subarray Bounds - From narrative: "Show divide boundaries" */}
-      {subarray_bounds && (
-        <div className="bg-slate-700/50 rounded-lg p-4">
-          <h3 className="text-white font-semibold mb-2">Active Subarray</h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-400">Left:</span>
-              <span className="text-white font-mono">
-                {subarray_bounds.left}
-              </span>
+    <div className="dashboard h-full">
+      {/* Zone 1: Primary Focus */}
+      <div className="zone zone-primary">
+        <div className="zone-label">{zone1.label}</div>
+        <div className="zone-meta">{zone1.meta}</div>
+        <div className="primary-value">{zone1.value}</div>
+        
+        {/* Zone 5: Overlay */}
+        <div className="zone-boundaries">
+          {zone5.map((cell, i) => (
+            <div key={i} className="boundary-cell">
+              <div className="boundary-label">{cell.label}</div>
+              <div className="boundary-value">{cell.value}</div>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-400">Right:</span>
-              <span className="text-white font-mono">
-                {subarray_bounds.right}
-              </span>
-            </div>
-          </div>
+          ))}
         </div>
-      )}
-
-      {/* Merge Progress - From narrative hints: "Visualize merge comparisons" */}
-      {merge_progress && (
-        <div className="bg-slate-700/50 rounded-lg p-4">
-          <h3 className="text-white font-semibold mb-2">Merge Progress</h3>
-          <div className="w-full bg-slate-600 rounded-full h-2">
-            <div
-              className="bg-green-500 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${merge_progress.percentage}%` }}
-            />
-          </div>
-        </div>
-      )}
+      </div>
+      
+      {/* Zone 2: Goal */}
+      <div className="zone zone-goal">
+        <div className="zone-label">{zone2.label}</div>
+        <div className="goal-value">{zone2.value}</div>
+      </div>
+      
+      {/* Zone 3: Logic */}
+      <div className="zone zone-logic">
+        <div className="zone-label">LOGIC</div>
+        <div className="logic-content">{zone3.content}</div>
+      </div>
+      
+      {/* Zone 4: Action */}
+      <div className="zone zone-action">
+        <div className="action-text">{zone4.text}</div>
+      </div>
     </div>
   );
 };
-
-// PropTypes for type checking and documentation
-MergeSortState.propTypes = {
-  step: PropTypes.shape({
-    data: PropTypes.shape({
-      visualization: PropTypes.shape({
-        recursion_depth: PropTypes.number,
-        subarray_bounds: PropTypes.shape({
-          left: PropTypes.number,
-          right: PropTypes.number,
-        }),
-        merge_progress: PropTypes.shape({
-          percentage: PropTypes.number,
-        }),
-      }),
-    }),
-  }).isRequired,
-  trace: PropTypes.shape({
-    metadata: PropTypes.shape({
-      algorithm: PropTypes.string,
-    }),
-  }),
-};
-
-export default MergeSortState;
 ```
+
+- [ ] **Reference implementations reviewed**
+  - Studied `BinarySearchState.jsx` (iterative example)
+  - Studied `IntervalCoverageState.jsx` (recursive example)
+  - Pattern adapted to algorithm-specific needs
+
+### Component Structure Best Practices
+
+- [ ] **Safe data access implemented**
+
+  - Optional chaining used (`step?.data?.visualization`)
+  - Null checks before rendering
+  - Graceful degradation for missing data
+  - Early returns for error states
+
+- [ ] **PropTypes defined**
+
+  - All component props typed
+  - Nested object shapes documented
+  - Required vs. optional props marked
+
+- [ ] **Error boundaries considered**
+  - Component wrapped in ErrorBoundary if needed
+  - Error states handled gracefully
+  - User-friendly error messages displayed
+
+### Context Usage (ADR-003)
+
+- [ ] **Context hooks used correctly**
+
+  - `useTrace()` for trace data access
+  - `useNavigation()` for step control
+  - `usePrediction()` for prediction state
+  - `useKeyboard()` for keyboard shortcuts
+  - NO direct context consumption in state components
+
+- [ ] **Props pattern followed**
+  - State components receive `step` and `trace` as props
+  - No direct context access in algorithm-specific components
+  - Context usage limited to top-level components
+
+### Testing Requirements
+
+- [ ] **Testing plan created**
+
+  - Unit tests for component rendering
+  - Tests for data transformations
+  - Tests for edge cases (missing data, first/last steps)
+  - Integration tests for full flow
+
+- [ ] **Tests implemented**
+  - Component renders without errors
+  - Dashboard zones populated correctly
+  - Graceful handling of missing data
+  - PropTypes validation working
+
+---
+
+## FREE CHOICES (Developer Discretion)
+
+### Visual Styling (Within Dashboard Constraints)
+
+- ✅ Algorithm-specific color palette (primary value color)
+- ✅ Typography choices (within font families)
+- ✅ Animation timing and easing
+- ✅ Hover states and transitions
+- ✅ Icon choices (if applicable)
+
+### Component Implementation Details
+
+- ✅ Helper function organization
+- ✅ Data transformation approach
+- ✅ Conditional rendering logic
+- ✅ Component composition
+- ✅ Custom hooks for logic reuse
+
+### LSP Visualization Customization
+
+- ✅ Layout within LSP panel
+- ✅ Spacing and padding
+- ✅ Animation choreography
+- ✅ Visual metaphors (within algorithm theme)
+- ✅ Interactive elements (if appropriate)
+
+---
+
+## Mockup-First Workflow
+
+### Mockup Creation (BEFORE Coding)
+
+- [ ] **Static mockup created in HTML**
+
+  - File location: `docs/static_mockup/{algorithm-name}-mockup.html`
+  - Uses unified dashboard base structure
+  - Populated with real JSON data
+  - Shows representative algorithm state (mid-execution preferred)
+
+- [ ] **Mockup demonstrates key features**
+
+  - Dashboard zones populated with actual values
+  - LSP visualization shows algorithm state
+  - Color palette and typography applied
+  - Responsive behavior considered
+
+- [ ] **Mockup approved before implementation**
+  - Team/PM review completed
+  - Feedback incorporated
+  - Final approval documented
+  - Mockup serves as implementation spec
+
+### Mockup Comparison Verification
+
+- [ ] **Side-by-side comparison performed**
+
+  - Implemented component vs. approved mockup
+  - Dashboard structure matches
+  - Colors and typography match
+  - Spacing and sizing match
+  - Visual polish consistent
+
+- [ ] **Deviations documented and approved**
+  - Any runtime-necessitated changes explained
+  - Technical constraints documented
+  - Approval obtained for deviations
+
+---
+
+## Quality Gates
+
+### Pre-Implementation
+
+- 🚨 DO NOT CODE without JSON payload analysis
+- 🚨 DO NOT CODE without visualization outline
+- 🚨 DO NOT CODE without static mockup approval
+- 🚨 DO NOT CODE without reviewing unified dashboard reference
+
+### Pre-Submission
+
+- 🚨 DO NOT SUBMIT without completing this checklist
+- 🚨 DO NOT SUBMIT without testing plan + implementation
+- 🚨 DO NOT SUBMIT without mockup compliance verification
+- 🚨 DO NOT SUBMIT without registry registration
+
+### Escalation Triggers
+
+- 🚨 If ADR conflicts with this checklist → Flag to PM
+- 🚨 If ADR conflicts with README → Flag to PM
+- 🚨 If README appears outdated → Flag to PM
+- 🚨 If unified dashboard doesn't fit algorithm → Flag to PM
+- 🚨 Escalate before implementing conflicting requirements
 
 ---
 
@@ -707,22 +496,25 @@ export default MergeSortState;
 1. ✅ Review this compliance checklist completely
 2. ✅ Review Frontend ADRs (ADR-001, ADR-002, ADR-003)
 3. ✅ Review project README.md for architecture
-4. ✅ Review backend narratives for visualization insights
-5. ✅ Analyze JSON payload deeply (pull trace data, document structure)
-6. ✅ Create visualization outline (what to show, how to map, what to omit)
-7. ✅ Create static mockup with real data
-8. ✅ Get mockup approval before coding
-9. ✅ Create state component in `algorithm-states/` directory
-10. ✅ Register component in `stateRegistry.js`
-11. ✅ Create/verify visualization component (reuse if possible)
-12. ✅ Register visualization in `visualizationRegistry.js` (if new)
-13. ✅ Create algorithm info markdown in `public/algorithm-info/`
-14. ✅ Verify static mockup compliance
-15. ✅ Create testing plan
-16. ✅ Implement tests
-17. ✅ Run all tests (unit + integration)
-18. ✅ Complete this checklist
-19. ✅ Submit PR with code + tests + checklist
+4. ✅ Review unified dashboard reference mockup
+5. ✅ Review backend narratives for visualization insights
+6. ✅ Analyze JSON payload deeply (pull trace data, document structure)
+7. ✅ Identify visualization pattern (iterative/recursive)
+8. ✅ Map dashboard content to 5 zones
+9. ✅ Create visualization outline (what to show, how to map, what to omit)
+10. ✅ Create static mockup with real data
+11. ✅ Get mockup approval before coding
+12. ✅ Create state component in `algorithm-states/` directory
+13. ✅ Register component in `stateRegistry.js`
+14. ✅ Create/verify LSP visualization component (reuse if possible)
+15. ✅ Register visualization in `visualizationRegistry.js` (if new)
+16. ✅ Create algorithm info markdown in `public/algorithm-info/`
+17. ✅ Verify unified dashboard compliance
+18. ✅ Create testing plan
+19. ✅ Implement tests
+20. ✅ Run all tests (unit + integration)
+21. ✅ Complete this checklist
+22. ✅ Submit PR with code + tests + checklist
 
 **Next Stage:** Integration Testing (Stage 4)
 
@@ -731,19 +523,22 @@ export default MergeSortState;
 ## Time Estimates
 
 - **ADR and Architecture Review:** 15 minutes
+- **Unified Dashboard Reference Review:** 10 minutes
 - **Narrative Review:** 10 minutes
 - **JSON Payload Deep Analysis:** 20-30 minutes
-- **Visualization Outline Creation:** 15 minutes
+- **Visualization Pattern Selection:** 5 minutes
+- **Dashboard Content Mapping:** 5 minutes
+- **Visualization Outline Creation:** 10 minutes
 - **Static Mockup Creation:** 30-45 minutes
 - **Mockup Approval Meeting:** 15-30 minutes
-- **Component Implementation:** 30-45 minutes
+- **Component Implementation:** 20-30 minutes
 - **Registry Registration:** 5 minutes
 - **Algorithm Info Markdown:** 10 minutes
 - **Testing Plan Creation:** 10 minutes
 - **Test Implementation:** 15-20 minutes
-- **Static Mockup Verification:** 10 minutes
+- **Dashboard Compliance Verification:** 10 minutes
 
-**Total:** ~3-4 hours for complete algorithm integration
+**Total:** ~2.5-3.5 hours for complete algorithm integration
 
 ---
 
@@ -753,12 +548,12 @@ export default MergeSortState;
 
 - ✅ Registry registration (state + visualization)
 - ✅ Component organization (correct directories, naming)
-- ✅ Static mockup compliance (theme, colors, typography)
-- ✅ Review existing templates first (often better than custom designs)
+- ✅ Unified dashboard compliance (5-zone structure, container queries)
+- ✅ Visualization pattern selection (iterative vs. recursive)
+- ✅ Dashboard content mapping (zone assignments)
 - ✅ Respect narrative quality (backend engineer's pedagogical work)
 - ✅ JSON-driven design (analyze payload deeply, don't reimplement logic)
 - ✅ Mockup-first workflow (create and get approval before coding)
-- ✅ Template flexibility (deviate when pedagogical clarity requires it)
 - ✅ Narrative-driven design (read narratives first!)
 - ✅ Testing (plan + implementation)
 
@@ -766,7 +561,7 @@ export default MergeSortState;
 
 - ✅ Review ADRs before implementation
 - ✅ Use context hooks (avoid prop drilling)
-- ✅ Follow component structure patterns
+- ✅ Follow unified dashboard structure
 - ✅ Respect LOCKED elements (shortcuts, panel ratio, overflow)
 - ✅ Check keyboard shortcut conflicts (`s`, `1`, `2`, `3`, `r` reserved)
 
@@ -777,23 +572,16 @@ export default MergeSortState;
 - ✅ Graceful degradation (handle missing data)
 - ✅ Visual-narrative alignment
 - ✅ Balance information density (not too little, not too much)
-- ✅ Respect spatial constraints (~384px × 400px dashboard)
+- ✅ Respect spatial constraints (dashboard ~384px width)
 
 **Critical Workflow Gates:**
 
 - 🚨 DO NOT CODE without JSON analysis
+- 🚨 DO NOT CODE without dashboard content mapping
 - 🚨 DO NOT CODE without visualization outline
 - 🚨 DO NOT CODE without static mockup approval
 - 🚨 If ADR conflicts with this checklist → Flag to PM
-- 🚨 If ADR conflicts with README → Flag to PM
-- 🚨 If README appears outdated → Flag to PM
-- 🚨 Escalate before implementing conflicting requirements
-
-**Document Contradictions:**
-
-- 🚨 If ADR conflicts with this checklist → Flag to PM
-- 🚨 If ADR conflicts with README → Flag to PM
-- 🚨 If README appears outdated → Flag to PM
+- 🚨 If unified dashboard doesn't fit → Flag to PM before deviating
 - 🚨 Escalate before implementing conflicting requirements
 
 ---
@@ -803,13 +591,14 @@ export default MergeSortState;
 - JSON payload is the driving engine - narrative is helpful but JSON is definitive
 - Narrative contains valuable work - respect backend engineer's effort (self-checks, pedagogy, accuracy)
 - Use narrative for "why" (pedagogical intent) and JSON for "what" (actual data)
-- Review existing templates FIRST - they often meet your needs and are well-designed
-- Only create custom dashboards if existing templates genuinely don't fit
+- All algorithms use unified dashboard - only visualization pattern changes
+- Dashboard zones are consistent - only content differs between algorithms
 - Create mockup before code - get approval on design before implementation
 - Balance is key - not too little (underwhelming), not too much (overwhelming)
-- Templates are guidelines - deviate when pedagogical clarity requires it
 - Read narratives BEFORE designing components (narrative-driven approach)
 - Register EVERY component you create (both registries)
-- Verify mockup compliance BEFORE submitting (side-by-side comparison)
+- Verify dashboard compliance BEFORE submitting (reference mockup comparison)
 - Create tests BEFORE considering done (testing plan + implementation)
 - Flag architectural conflicts IMMEDIATELY (don't implement contradictions)
+
+---

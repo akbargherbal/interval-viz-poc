@@ -70,7 +70,7 @@ const ArrayView = ({ step, config = {} }) => {
 
   if (!visualization || !visualization.array) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-400">
+      <div className="flex h-full items-center justify-center text-gray-400">
         No array data available
       </div>
     );
@@ -81,14 +81,14 @@ const ArrayView = ({ step, config = {} }) => {
 
   return (
     // PERMANENT FIX: Use items-start + mx-auto pattern
-    <div className="h-full flex flex-col items-start overflow-auto py-4 px-6">
-      <div className="mx-auto flex flex-col items-center gap-4 min-h-0 w-full">
+    <div className="flex h-full flex-col items-start overflow-auto px-6 py-4">
+      <div className="mx-auto flex min-h-0 w-full flex-col items-center gap-4">
         {/* CONDITIONAL: Target indicator */}
         {pointers.target !== null && pointers.target !== undefined && (
-          <div className="px-4 py-1.5 bg-green-900/30 border border-green-600/50 rounded-lg flex-shrink-0">
-            <span className="text-green-400 font-semibold text-sm">
+          <div className="flex-shrink-0 rounded-lg border border-green-600/50 bg-green-900/30 px-4 py-1.5">
+            <span className="text-sm font-semibold text-green-400">
               🎯 Target:{" "}
-              <span className="text-white text-base font-bold">
+              <span className="text-base font-bold text-white">
                 {pointers.target}
               </span>
             </span>
@@ -96,7 +96,7 @@ const ArrayView = ({ step, config = {} }) => {
         )}
 
         {/* Array visualization - Wrapping Grid Layout */}
-        <div className="flex flex-wrap justify-center gap-2 w-full max-w-4xl">
+        <div className="flex w-full max-w-4xl flex-wrap justify-center gap-2">
           {array.map((element) => (
             <ArrayItem
               key={element.index}
@@ -109,9 +109,9 @@ const ArrayView = ({ step, config = {} }) => {
 
         {/* CONDITIONAL: Search space info */}
         {visualization.search_space_size !== undefined && (
-          <div className="text-xs text-gray-400 flex-shrink-0">
+          <div className="flex-shrink-0 text-xs text-gray-400">
             Search space:{" "}
-            <span className="text-white font-semibold">
+            <span className="font-semibold text-white">
               {visualization.search_space_size}
             </span>{" "}
             elements
@@ -119,7 +119,7 @@ const ArrayView = ({ step, config = {} }) => {
         )}
 
         {/* State legend */}
-        <div className="flex flex-wrap gap-3 text-[10px] justify-center flex-shrink-0">
+        <div className="flex flex-shrink-0 flex-wrap justify-center gap-3 text-[10px]">
           {/* Legend items could be dynamic based on algorithm type */}
         </div>
       </div>

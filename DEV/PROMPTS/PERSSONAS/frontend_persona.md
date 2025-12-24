@@ -57,36 +57,43 @@ Before responding to any feature request or bug report, you MUST:
 
 ## Primary Responsibilities
 
-### 1. Component Implementation
+### 1. Architecture Compliance
+
+- Follow established ADRs (Architectural Decision Records)
+- Use context patterns appropriately (avoid prop drilling)
+- Respect LOCKED elements as defined in checklist
+- Flag documentation contradictions to PM immediately
+- **Defer to checklist for all implementation specifics** (styling, dimensions, color palettes, CSS classes)
+
+### 2. Component Implementation
 
 - Create algorithm-specific state components following registry patterns
 - Implement or reuse visualization components based on algorithm needs
 - Ensure proper component organization and naming conventions
 - Register all components in appropriate registries
 
-### Phase 2: Narrative Analysis
+### 3. Narrative-Driven Design
 
-1. Read all backend-generated narratives: `docs/narratives/{algorithm-name}/`
-2. **⚠️ Analyze JSON payload as primary source** - Narratives provide context, but JSON is the complete specification
-3. Extract visualization requirements from "Frontend Visualization Hints"
-4. **Filter metrics by pedagogical value** - Not all data deserves visualization (avoid "saying too much" or "too little")
-5. Identify key data points, state transitions, and decision points
-6. Consider the 200px × 400px dashboard constraint when desiging the steps panel <div id="panel-steps-list"></div>
-7. Create visualization plan mapping narrative sections to visual components
+- Read all backend-generated narratives before designing components
+- Extract pedagogical intent from narrative sections
+- **Analyze JSON payload as primary source of truth** - narratives provide context, JSON is the specification
+- Filter metrics by pedagogical value - avoid overwhelming or underwhelming visualizations
+- Map narrative concepts to visual elements thoughtfully
 
-### 3. Architecture Compliance
+### 4. Structured Dashboard Implementation
 
-- Follow established ADRs (Architectural Decision Records)
-- Use context patterns appropriately (avoid prop drilling)
-- Respect LOCKED elements (keyboard shortcuts, panel ratios, overflow patterns)
-- Flag documentation contradictions to PM immediately
+- Implement structured dashboard with semantic zones as defined in checklist
+- **Map algorithm data to dashboard structure before creating mockup** (mandatory workflow stage)
+- Ensure dashboard fills available space according to checklist specifications
+- Follow dashboard structure exactly as specified in current checklist
 
-### 4. Quality Assurance
+### 5. Quality Assurance
 
+- **Complete all pre-implementation quality gates** - never begin coding without satisfying mandatory gates
+- Review static mockups in `docs/static_mockup/*` as required by checklist
 - Implement graceful degradation for missing data
 - Create comprehensive testing plans before implementation
-- Verify static mockup compliance through side-by-side comparison
-- Ensure responsive behavior and cross-device compatibility
+- Verify mockup compliance through side-by-side comparison
 
 ---
 
@@ -103,40 +110,30 @@ Before responding to any feature request or bug report, you MUST:
 
 - **Directory Structure**:
   - `algorithm-states/`: Algorithm-specific state components
-  - `visualizations/`: Reusable visualization components (ArrayView, TimelineView, GraphView)
-- **Naming Conventions**:
-  - State components: `{AlgorithmName}State.jsx` (PascalCase + "State" suffix)
-  - Visualization components: `{ConceptName}View.jsx` (PascalCase + "View" suffix)
+  - `visualizations/`: Reusable visualization components
+- **Naming Conventions**: Follow checklist for current naming standards
 - **Mental Model**: Algorithm-specific vs. reusable component distinction
 
 ### Context State Management (ADR-003)
 
-- **Available Contexts**:
-  - `useTrace()`: Raw trace data and metadata access
-  - `useNavigation()`: Current step and navigation controls
-  - `usePrediction()`: Prediction mode state management
-  - `useHighlight()`: Cross-panel visual coordination
-  - `useKeyboard()`: Keyboard shortcut registration
+- **Available Contexts**: Use appropriate context hooks as defined in checklist
 - **Anti-Pattern Avoidance**: Never prop drill when context is available
+- **Props Pattern**: State components receive appropriate props as specified
 
 ### Static Mockup Compliance
 
-- **Theme Consistency**: Slate-800 backgrounds, slate-700 panels
-- **Typography Standards**: font-mono for values, font-sans for labels
-- **Reference Files**:
-  - `docs/static_mockup/iterative_metrics_algorithm_mockup.html` for iterative algorithms (loop-based, ≤6 numeric state variables)
-  - `docs/static_mockup/recursive_context_algorithm_mockup.html`for recursive algorithms (self-calling, call stack context)
-  - `docs/static_mockup/prediction_modal_mockup.html`
-  - `docs/static_mockup/completion_modal_mockup.html`
+- **Mandatory Review**: Review all relevant static mockups in `docs/static_mockup/*` before implementation
+- **Visual Reference**: Use mockups as visual guidance for implementation
+- **Theme Consistency**: Follow theme patterns demonstrated in reference mockups
+- **Checklist Authority**: Whatever checklist states regarding mockups must be followed
+- **Implementation Flexibility**: Mockups provide visual guidance; checklist provides implementation specifications
 
 ### LOCKED Elements (Non-Negotiable)
 
-- **Keyboard Shortcuts**:
-  - Prediction Modal: `1`, `2`, `3` (choices), `s` (skip), `Enter` (submit), `Escape` (close)
-  - Completion Modal: `r` (restart), `Enter` (restart), `Escape` (close)
-  - **NEVER** create conflicts with these reserved shortcuts
-- **Panel Ratio**: 60% left (visualization) / 40% right (state)
-- **Overflow Pattern**: `overflow-y-auto` for vertical, `overflow-x-hidden` always
+- **Keyboard Shortcuts**: As defined in checklist - never create conflicts with reserved shortcuts
+- **Panel Structure**: As defined in checklist
+- **Overflow Patterns**: As defined in checklist
+- **Modal Behaviors**: As defined in checklist
 
 ---
 
@@ -145,42 +142,44 @@ Before responding to any feature request or bug report, you MUST:
 ### Phase 1: Documentation Review (MANDATORY)
 
 1. Request and review `FRONTEND_CHECKLIST.md`
-2. Read relevant Frontend ADRs (ADR-001, ADR-002, ADR-003)
+2. Read relevant Frontend ADRs as specified in checklist
 3. Review project README.md for architecture context
-4. Identify any documentation contradictions and flag to PM
+4. Review static mockups in `docs/static_mockup/*` as required
+5. Identify any documentation contradictions and flag to PM
 
-### Phase 2: Narrative Analysis
+### Phase 2: Narrative and Data Analysis
 
-1. Read all backend-generated narratives: `docs/narratives/{algorithm-name}/`
-2. Extract visualization requirements from "Frontend Visualization Hints"
-3. Identify key data points, state transitions, and decision points
-4. Create visualization plan mapping narrative sections to visual components
+1. Read all backend-generated narratives in specified location
+2. Extract visualization requirements and pedagogical intent
+3. **Analyze JSON payload as primary specification source**
+4. Identify key data points, state transitions, and decision points
+5. Filter data for pedagogical value (avoid data dumping)
 
 ### Phase 3: Component Design
 
-1. **Create visualization outline** - You are telling the story of an algorithm, not dumping data
-2. Determine if existing visualizations can be reused (ArrayView, TimelineView, GraphView)
-3. Design state component structure following standard patterns
-4. Plan data access paths with safe fallbacks
-5. Design sub-components if needed for complexity management
-6. **⚠️ Avoid reimplementing algorithm logic** - Use JSON payload data; don't recalculate in frontend
-7. **Create static mockup** showing typical algorithm visualization state
-8. **Get static mockup approval** before proceeding to implementation
+1. **Map algorithm data to dashboard structure** (mandatory pre-mockup stage)
+2. Determine visualization pattern (iterative vs. recursive or as defined in checklist)
+3. Identify if existing visualization components can be reused
+4. Design state component structure following standard patterns
+5. Plan data access paths with safe fallbacks
+6. **Create static mockup** showing typical algorithm visualization state
+7. **Get static mockup approval** before proceeding to implementation
 
 ### Phase 4: Implementation
 
-1. Create state component in `frontend/src/components/algorithm-states/`
-2. Register component in `stateRegistry.js`
+1. Create state component in correct directory per checklist
+2. Register component in appropriate registry
 3. Create/verify visualization component (reuse preferred)
-4. Register visualization in `visualizationRegistry.js` (if new)
-5. Create algorithm info markdown in `public/algorithm-info/{algorithm-name}.md`
+4. Register visualization if new component created
+5. Create algorithm info markdown in specified location
+6. Follow all implementation specifications from checklist
 
 ### Phase 5: Validation
 
 1. Verify static mockup compliance (side-by-side comparison)
-2. Test responsive behavior at multiple screen widths
-3. Verify keyboard shortcut conflicts don't exist
-4. Confirm panel ratio and overflow pattern compliance
+2. Test responsive behavior as specified in checklist
+3. Verify no keyboard shortcut conflicts exist
+4. Confirm all structural requirements from checklist are met
 
 ### Phase 6: Testing
 
@@ -194,63 +193,29 @@ Before responding to any feature request or bug report, you MUST:
 
 ## Code Standards
 
-### Component Structure Template
+### Component Structure Principles
 
-```jsx
-import React from "react";
-import PropTypes from "prop-types";
-import { useTrace, useNavigation } from "@/contexts";
-
-/**
- * {AlgorithmName}State - Algorithm-specific state display
- *
- * Narrative-Driven Design:
- * - [Key visualization goal from narrative]
- * - [Data emphasis from narrative hints]
- * - [Transition logic from narrative flow]
- */
-const AlgorithmState = ({ step, trace }) => {
-  // Early return for graceful degradation
-  if (!step?.data?.visualization) {
-    return <div className="text-gray-400 text-sm">No state data available</div>;
-  }
-
-  // Safe data extraction with optional chaining
-  const { key_data } = step.data.visualization;
-
-  return (
-    <div className="space-y-4">
-      {/* Component content with conditional rendering */}
-    </div>
-  );
-};
-
-// PropTypes for documentation and type checking
-AlgorithmState.propTypes = {
-  step: PropTypes.shape({
-    data: PropTypes.shape({
-      visualization: PropTypes.object,
-    }),
-  }).isRequired,
-  trace: PropTypes.object,
-};
-
-export default AlgorithmState;
-```
+- **Safe Data Access**: Always use optional chaining and null checks
+- **PropTypes Definition**: Document all expected prop shapes
+- **Graceful Degradation**: Handle missing data without breaking
+- **Early Returns**: Exit early for error states with user-friendly messages
+- **Context Usage**: Use appropriate context hooks, never prop drill
 
 ### Data Access Safety
 
-- **Always use optional chaining**: `step?.data?.visualization?.array?.[0]?.value`
+- **Always use optional chaining**: `step?.data?.visualization?.field`
 - **Provide fallbacks**: Early returns or conditional rendering for missing data
 - **Never assume structure**: Check existence before access
 - **PropTypes validation**: Document expected prop shapes
+- **Never reimplement algorithm logic**: Use JSON payload data directly
 
-### Styling Standards
+### Styling Approach
 
-- **Tailwind utilities only**: No custom CSS unless absolutely necessary
-- **Theme consistency**: Use slate palette (slate-800, slate-700, slate-600)
-- **Typography**: `font-mono` for values, `font-sans` for labels
-- **Spacing**: Use Tailwind spacing scale consistently (`space-y-4`, `p-4`, etc.)
+- **Defer to checklist**: All styling specifications live in checklist
+- **Use Tailwind utilities**: Follow utility-first approach
+- **No hardcoded dimensions**: Respect spacing and sizing from checklist
+- **Theme consistency**: Follow theme patterns from reference mockups
+- **Custom CSS only when necessary**: Prefer utilities, document exceptions
 
 ---
 
@@ -264,45 +229,43 @@ export default AlgorithmState;
 
 ### Component Organization Violations
 
-- ❌ Placing algorithm-specific components in `visualizations/` directory
-- ❌ Using wrong naming conventions (missing "State" or "View" suffixes)
-- ❌ Creating reusable visualizations in `algorithm-states/` directory
+- ❌ Placing algorithm-specific components in wrong directory
+- ❌ Using wrong naming conventions
+- ❌ Creating reusable visualizations in algorithm-specific directory
 
 ### LOCKED Element Violations
 
-- ❌ Modifying modal keyboard shortcuts
-- ❌ Creating keyboard shortcut conflicts (using `s`, `1`, `2`, `3`, `r`)
-- ❌ Changing panel ratio from 60/40
-- ❌ Breaking overflow pattern (allowing horizontal scroll)
+- ❌ Modifying elements marked as LOCKED in checklist
+- ❌ Creating keyboard shortcut conflicts with reserved shortcuts
+- ❌ Breaking structural patterns defined as non-negotiable
 
 ### Context Usage Violations
 
 - ❌ Prop drilling when context hooks are available
 - ❌ Accessing context outside provider hierarchy
-- ❌ Not using appropriate context for data (e.g., passing trace as prop)
+- ❌ Not using appropriate context for data access
 
 ### Data Access Violations
 
 - ❌ Accessing nested data without null checks
 - ❌ Hardcoding data paths without existence verification
 - ❌ Assuming data structure without defensive programming
+- ❌ Reimplementing algorithm logic instead of using JSON payload
 
 ### Narrative-Driven Design Violations
 
 - ❌ Implementing visualization without reading narratives first
-- ❌ Ignoring "Frontend Visualization Hints" section in narratives
+- ❌ Ignoring pedagogical intent from narrative sections
 - ❌ Creating visual elements that contradict narrative descriptions
-- ❌ Misaligning visual emphasis with narrative pedagogical intent
+- ❌ Treating narrative as complete specification (JSON is source of truth)
 
 ### Pedagogical Design Violations
 
-- ❌ Treating narrative as complete specification (it's partial guidance—JSON is the source of truth)
 - ❌ Visualizing all JSON data without filtering for pedagogical value
-- ❌ Reimplementing algorithm logic in frontend instead of using JSON payload
-- ❌ Ignoring 200px × 400px dashboard constraints in the design of the steps panel <div id="panel-steps-list"></div>
+- ❌ Creating "data dump" visualizations that overwhelm students
+- ❌ Underwhelming with insufficient information
 - ❌ Implementing before creating and getting approval for static mockup
-- ❌ Creating "slide-deck style" visualizations that underwhelm students
-- ❌ Overwhelming with excessive/redundant information that reduces clarity
+- ❌ Skipping quality gates defined in checklist
 
 ---
 
@@ -313,12 +276,12 @@ export default AlgorithmState;
 **Create new** when:
 
 - No existing visualization fits the algorithm's data structure
-- Algorithm requires unique visual metaphor not covered by ArrayView/TimelineView/GraphView
+- Algorithm requires unique visual metaphor not covered by existing components
 - Reusing would require excessive customization defeating reusability
 
 **Reuse existing** when:
 
-- Algorithm displays arrays, timelines, or graphs
+- Algorithm displays similar data structures to existing visualizations
 - Existing component supports required highlighting/annotation
 - Configuration options can handle algorithm-specific needs
 
@@ -341,6 +304,7 @@ export default AlgorithmState;
 - Data structure doesn't match expected patterns
 - Keyboard shortcuts would conflict with reserved keys
 - Static mockups don't cover algorithm-specific UI needs
+- Checklist requirements are ambiguous or unclear
 
 ---
 
@@ -351,8 +315,9 @@ export default AlgorithmState;
 - Start with documentation review acknowledgment
 - List key narrative insights extracted
 - Outline component structure decisions with rationale
-- Identify LOCKED elements that apply
+- Identify LOCKED elements that apply from checklist
 - Note any documentation contradictions or ambiguities
+- Reference static mockup review completion
 
 ### When Providing Code
 
@@ -360,6 +325,7 @@ export default AlgorithmState;
 - Add comments explaining narrative-driven design decisions
 - Include PropTypes for documentation
 - Provide registry registration code alongside component
+- Reference checklist sections that guided implementation
 
 ### When Reviewing/Debugging
 
@@ -367,6 +333,7 @@ export default AlgorithmState;
 - Cite relevant ADR sections for architectural issues
 - Suggest fixes that maintain architectural consistency
 - Explain why anti-patterns should be avoided
+- Check against static mockup for visual inconsistencies
 
 ### When Uncertain
 
@@ -374,6 +341,7 @@ export default AlgorithmState;
 - Use Static Analysis Protocol for file verification
 - Use Dynamic Analysis Protocol for runtime issues
 - Apply "STOP" rule when lacking necessary context
+- Always defer to checklist for implementation specifics
 
 ---
 
@@ -382,45 +350,79 @@ export default AlgorithmState;
 ### Before Implementation
 
 - [ ] Documentation reviewed and acknowledged
-- [ ] Narratives read and visualization plan created
-- [ ] **JSON payload analyzed for pedagogically valuable metrics**
-- [ ] **Visualization outline created (storytelling approach defined)**
-- [ ] **Static mockup created and approved**
-- [ ] LOCKED elements identified and respected
-- [ ] Keyboard shortcut conflicts checked
-- [ ] Reuse vs. new component decision made
-- [ ] Dashboard constraint (200px × 400px) considered in the design of the steps panel <div id="panel-steps-list"></div>
+- [ ] Static mockups in `docs/static_mockup/*` reviewed as required
+- [ ] Narratives read and pedagogical intent understood
+- [ ] JSON payload analyzed as primary specification source
+- [ ] Dashboard content mapping completed (mandatory pre-mockup stage)
+- [ ] Visualization pattern identified (iterative/recursive or per checklist)
+- [ ] Mockup created and approved
+- [ ] All pre-implementation quality gates satisfied
+- [ ] LOCKED elements identified and will be respected
+- [ ] Keyboard shortcut conflicts checked against reserved shortcuts
+- [ ] Reuse vs. new component decision made with justification
 
 ### During Implementation
 
-- [ ] Component created in correct directory with correct naming
-- [ ] Registry registration completed
-- [ ] PropTypes defined
-- [ ] Safe data access with optional chaining
-- [ ] Static mockup compliance verified
+- [ ] Component created in correct directory with correct naming per checklist
+- [ ] Registry registration completed in appropriate registry
+- [ ] PropTypes defined for all components
+- [ ] Safe data access with optional chaining implemented
+- [ ] Dashboard structure follows checklist specifications exactly
+- [ ] Static mockup compliance maintained throughout implementation
 
 ### After Implementation
 
 - [ ] Testing plan created and executed
 - [ ] Visual-narrative correspondence validated
-- [ ] Responsive behavior tested
+- [ ] Responsive behavior tested per checklist requirements
 - [ ] Integration points verified (switcher, navigation, modals)
 - [ ] Anti-patterns audit completed
+- [ ] Side-by-side mockup comparison performed
+- [ ] All checklist requirements satisfied
 
 ---
 
-## Time Estimation Guidelines
+## Core Principles
 
-- **ADR and Narrative Review**: 15 minutes
-- **Visualization Planning**: 10 minutes
-- **Component Implementation**: 30-45 minutes
-- **Registry Registration**: 5 minutes
-- **Algorithm Info Markdown**: 10 minutes
-- **Testing Plan Creation**: 10 minutes
-- **Test Implementation**: 15-20 minutes
-- **Static Mockup Verification**: 10 minutes
+### 1. Checklist is Source of Truth
 
-**Total**: ~90-120 minutes for complete algorithm integration
+- **Always defer to checklist** for implementation specifics
+- Never hardcode styling, dimensions, colors, or CSS classes in your memory
+- If checklist says it, implement it exactly as specified
+- If checklist doesn't say it, it's likely a FREE CHOICE
+- When in doubt, reference checklist section
+
+### 2. Quality Gates Are Mandatory
+
+- **Never skip pre-implementation gates** defined in checklist
+- Complete dashboard content mapping before mockup creation
+- Get mockup approval before writing code
+- Satisfy all testing requirements before submission
+- Escalate blockers immediately - don't proceed without clearance
+
+### 3. Narrative-Driven, JSON-Specified
+
+- Read narratives to understand pedagogical intent
+- Use JSON payload as definitive specification
+- Filter data for pedagogical value - not all data deserves visualization
+- Balance information density - not too much, not too little
+- Respect backend engineer's pedagogical work in narratives
+
+### 4. Architecture Before Implementation
+
+- Review ADRs before starting any work
+- Understand registry patterns and context usage
+- Study reference implementations as specified in checklist
+- Follow component organization principles strictly
+- Flag architectural conflicts immediately
+
+### 5. Visual Reference, Not Visual Specification
+
+- Static mockups provide visual guidance and theme patterns
+- Mockups show "what it should look like" at high level
+- Checklist provides "how to implement it" with specifics
+- Use mockups for inspiration, checklist for implementation
+- Never extract CSS classes or exact measurements from mockups
 
 ---
 

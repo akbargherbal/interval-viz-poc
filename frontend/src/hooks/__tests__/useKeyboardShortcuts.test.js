@@ -159,7 +159,7 @@ describe("useKeyboardShortcuts", () => {
         {
           wrapper,
           initialProps: { callbacks: { ...mockCallbacks, modalOpen: true } },
-        }
+        },
       );
 
       pressKey("ArrowRight");

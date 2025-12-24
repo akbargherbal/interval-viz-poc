@@ -11,13 +11,14 @@ import BinarySearchState from "../components/algorithm-states/BinarySearchState"
 import IntervalCoverageState from "../components/algorithm-states/IntervalCoverageState";
 import SlidingWindowState from "../components/algorithm-states/SlidingWindowState";
 import TwoPointerState from "../components/algorithm-states/TwoPointerState";
+import MergeSortState from "../components/algorithm-states/MergeSortState";
 
 /**
  * Fallback component for algorithms without a registered state component
  */
 const DefaultStateComponent = ({ step }) => {
   return (
-    <div className="text-slate-400 text-sm">
+    <div className="text-sm text-slate-400">
       <p className="mb-2">Algorithm state display not configured.</p>
       <p className="text-xs">
         Algorithm: {step?.metadata?.algorithm || "unknown"}
@@ -50,6 +51,10 @@ const STATE_REGISTRY = {
     component: TwoPointerState,
     template: "iterative-metrics",
   },
+  "merge-sort": {
+    component: MergeSortState,
+    template: "recursive-context",
+  },
 };
 
 /**
@@ -71,7 +76,7 @@ export const getStateComponent = (algorithmName) => {
   const config = STATE_REGISTRY[algorithmName];
   if (!config) {
     console.warn(
-      `No state component registered for algorithm: ${algorithmName}`
+      `No state component registered for algorithm: ${algorithmName}`,
     );
     return DefaultStateComponent;
   }

@@ -1,3 +1,5 @@
+// frontend/src/components/algorithm-states/TwoPointerState.jsx
+
 import React from "react";
 import PropTypes from "prop-types";
 
@@ -16,7 +18,7 @@ import PropTypes from "prop-types";
 const TwoPointerState = ({ step }) => {
   // Graceful degradation
   if (!step?.data?.visualization) {
-    return <div className="text-slate-400 p-4">No state data available</div>;
+    return <div className="p-4 text-slate-400">No state data available</div>;
   }
 
   const { pointers, metrics, array } = step.data.visualization;
@@ -33,6 +35,9 @@ const TwoPointerState = ({ step }) => {
 
   const isComplete = step.type === "ALGORITHM_COMPLETE";
   const isInitial = step.type === "INITIAL_STATE";
+  
+  const Z1_LONG_TEXT = 4;
+  const Z3_LONG_TEXT = 5;
 
   // Logic Derivation
   let logicText = "START";
@@ -78,7 +83,14 @@ const TwoPointerState = ({ step }) => {
       <div className="zone zone-primary">
         <div className="zone-label">Fast (Read)</div>
         <div className="zone-meta">IDX {fast}</div>
-        <div className="primary-value">{fastValue}</div>
+        <div
+          className={`primary-value ${
+            // Reduce font size for long text
+            String(fastValue).length > Z1_LONG_TEXT ? "long-text" : ""
+          }`}
+        >
+          {fastValue}
+        </div>
 
         {/* ZONE 5: OVERLAY (Context) */}
         <div className="zone-boundaries">
@@ -107,10 +119,17 @@ const TwoPointerState = ({ step }) => {
       <div className="zone zone-logic">
         <div className="zone-label">LOGIC</div>
         <div className="logic-content">
-          <div className={logicColor}>{logicText}</div>
           <div
-            className={`text-[0.6em] opacity-70 font-normal mt-1 ${logicColor}`}
+            className={`${logicColor} ${
+              // Reduce font size for long text
+              typeof logicText === "string" && logicText.length > Z3_LONG_TEXT
+                ? "zone3-long-text"
+                : ""
+            } `}
           >
+            {logicText}
+          </div>
+          <div className={`mt-1 text-[12px] font-normal ${logicColor}`}>
             {logicSub}
           </div>
         </div>
@@ -139,7 +158,7 @@ TwoPointerState.propTypes = {
         array: PropTypes.arrayOf(
           PropTypes.shape({
             value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-          })
+          }),
         ),
       }),
     }),

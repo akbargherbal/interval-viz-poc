@@ -49,7 +49,7 @@ export const TraceProvider = ({ children }) => {
         let requestBody;
 
         const isRegistryAlgorithm = availableAlgorithms.some(
-          (alg) => alg.name === algorithm
+          (alg) => alg.name === algorithm,
         );
 
         if (isRegistryAlgorithm) {
@@ -78,7 +78,7 @@ export const TraceProvider = ({ children }) => {
           throw new Error(
             `Backend returned ${response.status}: ${
               errData.error || "Unknown error"
-            }`
+            }`,
           );
         }
 
@@ -87,14 +87,14 @@ export const TraceProvider = ({ children }) => {
         setCurrentAlgorithm(algorithm);
       } catch (err) {
         setError(
-          `Backend error: ${err.message}. Please ensure the Flask backend is running on port 5000.`
+          `Backend error: ${err.message}. Please ensure the Flask backend is running on port 5000.`,
         );
         console.error("Failed to load trace:", err);
       } finally {
         setLoading(false);
       }
     },
-    [BACKEND_URL, availableAlgorithms]
+    [BACKEND_URL, availableAlgorithms],
   );
 
   /**
@@ -104,7 +104,7 @@ export const TraceProvider = ({ children }) => {
     (intervals) => {
       return loadTrace("interval-coverage", { intervals: intervals });
     },
-    [loadTrace]
+    [loadTrace],
   );
 
   /**
@@ -114,7 +114,7 @@ export const TraceProvider = ({ children }) => {
     (array, target) => {
       return loadTrace("binary-search", { array, target });
     },
-    [loadTrace]
+    [loadTrace],
   );
 
   /**
@@ -123,7 +123,7 @@ export const TraceProvider = ({ children }) => {
   const switchAlgorithm = useCallback(
     async (algorithmName) => {
       const algorithm = availableAlgorithms.find(
-        (alg) => alg.name === algorithmName
+        (alg) => alg.name === algorithmName,
       );
 
       if (!algorithm) {
@@ -143,7 +143,7 @@ export const TraceProvider = ({ children }) => {
 
       await loadTrace(algorithmName, exampleInput);
     },
-    [availableAlgorithms, loadTrace]
+    [availableAlgorithms, loadTrace],
   );
 
   // Fetch available algorithms on mount

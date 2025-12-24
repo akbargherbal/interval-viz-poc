@@ -16,7 +16,7 @@ export const PredictionProvider = ({ children }) => {
   const { trace } = useTrace();
   const { setCurrentStep } = useNavigation();
 
-  const [predictionMode, setPredictionMode] = useState(true);
+  const [predictionMode, setPredictionMode] = useState(false);
   const [showPrediction, setShowPrediction] = useState(false);
   const [activePrediction, setActivePrediction] = useState(null);
   const [predictionStats, setPredictionStats] = useState({
@@ -27,7 +27,7 @@ export const PredictionProvider = ({ children }) => {
   // Memoize prediction points to prevent unstable dependency in activatePredictionForStep
   const predictionPoints = useMemo(
     () => trace?.metadata?.prediction_points || [],
-    [trace]
+    [trace],
   );
 
   // Reset stats when trace changes
@@ -43,7 +43,7 @@ export const PredictionProvider = ({ children }) => {
         return false;
       }
       const matchingPrediction = predictionPoints.find(
-        (p) => p.step_index === stepIndex
+        (p) => p.step_index === stepIndex,
       );
       if (matchingPrediction) {
         setActivePrediction(matchingPrediction);
@@ -52,7 +52,7 @@ export const PredictionProvider = ({ children }) => {
       }
       return false;
     },
-    [predictionPoints, predictionMode]
+    [predictionPoints, predictionMode],
   );
 
   const handlePredictionAnswer = useCallback(
@@ -62,7 +62,7 @@ export const PredictionProvider = ({ children }) => {
       if (typeof activePrediction.step_index !== "number") {
         console.error(
           "Prediction point is missing a valid 'step_index'. Cannot advance step.",
-          activePrediction
+          activePrediction,
         );
         setShowPrediction(false);
         setActivePrediction(null);
@@ -79,7 +79,7 @@ export const PredictionProvider = ({ children }) => {
       setActivePrediction(null);
       setCurrentStep(targetStep);
     },
-    [activePrediction, setCurrentStep]
+    [activePrediction, setCurrentStep],
   );
 
   const handlePredictionSkip = useCallback(() => {
@@ -92,7 +92,7 @@ export const PredictionProvider = ({ children }) => {
     if (typeof activePrediction.step_index !== "number") {
       console.error(
         "Prediction point is missing a valid 'step_index'. Cannot skip step.",
-        activePrediction
+        activePrediction,
       );
       setShowPrediction(false);
       setActivePrediction(null);

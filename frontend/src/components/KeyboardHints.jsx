@@ -42,19 +42,19 @@ export const KeyboardHintsProvider = ({ children }) => {
   return (
     <KeyboardHintsContext.Provider value={{ openModal, closeModal, isOpen }}>
       {children}
-      
+
       {/* Modal Only - No Floating Button */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-slate-800 border border-slate-600 rounded-lg shadow-2xl p-6 w-80 animate-in fade-in slide-in-from-bottom-4 duration-200">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-bold flex items-center gap-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-opacity duration-300">
+          <div className="w-80 transform rounded-lg border border-slate-600 bg-slate-800 p-6 shadow-2xl transition-all duration-300">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="flex items-center gap-2 font-bold text-white">
                 <Keyboard size={18} />
                 Keyboard Shortcuts
               </h3>
               <button
                 onClick={closeModal}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="text-slate-400 transition-colors hover:text-white"
                 aria-label="Close keyboard shortcuts"
               >
                 <X size={18} />
@@ -69,16 +69,16 @@ export const KeyboardHintsProvider = ({ children }) => {
                   <div className="flex gap-1">
                     {shortcut.keys.map((key, keyIdx) => (
                       <React.Fragment key={keyIdx}>
-                        <kbd className="bg-slate-700 text-white px-2 py-1 rounded text-xs font-mono border border-slate-600 shadow-sm">
+                        <kbd className="rounded border border-slate-600 bg-slate-700 px-2 py-1 font-mono text-xs text-white shadow-sm">
                           {key}
                         </kbd>
                         {keyIdx < shortcut.keys.length - 1 && (
-                          <span className="text-slate-500 mx-1">or</span>
+                          <span className="mx-1 text-slate-500">or</span>
                         )}
                       </React.Fragment>
                     ))}
                   </div>
-                  <span className="text-slate-400 text-xs">
+                  <span className="text-xs text-slate-400">
                     {shortcut.action}
                   </span>
                 </div>
@@ -97,7 +97,7 @@ export const KeyboardHintsProvider = ({ children }) => {
  */
 const KeyboardHints = () => {
   console.warn(
-    "KeyboardHints: Using legacy default export. Please migrate to KeyboardHintsProvider."
+    "KeyboardHints: Using legacy default export. Please migrate to KeyboardHintsProvider.",
   );
   return null;
 };

@@ -15,18 +15,28 @@ export const useKeyboardShortcuts = ({
   onSkipPrediction,
   onCloseModal,
 }) => {
-  
   // 1. Prediction Mode Shortcuts (Highest Priority: 20)
   useKeyboardHandler((event) => {
     if (!predictionOpen) return false;
 
     switch (event.key.toLowerCase()) {
-      case 'k': onSelectChoice?.(0); return true;
-      case 'c': onSelectChoice?.(1); return true;
-      case 's': onSkipPrediction?.(); return true;
-      case 'enter': onSubmitAnswer?.(); return true;
-      case 'escape': onSkipPrediction?.(); return true; // Allow skipping with Escape
-      default: return false;
+      case "k":
+        onSelectChoice?.(0);
+        return true;
+      case "c":
+        onSelectChoice?.(1);
+        return true;
+      case "s":
+        onSkipPrediction?.();
+        return true;
+      case "enter":
+        onSubmitAnswer?.();
+        return true;
+      case "escape":
+        onSkipPrediction?.();
+        return true; // Allow skipping with Escape
+      default:
+        return false;
     }
   }, 20);
 
@@ -34,7 +44,7 @@ export const useKeyboardShortcuts = ({
   useKeyboardHandler((event) => {
     if (!modalOpen) return false;
 
-    if (event.key === 'Escape') {
+    if (event.key === "Escape") {
       onCloseModal?.();
       return true;
     }
@@ -65,8 +75,8 @@ export const useKeyboardShortcuts = ({
         return true;
       case "Escape":
         if (isComplete) {
-            onCloseModal?.();
-            return true;
+          onCloseModal?.();
+          return true;
         }
         return false;
       default:

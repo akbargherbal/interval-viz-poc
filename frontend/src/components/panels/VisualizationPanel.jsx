@@ -31,9 +31,9 @@ const VisualizationPanel = () => {
   return (
     <div
       id="panel-visualization"
-      className="flex-[3] bg-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden select-none"
+      className="flex flex-[3] select-none flex-col overflow-hidden rounded-xl border border-slate-700 bg-slate-800 shadow-2xl"
     >
-      <div className="px-4 py-3 border-b border-slate-700 flex items-center justify-between flex-shrink-0">
+      <div className="flex flex-shrink-0 items-center justify-between border-b border-slate-700 px-4 py-3">
         <h2 className="text-lg font-semibold text-white">
           {visualizationType.charAt(0).toUpperCase() +
             visualizationType.slice(1)}{" "}
@@ -42,11 +42,11 @@ const VisualizationPanel = () => {
         <button
           id="algorithm-info-trigger"
           onClick={() => setShowAlgorithmInfo(true)}
-          className="p-2 bg-slate-700 hover:bg-slate-600 rounded-full transition-colors group"
+          className="group rounded-full bg-slate-700 p-2 transition-colors hover:bg-slate-600"
           title="Algorithm Details"
         >
           <svg
-            className="w-5 h-5 text-blue-400 group-hover:text-blue-300"
+            className="h-5 w-5 text-blue-400 group-hover:text-blue-300"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -60,7 +60,7 @@ const VisualizationPanel = () => {
           </svg>
         </button>
       </div>
-      <div className="flex-1 flex flex-col items-start overflow-auto p-6">
+      <div className="flex flex-1 flex-col items-start overflow-auto">
         <div className="mx-auto h-full w-full">
           <ErrorBoundary>
             <VisualizationComponent {...componentProps} />

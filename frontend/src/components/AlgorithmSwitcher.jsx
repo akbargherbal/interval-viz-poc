@@ -58,21 +58,21 @@ const AlgorithmSwitcher = () => {
       <button
         onClick={() => !loading && setIsOpen(!isOpen)}
         disabled={loading}
-        className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:cursor-not-allowed rounded-lg transition-colors group"
+        className="group flex items-center gap-2 rounded-lg bg-slate-700 px-3 py-1.5 transition-colors hover:bg-slate-600 disabled:cursor-not-allowed disabled:bg-slate-800"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
         {/* Algorithm Icon */}
-        <Search className="w-4 h-4 text-blue-400" />
+        <Search className="h-4 w-4 text-blue-400" />
 
         {/* Algorithm Name */}
-        <span className="text-white font-medium text-sm">
+        <span className="text-sm font-medium text-white">
           {currentAlgorithmDisplay}
         </span>
 
         {/* Dropdown Arrow */}
         <ChevronDown
-          className={`w-4 h-4 text-slate-400 group-hover:text-white transition-all ${
+          className={`h-4 w-4 text-slate-400 transition-all group-hover:text-white ${
             isOpen ? "rotate-180" : ""
           }`}
         />
@@ -81,12 +81,12 @@ const AlgorithmSwitcher = () => {
       {/* Dropdown Menu */}
       {isOpen && (
         <div
-          className="absolute top-full left-0 mt-2 w-64 bg-slate-700 rounded-lg shadow-xl border border-slate-600 z-50 animate-in fade-in slide-in-from-top-2 duration-100"
+          className="animate-in fade-in slide-in-from-top-2 absolute left-0 top-full z-50 mt-2 w-64 rounded-lg border border-slate-600 bg-slate-700 shadow-xl duration-100"
           role="menu"
         >
           <div className="p-2">
             {/* Header */}
-            <div className="text-xs text-slate-400 px-3 py-2 font-semibold uppercase tracking-wider">
+            <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
               Select Algorithm
             </div>
 
@@ -104,21 +104,21 @@ const AlgorithmSwitcher = () => {
                       key={algorithm.name}
                       onClick={() => handleAlgorithmSelect(algorithm.name)}
                       disabled={isCurrent}
-                      className={`w-full text-left px-3 py-2 rounded-md font-medium text-sm transition-colors ${
+                      className={`w-full rounded-md px-3 py-2 text-left text-sm font-medium transition-colors ${
                         isCurrent
-                          ? "bg-blue-600 text-white cursor-default"
-                          : "hover:bg-slate-600 text-slate-200"
+                          ? "cursor-default bg-blue-600 text-white"
+                          : "text-slate-200 hover:bg-slate-600"
                       }`}
                       role="menuitem"
                     >
                       <div className="flex items-center gap-2">
-                        <Search className="w-4 h-4 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
+                        <Search className="h-4 w-4 flex-shrink-0" />
+                        <div className="min-w-0 flex-1">
                           <div className="truncate">
                             {algorithm.display_name}
                           </div>
                           {algorithm.description && (
-                            <div className="text-xs text-slate-400 truncate mt-0.5">
+                            <div className="mt-0.5 truncate text-xs text-slate-400">
                               {algorithm.description}
                             </div>
                           )}

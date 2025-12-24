@@ -117,10 +117,11 @@ const StateComponent = getStateComponent(
 
 **Available Visualization Types:**
 
-- `array` - For Binary Search, Sorting algorithms
-- `timeline` - For Interval Coverage
+- `array` - For Binary Search, Sliding Window, Two Pointer
+- `interval-coverage` - Composite view (Recursive Stack + Timeline)
+- `merge-sort` - Composite view (Recursive Tree + Array Comparison)
+- `timeline` - Legacy support for simple interval traces
 - `graph` - Future: DFS, BFS, Dijkstra
-- `tree` - Future: BST, Heap operations
 
 ---
 
@@ -138,12 +139,14 @@ interval-viz-poc/
 │   ├── app.py                      # Flask API with unified routing
 │   └── requirements.txt
 │
-├── frontend/
+frontend/
 │   ├── src/
 │   │   ├── components/
+│   │   │   ├── AlgorithmInfoModal.jsx   # Educational context
 │   │   │   ├── AlgorithmSwitcher.jsx    # Dynamic algorithm selector
 │   │   │   ├── ControlBar.jsx           # Navigation controls
 │   │   │   ├── CompletionModal.jsx      # Success screen
+│   │   │   ├── ErrorBoundary.jsx        # Error handling wrapper
 │   │   │   ├── PredictionModal.jsx      # Interactive predictions
 │   │   │   ├── KeyboardHints.jsx        # Shortcut guide
 │   │   │   ├── panels/                  # ⭐ Layout Containers
@@ -152,25 +155,32 @@ interval-viz-poc/
 │   │   │   ├── algorithm-states/        # ⭐ Algorithm-specific state components
 │   │   │   │   ├── BinarySearchState.jsx
 │   │   │   │   ├── IntervalCoverageState.jsx
+│   │   │   │   ├── MergeSortState.jsx
+│   │   │   │   ├── SlidingWindowState.jsx
+│   │   │   │   ├── TwoPointerState.jsx
 │   │   │   │   └── index.js
 │   │   │   └── visualizations/          # ⭐ Reusable viz components
 │   │   │       ├── ArrayView.jsx
+│   │   │       ├── ArrayItem.jsx
+│   │   │       ├── IntervalCoverageVisualization.jsx
+│   │   │       ├── MergeSortVisualization.jsx
+│   │   │       ├── RecursiveCallStackView.jsx
 │   │   │       ├── TimelineView.jsx
 │   │   │       └── index.js
+│   │   ├── constants/
+│   │   │   └── intervalColors.js
 │   │   ├── contexts/                    # ⭐ State Management (Context API)
 │   │   │   ├── TraceContext.jsx
 │   │   │   ├── NavigationContext.jsx
 │   │   │   ├── PredictionContext.jsx
 │   │   │   ├── HighlightContext.jsx     # ⭐ Visual cross-referencing
 │   │   │   └── KeyboardContext.jsx
-│   │   ├── hooks/                       # Context Consumers
-│   │   │   ├── useTraceLoader.js
-│   │   │   ├── useTraceNavigation.js
-│   │   │   ├── usePredictionMode.js
-│   │   │   ├── useVisualHighlight.js
+│   │   ├── hooks/
 │   │   │   └── useKeyboardShortcuts.js
 │   │   ├── utils/
+│   │   │   ├── predictionUtils.js
 │   │   │   ├── stateRegistry.js         # ⭐ Dynamic state component selection
+│   │   │   ├── stepBadges.js
 │   │   │   └── visualizationRegistry.js # ⭐ Dynamic visualization selection
 │   │   ├── App.jsx
 │   │   └── index.js
@@ -1010,14 +1020,14 @@ curl -X POST http://localhost:5000/api/trace/unified \
 
 ---
 
-## Current Algorithms
+| Algorithm             | Visualization | Status | Prediction Points                |
+| --------------------- | ------------- | ------ | -------------------------------- |
+| **Interval Coverage** | Composite     | Live   | Keep / Covered decisions         |
+| **Binary Search**     | Array         | Live   | Search direction choices         |
+| **Two Pointer**       | Array         | Live   | Pointer movement decisions       |
+| **Sliding Window**    | Array         | Live   | Expand / shrink window decisions |
+| **Merge Sort**        | Composite     | Live   | Split / Merge decisions          |
 
-| Algorithm             | Visualization | Status | Prediction Points                          |
-| --------------------- | ------------- | -------| ------------------------------------------ |
-| **Interval Coverage** | Timeline      | Live   | Keep / Covered decisions                   |
-| **Binary Search**     | Array         | Live   | Search direction choices                   |
-| **Two Pointer**       | Array         | Live   | Pointer movement decisions                 |
-| **Sliding Window**    | Array         | Live   | Expand / shrink window decisions           |
 ---
 
 ## Deployment

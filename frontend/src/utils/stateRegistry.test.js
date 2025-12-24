@@ -30,7 +30,7 @@ describe("stateRegistry", () => {
       const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
       getStateComponent("unknown-algorithm");
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("No state component registered")
+        expect.stringContaining("No state component registered"),
       );
       consoleSpy.mockRestore();
     });
@@ -49,7 +49,7 @@ describe("stateRegistry", () => {
       const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
       getStateComponent(null);
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("getStateComponent called with null/undefined")
+        expect.stringContaining("getStateComponent called with null/undefined"),
       );
       consoleSpy.mockRestore();
     });
@@ -81,7 +81,7 @@ describe("stateRegistry", () => {
     it("returns array of registered algorithm names", () => {
       const algorithms = getRegisteredAlgorithms();
       expect(algorithms).toEqual(
-        expect.arrayContaining(["interval-coverage", "binary-search"])
+        expect.arrayContaining(["interval-coverage", "binary-search"]),
       );
     });
 
