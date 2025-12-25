@@ -45,7 +45,7 @@ Value:  -5  -2  -9  -1  -4
 ```
 Index:   0   1   2   3   4
 Value:  -5  -2  -9  -1  -4
-        [M]            
+       [M]            
 ```
 *M = Maximum subarray*
 
@@ -98,7 +98,7 @@ Value:  -5  -2  -9  -1  -4
 ```
 Index:   0   1   2   3   4
 Value:  -5  -2  -9  -1  -4
-           [M]         
+          [M]         
 ```
 *M = Maximum subarray*
 
@@ -179,7 +179,7 @@ Value:  -5  -2  -9  -1  -4
 ```
 Index:   0   1   2   3   4
 Value:  -5  -2  -9  -1  -4
-                 [M]   
+                [M]   
 ```
 *M = Maximum subarray*
 

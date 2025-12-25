@@ -45,15 +45,6 @@
 
 ## Step 1: 🆕 Allocate first room 1 for meeting 0
 
-**Meeting:** ID 0 [1, 10]
-**Decision:** Allocate **new Room 1**
-
-**Reason:**
-- Heap is empty (first meeting being scheduled)
-- Must allocate first room
-
-**Rooms Used:** 1
-
 ---
 
 ## Step 2: 📊 Initialize heap with end time 10
@@ -91,17 +82,6 @@ Compare meeting start time (2) with earliest end time (10):
 ---
 
 ## Step 4: 🆕 Allocate new room 2 for meeting 1 (all rooms occupied)
-
-**Meeting:** ID 1 [2, 7]
-**Decision:** Allocate **new Room 2**
-
-**Reason:**
-- Meeting starts at 2
-- Earliest ending meeting finishes at 10
-- Comparison: 2 < 10
-- All rooms are occupied, need new room
-
-**Rooms Used:** 2
 
 ---
 
@@ -141,17 +121,6 @@ Compare meeting start time (3) with earliest end time (7):
 
 ## Step 7: 🆕 Allocate new room 3 for meeting 2 (all rooms occupied)
 
-**Meeting:** ID 2 [3, 19]
-**Decision:** Allocate **new Room 3**
-
-**Reason:**
-- Meeting starts at 3
-- Earliest ending meeting finishes at 7
-- Comparison: 3 < 7
-- All rooms are occupied, need new room
-
-**Rooms Used:** 3
-
 ---
 
 ## Step 8: 📊 Add end time 19 to heap (heap size: 3)
@@ -188,30 +157,17 @@ Compare meeting start time (8) with earliest end time (7):
 
 ---
 
-## Step 10: ♻️ Reuse room 3 for meeting 3 (previous meeting ended at 7)
+## Step 10: ♻️ Reuse room 2 for meeting 3 (previous meeting ended at 7)
 
 **Meeting:** ID 3 [8, 12]
-**Assigned to:** Room 3
+**Assigned to:** Room 2
 
 **Room Reuse:**
-- Previous meeting in this room ended at 7
+- Heap popped: end time 7 (Room 2)
+- Previous meeting in Room 2 ended at 7
 - Current meeting starts at 8
 - Gap: 1 time units
-- Room was freed and is now reused
-
-**Heap Update:**
-- Add meeting end time (12) to heap
-- Updated heap: [10, 12, 19]
-- Heap size: 3 (= rooms currently in use)
-
-**Room Assignments So Far:**
-
-| Meeting ID | Start | End | Room |
-|------------|-------|-----|------|
-| 0 | 1 | 10 | 1 |
-| 1 | 2 | 7 | 2 |
-| 2 | 3 | 19 | 3 |
-| 3 | 8 | 12 | 3 |
+- **Room 2** is now free and reused
 
 ---
 
@@ -235,31 +191,17 @@ Compare meeting start time (10) with earliest end time (10):
 
 ---
 
-## Step 12: ♻️ Reuse room 3 for meeting 4 (previous meeting ended at 10)
+## Step 12: ♻️ Reuse room 1 for meeting 4 (previous meeting ended at 10)
 
 **Meeting:** ID 4 [10, 20]
-**Assigned to:** Room 3
+**Assigned to:** Room 1
 
 **Room Reuse:**
-- Previous meeting in this room ended at 10
+- Heap popped: end time 10 (Room 1)
+- Previous meeting in Room 1 ended at 10
 - Current meeting starts at 10
 - Gap: 0 time units
-- Room was freed and is now reused
-
-**Heap Update:**
-- Add meeting end time (20) to heap
-- Updated heap: [12, 19, 20]
-- Heap size: 3 (= rooms currently in use)
-
-**Room Assignments So Far:**
-
-| Meeting ID | Start | End | Room |
-|------------|-------|-----|------|
-| 0 | 1 | 10 | 1 |
-| 1 | 2 | 7 | 2 |
-| 2 | 3 | 19 | 3 |
-| 3 | 8 | 12 | 3 |
-| 4 | 10 | 20 | 3 |
+- **Room 1** is now free and reused
 
 ---
 
@@ -285,17 +227,6 @@ Compare meeting start time (11) with earliest end time (12):
 
 ## Step 14: 🆕 Allocate new room 4 for meeting 5 (all rooms occupied)
 
-**Meeting:** ID 5 [11, 30]
-**Decision:** Allocate **new Room 4**
-
-**Reason:**
-- Meeting starts at 11
-- Earliest ending meeting finishes at 12
-- Comparison: 11 < 12
-- All rooms are occupied, need new room
-
-**Rooms Used:** 4
-
 ---
 
 ## Step 15: 📊 Add end time 30 to heap (heap size: 4)
@@ -309,38 +240,6 @@ Compare meeting start time (11) with earliest end time (12):
 
 **Updated Heap:** [12, 19, 20, 30]
 **Heap Size:** 4 rooms in use
-
----
-
-## Execution Summary
-
-**Minimum Rooms Required:** 4
-
-**Final Room Assignments:**
-
-**Room 1:**
-- Meeting 0: [1, 10]
-
-**Room 2:**
-- Meeting 1: [2, 7]
-
-**Room 3:**
-- Meeting 2: [3, 19]
-- Meeting 3: [8, 12]
-- Meeting 4: [10, 20]
-
-**Room 4:**
-- Meeting 5: [11, 30]
-
-**Algorithm Efficiency:**
-- Time Complexity: O(n log n) where n = 6
-  - Sorting: O(n log n)
-  - Heap operations: O(n log n) for n insertions/deletions
-- Space Complexity: O(n) for heap storage
-- Optimal Solution: Uses minimum possible rooms (greedy algorithm)
-
-**Key Insight:**
-The heap size at any point represents the number of rooms in use. The maximum heap size throughout execution equals the minimum rooms needed. By always reusing the earliest-ending room when possible, we ensure optimal room utilization.
 
 ---
 
@@ -373,13 +272,16 @@ step.data.visualization.room_assignments        // map of interval_id -> room_nu
 step.data.visualization.rooms_used              // total rooms allocated
 step.data.interval_id                           // current meeting being processed
 step.data.heap_top                              // earliest end time (for comparisons)
+step.data.freed_room                            // room that was just freed (reuse steps)
 ```
 
 ### Algorithm-Specific Guidance
 
 Meeting Rooms II is fundamentally about **resource allocation over time**. The most pedagogically powerful visualization is a **Gantt chart / timeline** showing meetings grouped by room. Students should see:
+
 1. **Why overlaps force new rooms** - When meeting A hasn't ended but meeting B starts
 2. **How the heap enables reuse** - The earliest-ending meeting's room becomes available first
 3. **The greedy optimality** - Always reusing the earliest-free room minimizes total rooms
 
 Consider using **color coding**: pending meetings (gray), examining (yellow), scheduled (green/blue). Animate the **heap pop operation** when reusing a room - show the end time being removed and the room becoming available. The heap visualization should be **synchronized with the timeline** - when heap size grows, show new room allocation; when heap size shrinks, show room reuse. This dual visualization (timeline + heap) makes the algorithm's logic transparent.
+

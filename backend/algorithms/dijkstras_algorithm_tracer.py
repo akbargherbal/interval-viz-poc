@@ -1,4 +1,3 @@
-
 """
 Dijkstra's Algorithm tracer for educational visualization.
 
@@ -444,6 +443,9 @@ class DijkstrasAlgorithmTracer(AlgorithmTracer):
 
             self.current_node = current_node
 
+            # Mark as visited BEFORE recording step so visualization state is correct
+            self.visited.add(current_node)
+
             # Record selection
             pq_snapshot = list(self.priority_queue)
             self._add_step(
@@ -455,9 +457,6 @@ class DijkstrasAlgorithmTracer(AlgorithmTracer):
                 },
                 f"📍 Select node '{current_node}' with minimum distance {current_dist} from priority queue"
             )
-
-            # Mark as visited
-            self.visited.add(current_node)
 
             # Get neighbors
             neighbors = [n for n, w in self.adjacency[current_node]]

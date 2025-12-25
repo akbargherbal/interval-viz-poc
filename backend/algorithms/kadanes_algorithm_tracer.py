@@ -1,4 +1,3 @@
-
 """
 Kadane's Algorithm tracer for educational visualization.
 
@@ -201,7 +200,18 @@ class KadanesAlgorithmTracer(AlgorithmTracer):
                 marker_line = "       "
                 for elem in viz['array']:
                     if subarray_start <= elem['index'] <= subarray_end:
-                        marker_line += " [M]" if elem['index'] == subarray_start else (" M]" if elem['index'] == subarray_end else "  M")
+                        if elem['index'] == subarray_start and elem['index'] == subarray_end:
+                            # Single-element subarray
+                            marker_line += "[M]"
+                        elif elem['index'] == subarray_start:
+                            # Opening bracket
+                            marker_line += "[M "
+                        elif elem['index'] == subarray_end:
+                            # Closing bracket
+                            marker_line += " M]"
+                        else:
+                            # Middle element
+                            marker_line += "  M"
                     else:
                         marker_line += "   "
                 narrative += marker_line + "\n"

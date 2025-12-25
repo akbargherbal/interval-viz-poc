@@ -33,15 +33,15 @@
 ## Step 1: 🔍 Compare interval [2, 6] with last merged [1, 3]
 
 **Current Interval:** [2, 6]
-**Last Merged Interval:** [1, 6]
+**Last Merged Interval:** [1, 3]
 
 **Overlap Check:**
 ```
-Compare current.start (2) with last_merged.end (6)
-2 <= 6? → True
+Compare current.start (2) with last_merged.end (3)
+2 <= 3? → True
 ```
 
-**Decision:** Intervals **overlap** because current starts (2) before or when last ends (6)
+**Decision:** Intervals **overlap** because current starts (2) before or when last ends (3)
 - Action: Merge by extending the last interval's end time
 
 **Timeline State:**

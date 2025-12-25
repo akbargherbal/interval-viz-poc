@@ -243,7 +243,9 @@ class InsertionSortTracer(AlgorithmTracer):
                 narrative += state_line + "\n"
                 narrative += "       (S=Sorted, U=Unsorted)\n"
                 narrative += "```\n"
-                narrative += f"*Sorted region expanded: **{insert_index + 1} elements***\n\n"
+                sorted_boundary = viz['sorted_boundary']
+                narrative += f"*Sorted region now contains: **{sorted_boundary} elements** (indices [0,{sorted_boundary - 1}])*\n\n"
+
 
             elif step_type == "COMPLETE":
                 total_comparisons = data['total_comparisons']
@@ -463,7 +465,7 @@ class InsertionSortTracer(AlgorithmTracer):
             self.array[insert_position] = self.key_value
 
             self.sorted_boundary = i + 1
-            
+
             # Clear compare index before insert step to ensure clean visualization
             self.compare_index = None
 

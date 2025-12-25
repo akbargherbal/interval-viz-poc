@@ -98,7 +98,7 @@ Value:  11  12  13   5   6
 State:   S  U  U  U  U
        (S=Sorted, U=Unsorted)
 ```
-*Sorted region expanded: **1 elements***
+*Sorted region now contains: **2 elements** (indices [0,1])*
 
 ---
 
@@ -158,7 +158,7 @@ Value:  11  12  13   5   6
 State:   S  S  S  U  U
        (S=Sorted, U=Unsorted)
 ```
-*Sorted region expanded: **3 elements***
+*Sorted region now contains: **3 elements** (indices [0,2])*
 
 ---
 
@@ -307,7 +307,7 @@ Value:   5  11  12  13   6
 State:   S  U  U  U  U
        (S=Sorted, U=Unsorted)
 ```
-*Sorted region expanded: **1 elements***
+*Sorted region now contains: **4 elements** (indices [0,3])*
 
 ---
 
@@ -478,7 +478,7 @@ Value:   5   6  11  12  13
 State:   S  S  U  U  U
        (S=Sorted, U=Unsorted)
 ```
-*Sorted region expanded: **2 elements***
+*Sorted region now contains: **5 elements** (indices [0,4])*
 
 ---
 

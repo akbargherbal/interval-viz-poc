@@ -42,10 +42,10 @@ Compare arr[0] (1) with arr[1] (2):
 
 **Current Comparison Visualization:**
 ```
-Index:   0   1   2   3
-Value:   1   2   3   4
-         ^  ^      
-         L  R        (L = Left, R = Right in comparison)
+Index:   0   1   2   3   4
+Value:   1   2   3   4   5
+         ^  ^         
+         L  R           (L = Left, R = Right in comparison)
 ```
 
 ---
@@ -144,10 +144,10 @@ Compare arr[3] (4) with arr[4] (5):
 
 **Current Comparison Visualization:**
 ```
-Index:   1   2   3   4
-Value:   2   3   4   5
-               ^  ^
-               L  R  (L = Left, R = Right in comparison)
+Index:   0   1   2   3   4
+Value:   1   2   3   4   5
+                  ^  ^
+                  L  R  (L = Left, R = Right in comparison)
 ```
 
 ---

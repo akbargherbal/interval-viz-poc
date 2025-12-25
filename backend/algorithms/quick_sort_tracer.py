@@ -1,4 +1,3 @@
-
 """
 Quick Sort algorithm tracer for educational visualization.
 
@@ -172,23 +171,28 @@ class QuickSortTracer(AlgorithmTracer):
                 i += 1
 
                 if i != j:
-                    # Swap elements
+                    # Capture pre-swap values for accurate reporting
+                    value_at_i = self.array[i]
+                    value_at_j = self.array[j]
+                    
+                    # Perform the swap
                     self.array[i], self.array[j] = self.array[j], self.array[i]
                     self.swap_count += 1
 
+                    # Record the swap with PRE-swap values for clarity
                     self._add_step(
                         "SWAP",
                         {
                             'index1': i,
-                            'value1': self.array[i],
+                            'value1': value_at_i,  # Value BEFORE swap
                             'index2': j,
-                            'value2': self.array[j],
+                            'value2': value_at_j,  # Value BEFORE swap
                             'reason': 'move_to_left_partition',
                             'partition_index': i,
                             'low': low,
                             'high': high
                         },
-                        f"🔄 Swap arr[{i}] ↔ arr[{j}]: {self.array[j]} ↔ {self.array[i]} (move {self.array[i]} to left partition)"
+                        f"🔄 Swap arr[{i}] ↔ arr[{j}]: {value_at_i} ↔ {value_at_j} (move {value_at_j} to left partition)"
                     )
                 else:
                     # Element already in correct position
@@ -211,22 +215,28 @@ class QuickSortTracer(AlgorithmTracer):
         final_pivot_index = i + 1
 
         if final_pivot_index != high:
+            # Capture pre-swap values for accurate reporting
+            value_at_final_pivot_index = self.array[final_pivot_index]
+            value_at_high = self.array[high]  # This is the pivot value
+            
+            # Perform the swap
             self.array[final_pivot_index], self.array[high] = self.array[high], self.array[final_pivot_index]
             self.swap_count += 1
 
+            # Record the swap with PRE-swap values for clarity
             self._add_step(
                 "SWAP",
                 {
                     'index1': final_pivot_index,
-                    'value1': self.array[final_pivot_index],
+                    'value1': value_at_final_pivot_index,  # Value BEFORE swap
                     'index2': high,
-                    'value2': self.array[high],
+                    'value2': value_at_high,  # Value BEFORE swap (pivot)
                     'reason': 'place_pivot_final_position',
                     'partition_index': i,
                     'low': low,
                     'high': high
                 },
-                f"🔄 Place pivot in final position: swap arr[{final_pivot_index}] ↔ arr[{high}]: {self.array[high]} ↔ {self.array[final_pivot_index]}"
+                f"🔄 Place pivot in final position: swap arr[{final_pivot_index}] ↔ arr[{high}]: {value_at_final_pivot_index} ↔ {value_at_high}"
             )
         else:
             self._add_step(
@@ -388,15 +398,15 @@ class QuickSortTracer(AlgorithmTracer):
 
                 if reason == 'move_to_left_partition':
                     narrative += f"- **Action:** Swap arr[{idx1}] ↔ arr[{idx2}]\n"
-                    narrative += f"- **Reason:** Move {val1} to left partition (< pivot)\n"
-                    narrative += f"- **Result:** arr[{idx1}] = {val1}, arr[{idx2}] = {val2}\n\n"
+                    narrative += f"- **Reason:** Move {val2} to left partition (< pivot)\n"
+                    narrative += f"- **Result:** arr[{idx1}] now contains {val2}, arr[{idx2}] now contains {val1}\n\n"
                 elif reason == 'already_in_position':
                     narrative += f"- **Action:** No swap needed\n"
                     narrative += f"- **Reason:** Element {val1} already at partition boundary\n\n"
                 elif reason == 'place_pivot_final_position':
                     narrative += f"- **Action:** Swap arr[{idx1}] ↔ arr[{idx2}]\n"
-                    narrative += f"- **Reason:** Place pivot {val1} in its final sorted position\n"
-                    narrative += f"- **Result:** Pivot now at index {idx1} (all left < pivot, all right ≥ pivot)\n\n"
+                    narrative += f"- **Reason:** Place pivot {val2} in its final sorted position\n"
+                    narrative += f"- **Result:** Pivot {val2} now at index {idx1} (all left < {val2}, all right ≥ {val2})\n\n"
                 elif reason == 'pivot_already_in_position':
                     narrative += f"- **Action:** No swap needed\n"
                     narrative += f"- **Reason:** Pivot {val1} already in final position\n\n"

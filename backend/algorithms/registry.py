@@ -92,7 +92,7 @@ class AlgorithmRegistry:
         if name not in self._algorithms:
             available = ", ".join(self._algorithms.keys())
             raise KeyError(
-                f"Algorithm '{name}' is not registered. "
+                f"Algorithm '{name}' not found. "
                 f"Available algorithms: {available}"
             )
 

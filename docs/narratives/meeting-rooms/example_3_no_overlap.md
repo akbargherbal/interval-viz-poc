@@ -37,15 +37,6 @@
 
 ## Step 1: 🆕 Allocate first room 1 for meeting 1
 
-**Meeting:** ID 1 [2, 4]
-**Decision:** Allocate **new Room 1**
-
-**Reason:**
-- Heap is empty (first meeting being scheduled)
-- Must allocate first room
-
-**Rooms Used:** 1
-
 ---
 
 ## Step 2: 📊 Initialize heap with end time 4
@@ -88,44 +79,11 @@ Compare meeting start time (7) with earliest end time (4):
 **Assigned to:** Room 1
 
 **Room Reuse:**
-- Previous meeting in this room ended at 4
+- Heap popped: end time 4 (Room 1)
+- Previous meeting in Room 1 ended at 4
 - Current meeting starts at 7
 - Gap: 3 time units
-- Room was freed and is now reused
-
-**Heap Update:**
-- Add meeting end time (10) to heap
-- Updated heap: [10]
-- Heap size: 1 (= rooms currently in use)
-
-**Room Assignments So Far:**
-
-| Meeting ID | Start | End | Room |
-|------------|-------|-----|------|
-| 1 | 2 | 4 | 1 |
-| 0 | 7 | 10 | 1 |
-
----
-
-## Execution Summary
-
-**Minimum Rooms Required:** 1
-
-**Final Room Assignments:**
-
-**Room 1:**
-- Meeting 1: [2, 4]
-- Meeting 0: [7, 10]
-
-**Algorithm Efficiency:**
-- Time Complexity: O(n log n) where n = 2
-  - Sorting: O(n log n)
-  - Heap operations: O(n log n) for n insertions/deletions
-- Space Complexity: O(n) for heap storage
-- Optimal Solution: Uses minimum possible rooms (greedy algorithm)
-
-**Key Insight:**
-The heap size at any point represents the number of rooms in use. The maximum heap size throughout execution equals the minimum rooms needed. By always reusing the earliest-ending room when possible, we ensure optimal room utilization.
+- **Room 1** is now free and reused
 
 ---
 
@@ -158,13 +116,16 @@ step.data.visualization.room_assignments        // map of interval_id -> room_nu
 step.data.visualization.rooms_used              // total rooms allocated
 step.data.interval_id                           // current meeting being processed
 step.data.heap_top                              // earliest end time (for comparisons)
+step.data.freed_room                            // room that was just freed (reuse steps)
 ```
 
 ### Algorithm-Specific Guidance
 
 Meeting Rooms II is fundamentally about **resource allocation over time**. The most pedagogically powerful visualization is a **Gantt chart / timeline** showing meetings grouped by room. Students should see:
+
 1. **Why overlaps force new rooms** - When meeting A hasn't ended but meeting B starts
 2. **How the heap enables reuse** - The earliest-ending meeting's room becomes available first
 3. **The greedy optimality** - Always reusing the earliest-free room minimizes total rooms
 
 Consider using **color coding**: pending meetings (gray), examining (yellow), scheduled (green/blue). Animate the **heap pop operation** when reusing a room - show the end time being removed and the room becoming available. The heap visualization should be **synchronized with the timeline** - when heap size grows, show new room allocation; when heap size shrinks, show room reuse. This dual visualization (timeline + heap) makes the algorithm's logic transparent.
+

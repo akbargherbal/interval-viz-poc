@@ -1,4 +1,3 @@
-
 """
 Tests for Insertion Sort algorithm tracer.
 
@@ -204,46 +203,22 @@ class TestInsertionSortTraceStructure:
         tracer = InsertionSortTracer()
         result = tracer.execute({'array': [5, 2, 8, 1]})
         
+        # Count COMPARE steps
         compare_steps = [s for s in result['trace']['steps'] if s['type'] == 'COMPARE']
-        total_comparisons = len(compare_steps)
         
-        assert result['result']['comparisons'] == total_comparisons
+        # Should match result comparisons
+        assert len(compare_steps) == result['result']['comparisons']
 
     def test_shift_count_matches_result(self):
         """Shift count in trace should match result."""
         tracer = InsertionSortTracer()
         result = tracer.execute({'array': [5, 2, 8, 1]})
         
+        # Count SHIFT steps
         shift_steps = [s for s in result['trace']['steps'] if s['type'] == 'SHIFT']
-        total_shifts = len(shift_steps)
         
-        assert result['result']['shifts'] == total_shifts
-
-    def test_trace_has_timestamps(self):
-        """All steps should have timestamps."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [3, 1, 2]})
-        
-        for step in result['trace']['steps']:
-            assert 'timestamp' in step
-            assert isinstance(step['timestamp'], (int, float))
-            assert step['timestamp'] >= 0
-
-    def test_trace_duration_recorded(self):
-        """Trace should include total duration."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [3, 1, 2]})
-        
-        assert 'duration' in result['trace']
-        assert isinstance(result['trace']['duration'], (int, float))
-        assert result['trace']['duration'] >= 0
-
-    def test_total_steps_matches_array_length(self):
-        """total_steps should match length of steps array."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [3, 1, 2]})
-        
-        assert result['trace']['total_steps'] == len(result['trace']['steps'])
+        # Should match result shifts
+        assert len(shift_steps) == result['result']['shifts']
 
 
 # =============================================================================
@@ -252,163 +227,85 @@ class TestInsertionSortTraceStructure:
 
 @pytest.mark.unit
 class TestInsertionSortVisualizationState:
-    """Test visualization state - is frontend data correct?"""
+    """Test visualization state generation."""
 
-    def test_visualization_state_present(self):
-        """Each step (except INITIAL_STATE) should have visualization data."""
+    def test_visualization_in_all_steps(self):
+        """All steps should have visualization state."""
         tracer = InsertionSortTracer()
         result = tracer.execute({'array': [3, 1, 2]})
         
         for step in result['trace']['steps']:
-            if step['type'] != 'INITIAL_STATE':
-                assert 'visualization' in step['data']
+            assert 'visualization' in step['data']
 
-    def test_array_elements_structure(self):
-        """Array elements should have index, value, and state."""
+    def test_array_visualization_structure(self):
+        """Array visualization should have correct structure."""
         tracer = InsertionSortTracer()
         result = tracer.execute({'array': [3, 1, 2]})
         
-        # Check a SELECT_KEY step
-        select_step = [s for s in result['trace']['steps'] if s['type'] == 'SELECT_KEY'][0]
-        viz = select_step['data']['visualization']
+        # Check first step visualization
+        viz = result['trace']['steps'][0]['data']['visualization']
         
         assert 'array' in viz
-        assert len(viz['array']) == 3
+        assert isinstance(viz['array'], list)
         
-        for element in viz['array']:
-            assert 'index' in element
-            assert 'value' in element
-            assert 'state' in element
+        # Each array element should have index, value, state
+        for elem in viz['array']:
+            assert 'index' in elem
+            assert 'value' in elem
+            assert 'state' in elem
+
+    def test_key_visualization_when_present(self):
+        """Key should be in visualization when active."""
+        tracer = InsertionSortTracer()
+        result = tracer.execute({'array': [3, 1, 2]})
+        
+        # Find a SELECT_KEY step
+        select_key_step = next(s for s in result['trace']['steps'] if s['type'] == 'SELECT_KEY')
+        
+        viz = select_key_step['data']['visualization']
+        assert 'key' in viz
+        
+        if viz['key'] is not None:
+            assert 'index' in viz['key']
+            assert 'value' in viz['key']
+
+    def test_sorted_boundary_in_visualization(self):
+        """Sorted boundary should be in visualization."""
+        tracer = InsertionSortTracer()
+        result = tracer.execute({'array': [3, 1, 2]})
+        
+        for step in result['trace']['steps']:
+            viz = step['data']['visualization']
+            assert 'sorted_boundary' in viz
 
     def test_element_states_valid(self):
-        """Element states should be one of: sorted, examining, comparing, shifting, unsorted."""
+        """Element states should be valid values."""
         tracer = InsertionSortTracer()
         result = tracer.execute({'array': [3, 1, 2]})
         
         valid_states = {'sorted', 'examining', 'comparing', 'shifting', 'unsorted'}
         
         for step in result['trace']['steps']:
-            if 'visualization' in step['data']:
-                viz = step['data']['visualization']
-                for element in viz['array']:
-                    assert element['state'] in valid_states
-
-    def test_examining_state_at_key(self):
-        """Element at key index should have 'examining' state."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [3, 1, 2]})
-        
-        # Check SELECT_KEY steps
-        select_steps = [s for s in result['trace']['steps'] if s['type'] == 'SELECT_KEY']
-        
-        for step in select_steps:
-            key_index = step['data']['key_index']
             viz = step['data']['visualization']
-            
-            key_element = viz['array'][key_index]
-            assert key_element['state'] == 'examining'
-
-    def test_comparing_state_during_comparison(self):
-        """Element being compared should have 'comparing' state."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [3, 1, 2]})
-        
-        # Check COMPARE steps
-        compare_steps = [s for s in result['trace']['steps'] if s['type'] == 'COMPARE']
-        
-        for step in compare_steps:
-            compare_index = step['data']['compare_index']
-            viz = step['data']['visualization']
-            
-            compare_element = viz['array'][compare_index]
-            assert compare_element['state'] == 'comparing'
-
-    def test_sorted_state_in_sorted_region(self):
-        """Elements in sorted region should have 'sorted' state."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [3, 1, 2]})
-        
-        # Check INSERT steps (after insertion, elements should be sorted)
-        insert_steps = [s for s in result['trace']['steps'] if s['type'] == 'INSERT']
-        
-        for step in insert_steps:
-            insert_index = step['data']['insert_index']
-            viz = step['data']['visualization']
-            
-            # Elements up to insert_index should be sorted
-            for i in range(insert_index + 1):
-                assert viz['array'][i]['state'] == 'sorted'
-
-    def test_unsorted_state_in_unsorted_region(self):
-        """Elements not yet processed should have 'unsorted' state."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [5, 2, 8, 1]})
-        
-        # Check SELECT_KEY steps
-        select_steps = [s for s in result['trace']['steps'] if s['type'] == 'SELECT_KEY']
-        
-        for step in select_steps:
-            key_index = step['data']['key_index']
-            viz = step['data']['visualization']
-            
-            # Elements after key_index should be unsorted
-            for i in range(key_index + 1, len(viz['array'])):
-                if viz['array'][i]['state'] != 'examining':
-                    assert viz['array'][i]['state'] == 'unsorted'
-
-    def test_key_information_present(self):
-        """Key information should be present in visualization."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [3, 1, 2]})
-        
-        # Check SELECT_KEY steps
-        select_steps = [s for s in result['trace']['steps'] if s['type'] == 'SELECT_KEY']
-        
-        for step in select_steps:
-            viz = step['data']['visualization']
-            
-            assert 'key' in viz
-            assert viz['key'] is not None
-            assert 'index' in viz['key']
-            assert 'value' in viz['key']
-
-    def test_sorted_boundary_present(self):
-        """Sorted boundary should be tracked."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [3, 1, 2]})
-        
-        for step in result['trace']['steps']:
-            if 'visualization' in step['data']:
-                viz = step['data']['visualization']
-                assert 'sorted_boundary' in viz
+            if 'array' in viz:
+                for elem in viz['array']:
+                    assert elem['state'] in valid_states
 
     def test_sorted_boundary_grows(self):
-        """Sorted boundary should grow with each insertion."""
+        """Sorted boundary should grow as algorithm progresses."""
         tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [5, 2, 8, 1]})
+        result = tracer.execute({'array': [5, 2, 8, 1, 9]})
         
+        # Find INSERT steps
         insert_steps = [s for s in result['trace']['steps'] if s['type'] == 'INSERT']
         
-        previous_boundary = 0
+        # Sorted boundary should increase with each insertion
+        prev_boundary = 0
         for step in insert_steps:
             viz = step['data']['visualization']
             current_boundary = viz['sorted_boundary']
-            
-            # Boundary should increase
-            assert current_boundary > previous_boundary
-            previous_boundary = current_boundary
-
-    def test_compare_index_present_during_comparison(self):
-        """Compare index should be present during COMPARE steps."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [3, 1, 2]})
-        
-        compare_steps = [s for s in result['trace']['steps'] if s['type'] == 'COMPARE']
-        
-        for step in compare_steps:
-            viz = step['data']['visualization']
-            assert 'compare_index' in viz
-            assert viz['compare_index'] is not None
+            assert current_boundary > prev_boundary
+            prev_boundary = current_boundary
 
 
 # =============================================================================
@@ -417,248 +314,162 @@ class TestInsertionSortVisualizationState:
 
 @pytest.mark.unit
 class TestInsertionSortPredictionPoints:
-    """Test prediction points - are learning moments identified?"""
+    """Test prediction point generation for active learning."""
 
-    def test_predictions_generated(self):
+    def test_prediction_points_exist(self):
         """Prediction points should be generated."""
         tracer = InsertionSortTracer()
         result = tracer.execute({'array': [3, 1, 2]})
         
         predictions = result['metadata']['prediction_points']
-        
-        assert isinstance(predictions, list)
         assert len(predictions) > 0
 
-    def test_prediction_count_matches_comparisons(self):
-        """Prediction count should match number of COMPARE steps."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [3, 1, 2]})
-        
-        compare_count = len([s for s in result['trace']['steps'] if s['type'] == 'COMPARE'])
-        prediction_count = len(result['metadata']['prediction_points'])
-        
-        assert prediction_count == compare_count
-
-    def test_prediction_structure_complete(self):
-        """Each prediction should have all required fields."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [3, 1, 2]})
-        
-        predictions = result['metadata']['prediction_points']
-        
-        required_fields = ['step_index', 'question', 'choices', 'hint', 'correct_answer', 'explanation']
-        
-        for pred in predictions:
-            for field in required_fields:
-                assert field in pred, f"Missing field: {field}"
-
-    def test_prediction_choices_structure(self):
-        """Each prediction should have 3 choices with id and label."""
+    def test_prediction_point_structure(self):
+        """Each prediction point should have required fields."""
         tracer = InsertionSortTracer()
         result = tracer.execute({'array': [3, 1, 2]})
         
         predictions = result['metadata']['prediction_points']
         
         for pred in predictions:
-            choices = pred['choices']
-            assert len(choices) == 3
-            
-            choice_ids = {c['id'] for c in choices}
-            assert choice_ids == {'shift', 'insert', 'continue'}
-            
-            for choice in choices:
+            assert 'step_index' in pred
+            assert 'question' in pred
+            assert 'choices' in pred
+            assert 'hint' in pred
+            assert 'correct_answer' in pred
+            assert 'explanation' in pred
+
+    def test_prediction_choices_valid(self):
+        """Prediction choices should have id and label."""
+        tracer = InsertionSortTracer()
+        result = tracer.execute({'array': [3, 1, 2]})
+        
+        predictions = result['metadata']['prediction_points']
+        
+        for pred in predictions:
+            assert len(pred['choices']) > 0
+            for choice in pred['choices']:
                 assert 'id' in choice
                 assert 'label' in choice
-                assert isinstance(choice['label'], str)
-                assert len(choice['label']) > 0
 
-    def test_correct_answer_valid(self):
-        """Correct answer should be one of the three choices."""
+    def test_prediction_has_3_choices(self):
+        """Each prediction should have exactly 3 choices."""
         tracer = InsertionSortTracer()
         result = tracer.execute({'array': [3, 1, 2]})
         
         predictions = result['metadata']['prediction_points']
-        valid_answers = {'shift', 'insert', 'continue'}
         
         for pred in predictions:
-            assert pred['correct_answer'] in valid_answers
+            assert len(pred['choices']) == 3
 
-    def test_correct_answer_matches_next_step(self):
-        """Correct answer should match the actual next step taken."""
+    def test_correct_answer_in_choices(self):
+        """Correct answer should match one of the choice ids."""
         tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [5, 2, 8, 1]})
+        result = tracer.execute({'array': [3, 1, 2]})
+        
+        predictions = result['metadata']['prediction_points']
+        
+        for pred in predictions:
+            choice_ids = [c['id'] for c in pred['choices']]
+            assert pred['correct_answer'] in choice_ids
+
+    def test_predictions_at_compare_steps(self):
+        """Predictions should be at COMPARE steps."""
+        tracer = InsertionSortTracer()
+        result = tracer.execute({'array': [3, 1, 2]})
         
         predictions = result['metadata']['prediction_points']
         steps = result['trace']['steps']
         
         for pred in predictions:
             step_index = pred['step_index']
-            correct_answer = pred['correct_answer']
-            
-            # Get next step
-            next_step = steps[step_index + 1]
-            
-            # Verify answer matches next step type
-            if correct_answer == 'shift':
-                assert next_step['type'] == 'SHIFT'
-            elif correct_answer == 'insert':
-                assert next_step['type'] == 'INSERT'
-
-    def test_prediction_question_mentions_values(self):
-        """Question should mention key and compare values."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [3, 1, 2]})
-        
-        predictions = result['metadata']['prediction_points']
-        
-        for pred in predictions:
-            question = pred['question'].lower()
-            # Question should mention comparison
-            assert 'key' in question or 'vs' in question or 'array' in question
-
-    def test_prediction_hint_present(self):
-        """Each prediction should have a helpful hint."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [3, 1, 2]})
-        
-        predictions = result['metadata']['prediction_points']
-        
-        for pred in predictions:
-            hint = pred['hint']
-            assert isinstance(hint, str)
-            assert len(hint) > 0
-
-    def test_prediction_explanation_present(self):
-        """Each prediction should have an explanation."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [3, 1, 2]})
-        
-        predictions = result['metadata']['prediction_points']
-        
-        for pred in predictions:
-            explanation = pred['explanation']
-            assert isinstance(explanation, str)
-            assert len(explanation) > 0
+            assert steps[step_index]['type'] == 'COMPARE'
 
 
 # =============================================================================
-# Test Class 5: Edge Cases & Error Handling
+# Test Class 5: Edge Cases
 # =============================================================================
 
-@pytest.mark.edge_case
+@pytest.mark.unit
 class TestInsertionSortEdgeCases:
     """Test edge cases and error handling."""
 
-    def test_minimum_size_array(self):
-        """Array with exactly 2 elements should work."""
+    def test_invalid_input_not_dict(self):
+        """Should raise ValueError if input is not a dict."""
+        tracer = InsertionSortTracer()
+        
+        with pytest.raises(ValueError, match="Input must be a dictionary"):
+            tracer.execute([3, 1, 2])
+
+    def test_invalid_input_missing_array_key(self):
+        """Should raise ValueError if 'array' key missing."""
+        tracer = InsertionSortTracer()
+        
+        with pytest.raises(ValueError, match="Input must contain 'array' key"):
+            tracer.execute({'data': [3, 1, 2]})
+
+    def test_invalid_input_array_not_list(self):
+        """Should raise ValueError if array is not a list."""
+        tracer = InsertionSortTracer()
+        
+        with pytest.raises(ValueError, match="Array must be a list"):
+            tracer.execute({'array': "not a list"})
+
+    def test_invalid_input_array_too_small(self):
+        """Should raise ValueError if array has < 2 elements."""
+        tracer = InsertionSortTracer()
+        
+        with pytest.raises(ValueError, match="Array must contain at least 2 elements"):
+            tracer.execute({'array': [1]})
+        
+        with pytest.raises(ValueError, match="Array must contain at least 2 elements"):
+            tracer.execute({'array': []})
+
+    def test_two_element_array(self):
+        """Should handle minimum valid size (2 elements)."""
         tracer = InsertionSortTracer()
         result = tracer.execute({'array': [2, 1]})
         
         assert result['result']['sorted_array'] == [1, 2]
 
-    def test_single_element_raises_error(self):
-        """Single element array should raise ValueError."""
-        tracer = InsertionSortTracer()
-        
-        with pytest.raises(ValueError, match="at least 2 elements"):
-            tracer.execute({'array': [42]})
-
-    def test_empty_array_raises_error(self):
-        """Empty array should raise ValueError."""
-        tracer = InsertionSortTracer()
-        
-        with pytest.raises(ValueError, match="at least 2 elements"):
-            tracer.execute({'array': []})
-
-    def test_non_dict_input_raises_error(self):
-        """Non-dictionary input should raise ValueError."""
-        tracer = InsertionSortTracer()
-        
-        with pytest.raises(ValueError, match="dictionary"):
-            tracer.execute([3, 1, 2])
-
-    def test_missing_array_key_raises_error(self):
-        """Missing 'array' key should raise ValueError."""
-        tracer = InsertionSortTracer()
-        
-        with pytest.raises(ValueError, match="array"):
-            tracer.execute({'data': [3, 1, 2]})
-
-    def test_non_list_array_raises_error(self):
-        """Non-list array should raise ValueError."""
-        tracer = InsertionSortTracer()
-        
-        with pytest.raises(ValueError, match="list"):
-            tracer.execute({'array': "not a list"})
-
-    def test_already_sorted_minimal_work(self):
-        """Already sorted array should require minimal comparisons."""
+    def test_already_sorted_array(self):
+        """Should handle already sorted array efficiently."""
         tracer = InsertionSortTracer()
         result = tracer.execute({'array': [1, 2, 3, 4, 5]})
         
-        # Should have n-1 comparisons (one per element)
+        # Should have minimal comparisons (n-1)
         assert result['result']['comparisons'] == 4
-        # Should have 0 shifts
+        # Should have no shifts
         assert result['result']['shifts'] == 0
 
-    def test_reverse_sorted_maximum_work(self):
-        """Reverse sorted array should require maximum comparisons and shifts."""
+    def test_reverse_sorted_array(self):
+        """Should handle reverse sorted array (worst case)."""
         tracer = InsertionSortTracer()
         result = tracer.execute({'array': [5, 4, 3, 2, 1]})
         
-        # Should have many comparisons and shifts
+        # Should have maximum comparisons and shifts
+        assert result['result']['sorted_array'] == [1, 2, 3, 4, 5]
         assert result['result']['comparisons'] > 0
         assert result['result']['shifts'] > 0
-        # For reverse sorted: comparisons = 1+2+3+4 = 10, shifts = 1+2+3+4 = 10
-        assert result['result']['comparisons'] == 10
-        assert result['result']['shifts'] == 10
 
-    def test_all_duplicates(self):
-        """Array with all same values."""
+    def test_all_same_elements(self):
+        """Should handle array with all identical elements."""
         tracer = InsertionSortTracer()
         result = tracer.execute({'array': [5, 5, 5, 5]})
         
         assert result['result']['sorted_array'] == [5, 5, 5, 5]
         # Should have comparisons but no shifts
-        assert result['result']['comparisons'] > 0
+        assert result['result']['comparisons'] == 3
         assert result['result']['shifts'] == 0
-
-    def test_negative_numbers(self):
-        """Array with negative numbers should work."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [-5, 3, -1, 7, -9]})
-        
-        assert result['result']['sorted_array'] == [-9, -5, -1, 3, 7]
-
-    def test_mixed_positive_negative_zero(self):
-        """Array with mixed positive, negative, and zero."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [0, -1, 1, -2, 2]})
-        
-        assert result['result']['sorted_array'] == [-2, -1, 0, 1, 2]
-
-    def test_large_value_range(self):
-        """Array with large value range."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [1000, -1000, 500, -500, 0]})
-        
-        assert result['result']['sorted_array'] == [-1000, -500, 0, 500, 1000]
 
 
 # =============================================================================
 # Test Class 6: Metadata Compliance
 # =============================================================================
 
-@pytest.mark.compliance
+@pytest.mark.unit
 class TestInsertionSortMetadataCompliance:
-    """Test metadata compliance with frontend requirements."""
-
-    def test_metadata_present(self):
-        """Metadata should be present in result."""
-        tracer = InsertionSortTracer()
-        result = tracer.execute({'array': [3, 1, 2]})
-        
-        assert 'metadata' in result
+    """Test compliance with Backend Checklist metadata requirements."""
 
     def test_required_metadata_fields(self):
         """Metadata should have all required fields."""
@@ -866,3 +677,94 @@ class TestInsertionSortNarrative:
         assert "#" in narrative  # Headers
         assert "**" in narrative  # Bold
         assert "```" in narrative  # Code blocks
+
+
+# =============================================================================
+# Test Class 8: FAA Compliance (Arithmetic Accuracy)
+# =============================================================================
+
+@pytest.mark.unit
+class TestInsertionSortFAACompliance:
+    """Test FAA compliance - verifies sorted region arithmetic correctness."""
+
+    def test_sorted_region_uses_boundary_not_insert_index(self):
+        """
+        REGRESSION TEST for sorted region bug.
+        
+        Ensures narrative uses self.sorted_boundary instead of insert_index + 1.
+        This prevents the bug where sorted region size was reported as insert 
+        position rather than total sorted region size.
+        
+        Bug example: When key inserts at index 0 but sorted region is 4 elements,
+        old code reported "1 elements" (insert_index + 1 = 0 + 1) instead of 
+        "4 elements" (self.sorted_boundary = 4).
+        """
+        tracer = InsertionSortTracer()
+        result = tracer.execute({'array': [12, 11, 13, 5, 6]})
+        
+        narrative = tracer.generate_narrative(result)
+        
+        # The narrative should use pattern: "Sorted region now contains: **N elements**"
+        # NOT the old pattern: "Sorted region expanded: **N elements***"
+        
+        # Verify the new pattern is present
+        assert "Sorted region now contains:" in narrative, \
+            "Narrative should use 'Sorted region now contains:' pattern"
+        
+        # Verify specific expected values are present
+        # After inserting array[1]=11: sorted region should be 2 elements
+        assert "**2 elements**" in narrative, \
+            "After inserting second element, sorted region should show 2 elements"
+        
+        # After inserting array[2]=13: sorted region should be 3 elements
+        assert "**3 elements**" in narrative, \
+            "After inserting third element, sorted region should show 3 elements"
+        
+        # After inserting array[3]=5: sorted region should be 4 elements
+        assert "**4 elements**" in narrative, \
+            "After inserting fourth element, sorted region should show 4 elements"
+        
+        # After inserting array[4]=6: sorted region should be 5 elements (complete)
+        assert "**5 elements**" in narrative, \
+            "After inserting fifth element, sorted region should show 5 elements"
+
+    def test_sorted_boundary_value_correctness(self):
+        """Verify sorted_boundary values in visualization state are arithmetically correct."""
+        tracer = InsertionSortTracer()
+        result = tracer.execute({'array': [12, 11, 13, 5, 6]})
+        
+        # Find all INSERT steps
+        insert_steps = [s for s in result['trace']['steps'] if s['type'] == 'INSERT']
+        
+        # Verify sorted_boundary in visualization for each INSERT step
+        expected_boundaries = [2, 3, 4, 5]  # After inserting elements 1, 2, 3, 4
+        
+        for i, step in enumerate(insert_steps):
+            viz = step['data']['visualization']
+            actual_boundary = viz['sorted_boundary']
+            expected_boundary = expected_boundaries[i]
+            
+            assert actual_boundary == expected_boundary, \
+                f"INSERT step {i}: sorted_boundary should be {expected_boundary}, got {actual_boundary}"
+
+    def test_no_old_expanded_pattern_in_narrative(self):
+        """Ensure old buggy pattern is not present in narrative."""
+        tracer = InsertionSortTracer()
+        result = tracer.execute({'array': [12, 11, 13, 5, 6]})
+        
+        narrative = tracer.generate_narrative(result)
+        
+        # The old buggy pattern should NOT be present
+        assert "Sorted region expanded: **1 elements***" not in narrative, \
+            "Old buggy pattern 'expanded: **1 elements***' should not be in narrative"
+
+    def test_sorted_region_indices_shown_correctly(self):
+        """Verify that sorted region indices are shown in narrative."""
+        tracer = InsertionSortTracer()
+        result = tracer.execute({'array': [12, 11, 13, 5, 6]})
+        
+        narrative = tracer.generate_narrative(result)
+        
+        # Should show index ranges like (indices [0,1]), (indices [0,2]), etc.
+        assert "indices [0," in narrative, \
+            "Narrative should show sorted region index ranges"

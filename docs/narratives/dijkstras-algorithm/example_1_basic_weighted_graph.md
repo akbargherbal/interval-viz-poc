@@ -44,6 +44,8 @@ Queue before pop: `[(0, 'A')]`
 - Mark **A** as visited (distance is now finalized)
 - Explore all neighbors of **A** to potentially improve their distances
 
+**Visited Set:** {A}
+
 ---
 
 ## Step 2: 🔍 Visit node 'A' (distance: 0) - checking 2 neighbor(s)
@@ -172,7 +174,7 @@ Queue before pop: `[(2, 'C'), (4, 'B')]`
 - Mark **C** as visited (distance is now finalized)
 - Explore all neighbors of **C** to potentially improve their distances
 
-**Visited Set:** {A}
+**Visited Set:** {A, C}
 
 ---
 
@@ -364,7 +366,7 @@ Queue before pop: `[(3, 'B'), (4, 'B'), (12, 'E'), (10, 'D')]`
 - Mark **B** as visited (distance is now finalized)
 - Explore all neighbors of **B** to potentially improve their distances
 
-**Visited Set:** {A, C}
+**Visited Set:** {A, B, C}
 
 ---
 
@@ -462,7 +464,7 @@ Queue before pop: `[(8, 'D'), (10, 'D'), (12, 'E')]`
 - Mark **D** as visited (distance is now finalized)
 - Explore all neighbors of **D** to potentially improve their distances
 
-**Visited Set:** {A, B, C}
+**Visited Set:** {A, B, C, D}
 
 ---
 
@@ -560,7 +562,7 @@ Queue before pop: `[(10, 'E'), (12, 'E')]`
 - Mark **E** as visited (distance is now finalized)
 - Explore all neighbors of **E** to potentially improve their distances
 
-**Visited Set:** {A, B, C, D}
+**Visited Set:** {A, B, C, D, E}
 
 ---
 

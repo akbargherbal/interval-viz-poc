@@ -281,13 +281,13 @@ Height:   8   6   2   5   4   8
 **Decision: Move Right Pointer**
 
 **Comparison:** Left height (8) vs Right height (8)
-- Compare: 8 < 8 ✓
-- Conclusion: Right side is the limiting factor (shorter wall)
+- Compare: 8 = 8
+- Conclusion: Heights are equal - either pointer can be moved
 
 **Reasoning:**
-- Current container height is limited by right side (8)
-- Moving left pointer would only decrease width, keeping same height limit
-- Moving right pointer might find a taller wall, potentially increasing area
+- Current container height is 8 (both walls are same height)
+- Moving either pointer would only decrease width, keeping same height limit
+- We choose to move right pointer (arbitrary choice when heights are equal)
 
 **Pointer Update:**
 - Left pointer: 1 (unchanged)

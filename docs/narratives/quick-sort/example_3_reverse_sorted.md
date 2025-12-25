@@ -116,11 +116,11 @@
 ## Step 7: 🔄 Place pivot in final position: swap arr[0] ↔ arr[4]: 5 ↔ 1
 
 **Swap Operation:**
-- Position 1: arr[0] = 1
-- Position 2: arr[4] = 5
+- Position 1: arr[0] = 5
+- Position 2: arr[4] = 1
 - **Action:** Swap arr[0] ↔ arr[4]
 - **Reason:** Place pivot 1 in its final sorted position
-- **Result:** Pivot now at index 0 (all left < pivot, all right ≥ pivot)
+- **Result:** Pivot 1 now at index 0 (all left < 1, all right ≥ 1)
 
 ---
 
@@ -328,11 +328,11 @@
 ## Step 23: 🔄 Place pivot in final position: swap arr[1] ↔ arr[3]: 4 ↔ 2
 
 **Swap Operation:**
-- Position 1: arr[1] = 2
-- Position 2: arr[3] = 4
+- Position 1: arr[1] = 4
+- Position 2: arr[3] = 2
 - **Action:** Swap arr[1] ↔ arr[3]
 - **Reason:** Place pivot 2 in its final sorted position
-- **Result:** Pivot now at index 1 (all left < pivot, all right ≥ pivot)
+- **Result:** Pivot 2 now at index 1 (all left < 2, all right ≥ 2)
 
 ---
 

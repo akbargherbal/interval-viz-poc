@@ -5,14 +5,19 @@ Implements interval merging with complete trace generation for step-by-step
 visualization on a timeline. Sorts intervals by start time, then merges
 overlapping intervals by comparing each interval with the last merged interval.
 
-VERSION: 2.1 - Backend Checklist v2.2 Compliance
-- Added Frontend Visualization Hints section to narrative
-- Explicit arithmetic in all comparisons
-- Result field traceability (merged list construction)
+VERSION: 2.2 - Bug Fix: Mutable Reference in Trace Data
+- FIXED: Line 395 - Create copy of last_merged to prevent retroactive mutation
+- Previous bug: Trace recorded reference to list that was later mutated
+- Impact: Step 1 showed post-merge state ([1,6]) instead of pre-merge state ([1,3])
 """
 
 from typing import Any, List, Dict
-from .base_tracer import AlgorithmTracer
+
+try:
+    from .base_tracer import AlgorithmTracer
+except ImportError:
+    # For standalone testing
+    from algorithms.base_tracer import AlgorithmTracer
 
 
 class MergeIntervalsTracer(AlgorithmTracer):
@@ -191,10 +196,6 @@ class MergeIntervalsTracer(AlgorithmTracer):
                 if 'visualization' in data:
                     viz = data['visualization']
                     narrative += f"**Timeline State:**\n"
-                    # Get current index from visualization or calculate from merged/pending counts
-                    current_idx = viz.get('current_index', None)
-                    if current_idx is not None:
-                        narrative += f"- Examining: Interval {current_idx + 1}\n"
                     narrative += f"- Merged so far: {viz['merged_count']}\n"
                     narrative += f"- Pending: {viz['pending_count']}\n\n"
 
@@ -221,18 +222,6 @@ class MergeIntervalsTracer(AlgorithmTracer):
                 narrative += f"covers both original intervals completely. If current interval is fully enclosed "
                 narrative += f"(ends before last ends), we keep the larger end time.\n\n"
 
-                # Show current merged list from visualization data
-                if 'visualization' in data:
-                    viz = data['visualization']
-                    # Get merged intervals from call stack state
-                    merged_intervals = [item['interval'] for item in viz.get('call_stack_state', []) 
-                                       if item.get('type') in ['merged', 'current_merged']]
-                    if merged_intervals:
-                        narrative += f"**Current Merged List:**\n"
-                        for i, interval in enumerate(merged_intervals, 1):
-                            narrative += f"- Merged {i}: [{interval[0]}, {interval[1]}]\n"
-                        narrative += "\n"
-
             elif step_type == "ADD_NEW":
                 current = data['current_interval']
 
@@ -241,21 +230,9 @@ class MergeIntervalsTracer(AlgorithmTracer):
                 narrative += f"- This interval does not overlap with the last merged interval\n"
                 narrative += f"- Added as separate interval to result\n\n"
 
-                # Show current merged list from visualization data
-                if 'visualization' in data:
-                    viz = data['visualization']
-                    # Get merged intervals from call stack state
-                    merged_intervals = [item['interval'] for item in viz.get('call_stack_state', []) 
-                                       if item.get('type') in ['merged', 'current_merged']]
-                    if merged_intervals:
-                        narrative += f"**Current Merged List:**\n"
-                        for i, interval in enumerate(merged_intervals, 1):
-                            narrative += f"- Merged {i}: [{interval[0]}, {interval[1]}]\n"
-                        narrative += "\n"
-
             narrative += "---\n\n"
 
-        # Summary
+        # Execution summary
         narrative += "## Execution Summary\n\n"
         narrative += f"**Input:** {input_size} intervals\n"
         narrative += f"**Output:** {len(result['merged_intervals'])} merged intervals\n"
@@ -271,8 +248,10 @@ class MergeIntervalsTracer(AlgorithmTracer):
         narrative += f"- Space Complexity: O(n) - for storing merged result\n"
         narrative += f"- Merge operations: {result['merge_count']} (out of {input_size - 1} possible)\n\n"
 
-        # Add Frontend Visualization Hints section (Backend Checklist v2.2)
-        narrative += "---\n\n## 🎨 Frontend Visualization Hints\n\n"
+        narrative += "---\n\n"
+
+        # Frontend Visualization Hints
+        narrative += "## 🎨 Frontend Visualization Hints\n\n"
         
         narrative += "### Primary Metrics to Emphasize\n\n"
         narrative += "- **Merged Count** (`merged_count`) - Shows progressive building of result\n"
@@ -302,15 +281,15 @@ class MergeIntervalsTracer(AlgorithmTracer):
         narrative += "```\n\n"
         
         narrative += "### Algorithm-Specific Guidance\n\n"
-        narrative += "Merge Intervals is fundamentally about **temporal overlap detection**. "
-        narrative += "The most important visualization is the **timeline itself** - showing intervals as horizontal bars "
-        narrative += "makes overlaps visually obvious. The key pedagogical moment is the **comparison step** "
-        narrative += "(current.start <= last.end) - this should be highlighted with visual indicators showing "
-        narrative += "the two values being compared. When a merge happens, animate the **extension** of the last interval's "
-        narrative += "end time to show how the intervals combine. Use color coding to show the **state progression**: "
-        narrative += "pending (gray) → examining (yellow) → merged (green) or new_interval (blue). "
-        narrative += "The call stack visualization helps students track which interval is currently being processed. "
-        narrative += "Consider showing a **before/after comparison** for merge operations to emphasize the transformation.\n"
+        narrative += "Merge Intervals is fundamentally about **temporal overlap detection**. The most important "
+        narrative += "visualization is the **timeline itself** - showing intervals as horizontal bars makes overlaps "
+        narrative += "visually obvious. The key pedagogical moment is the **comparison step** (current.start <= last.end) "
+        narrative += "- this should be highlighted with visual indicators showing the two values being compared. "
+        narrative += "When a merge happens, animate the **extension** of the last interval's end time to show how "
+        narrative += "the intervals combine. Use color coding to show the **state progression**: pending (gray) → "
+        narrative += "examining (yellow) → merged (green) or new_interval (blue). The call stack visualization helps "
+        narrative += "students track which interval is currently being processed. Consider showing a **before/after "
+        narrative += "comparison** for merge operations to emphasize the transformation.\n"
 
         return narrative
 
@@ -392,7 +371,8 @@ class MergeIntervalsTracer(AlgorithmTracer):
             self.current_index = i
             self.current_interval = self.sorted_intervals[i]
             current_start, current_end = self.current_interval
-            last_merged = self.merged[-1]
+            # BUG FIX: Create copy to prevent retroactive mutation in trace data
+            last_merged = list(self.merged[-1])
             last_start, last_end = last_merged
 
             # Check for overlap

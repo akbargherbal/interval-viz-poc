@@ -131,22 +131,22 @@
 ## Step 8: 🔄 Swap arr[0] ↔ arr[4]: 10 ↔ 1 (move 1 to left partition)
 
 **Swap Operation:**
-- Position 1: arr[0] = 1
-- Position 2: arr[4] = 10
+- Position 1: arr[0] = 10
+- Position 2: arr[4] = 1
 - **Action:** Swap arr[0] ↔ arr[4]
 - **Reason:** Move 1 to left partition (< pivot)
-- **Result:** arr[0] = 1, arr[4] = 10
+- **Result:** arr[0] now contains 1, arr[4] now contains 10
 
 ---
 
 ## Step 9: 🔄 Place pivot in final position: swap arr[1] ↔ arr[5]: 7 ↔ 5
 
 **Swap Operation:**
-- Position 1: arr[1] = 5
-- Position 2: arr[5] = 7
+- Position 1: arr[1] = 7
+- Position 2: arr[5] = 5
 - **Action:** Swap arr[1] ↔ arr[5]
 - **Reason:** Place pivot 5 in its final sorted position
-- **Result:** Pivot now at index 1 (all left < pivot, all right ≥ pivot)
+- **Result:** Pivot 5 now at index 1 (all left < 5, all right ≥ 5)
 
 ---
 
@@ -241,11 +241,11 @@
 ## Step 16: 🔄 Place pivot in final position: swap arr[2] ↔ arr[5]: 8 ↔ 7
 
 **Swap Operation:**
-- Position 1: arr[2] = 7
-- Position 2: arr[5] = 8
+- Position 1: arr[2] = 8
+- Position 2: arr[5] = 7
 - **Action:** Swap arr[2] ↔ arr[5]
 - **Reason:** Place pivot 7 in its final sorted position
-- **Result:** Pivot now at index 2 (all left < pivot, all right ≥ pivot)
+- **Result:** Pivot 7 now at index 2 (all left < 7, all right ≥ 7)
 
 ---
 
@@ -325,11 +325,11 @@
 ## Step 22: 🔄 Place pivot in final position: swap arr[3] ↔ arr[5]: 9 ↔ 8
 
 **Swap Operation:**
-- Position 1: arr[3] = 8
-- Position 2: arr[5] = 9
+- Position 1: arr[3] = 9
+- Position 2: arr[5] = 8
 - **Action:** Swap arr[3] ↔ arr[5]
 - **Reason:** Place pivot 8 in its final sorted position
-- **Result:** Pivot now at index 3 (all left < pivot, all right ≥ pivot)
+- **Result:** Pivot 8 now at index 3 (all left < 8, all right ≥ 8)
 
 ---
 
@@ -396,11 +396,11 @@
 ## Step 27: 🔄 Place pivot in final position: swap arr[4] ↔ arr[5]: 10 ↔ 9
 
 **Swap Operation:**
-- Position 1: arr[4] = 9
-- Position 2: arr[5] = 10
+- Position 1: arr[4] = 10
+- Position 2: arr[5] = 9
 - **Action:** Swap arr[4] ↔ arr[5]
 - **Reason:** Place pivot 9 in its final sorted position
-- **Result:** Pivot now at index 4 (all left < pivot, all right ≥ pivot)
+- **Result:** Pivot 9 now at index 4 (all left < 9, all right ≥ 9)
 
 ---
 

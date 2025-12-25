@@ -45,7 +45,7 @@ Value:  -2   1  -3   4  -1   2   1  -5   4
 ```
 Index:   0   1   2   3   4   5   6   7   8
 Value:  -2   1  -3   4  -1   2   1  -5   4
-        [M]                        
+       [M]                        
 ```
 *M = Maximum subarray*
 
@@ -98,7 +98,7 @@ Value:  -2   1  -3   4  -1   2   1  -5   4
 ```
 Index:   0   1   2   3   4   5   6   7   8
 Value:  -2   1  -3   4  -1   2   1  -5   4
-           [M]                     
+          [M]                     
 ```
 *M = Maximum subarray*
 
@@ -179,7 +179,7 @@ Value:  -2   1  -3   4  -1   2   1  -5   4
 ```
 Index:   0   1   2   3   4   5   6   7   8
 Value:  -2   1  -3   4  -1   2   1  -5   4
-                 [M]               
+                [M]               
 ```
 *M = Maximum subarray*
 
@@ -260,7 +260,7 @@ Value:  -2   1  -3   4  -1   2   1  -5   4
 ```
 Index:   0   1   2   3   4   5   6   7   8
 Value:  -2   1  -3   4  -1   2   1  -5   4
-                 [M]  M M]         
+                [M   M M]         
 ```
 *M = Maximum subarray*
 
@@ -313,7 +313,7 @@ Value:  -2   1  -3   4  -1   2   1  -5   4
 ```
 Index:   0   1   2   3   4   5   6   7   8
 Value:  -2   1  -3   4  -1   2   1  -5   4
-                 [M]  M  M M]      
+                [M   M  M M]      
 ```
 *M = Maximum subarray*
 

@@ -1,4 +1,3 @@
-
 """
 Bubble Sort algorithm tracer for educational visualization.
 
@@ -184,17 +183,13 @@ class BubbleSortTracer(AlgorithmTracer):
                 narrative += f"- ELSE: No swap (correct order, continue)\n\n"
 
                 narrative += "**Current Comparison Visualization:**\n```\n"
-                # Show only relevant portion of array
-                start_idx = max(0, i - 2)
-                end_idx = min(len(viz['array']), j + 3)
-                relevant_elements = viz['array'][start_idx:end_idx]
-                
-                narrative += "Index: " + " ".join(f"{elem['index']:3d}" for elem in relevant_elements) + "\n"
-                narrative += "Value: " + " ".join(f"{elem['value']:3d}" for elem in relevant_elements) + "\n"
+                # Show complete array to maintain arithmetic consistency
+                narrative += "Index: " + " ".join(f"{elem['index']:3d}" for elem in viz['array']) + "\n"
+                narrative += "Value: " + " ".join(f"{elem['value']:3d}" for elem in viz['array']) + "\n"
                 
                 # Show comparison pointers
                 pointer_line = "       "
-                for elem in relevant_elements:
+                for elem in viz['array']:
                     if elem['index'] == i:
                         pointer_line += "  ^"
                     elif elem['index'] == j:
@@ -204,7 +199,7 @@ class BubbleSortTracer(AlgorithmTracer):
                 narrative += pointer_line + "\n"
                 
                 label_line = "       "
-                for elem in relevant_elements:
+                for elem in viz['array']:
                     if elem['index'] == i:
                         label_line += "  L"
                     elif elem['index'] == j:

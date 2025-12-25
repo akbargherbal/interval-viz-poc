@@ -1,4 +1,3 @@
-
 """
 Meeting Rooms II algorithm tracer for educational visualization.
 
@@ -10,9 +9,11 @@ When a new meeting starts, check if earliest ending meeting has finished (heap t
 If finished, reuse that room (pop heap). Otherwise, allocate new room.
 Heap size at any point = number of rooms needed.
 
-VERSION: 2.1 - Backend Checklist v2.2 Compliance
-- Added Frontend Visualization Hints section to narrative
-- Follows Universal Pedagogical Principles + Timeline extensions
+VERSION: 2.2 - FAA COMPLIANCE FIX + INPUT VALIDATION
+- CRITICAL FIX: Heap now stores (end_time, room_id) tuples instead of just end_time
+- Room assignments now traceable and temporally exclusive
+- Fixes FAA audit failures: room assignment contradictions eliminated
+- Added comprehensive input validation (fail loudly on invalid input)
 """
 
 from typing import Any, List, Dict
@@ -26,7 +27,7 @@ class MeetingRoomsTracer(AlgorithmTracer):
 
     Visualization shows:
     - Timeline of all meetings grouped by assigned room
-    - Min-heap state showing earliest ending meetings
+    - Min-heap state showing earliest ending meetings WITH room tracking
     - Current meeting being processed
     - Room allocation decisions
 
@@ -37,7 +38,7 @@ class MeetingRoomsTracer(AlgorithmTracer):
         super().__init__()
         self.intervals = []
         self.sorted_intervals = []
-        self.heap = []
+        self.heap = []  # Now stores (end_time, room_id) tuples
         self.room_assignments = {}  # interval_id -> room_number
         self.current_interval_id = None
         self.rooms_used = 0
@@ -48,7 +49,7 @@ class MeetingRoomsTracer(AlgorithmTracer):
 
         Returns timeline visualization with:
         - all_intervals: All meetings with states (pending, examining, scheduled)
-        - heap_state: Current min-heap of end times
+        - heap_state: Current min-heap of end times (extracted from tuples)
         - room_assignments: Which room each meeting is in
         - rooms_used: Total rooms allocated so far
         """
@@ -72,9 +73,13 @@ class MeetingRoomsTracer(AlgorithmTracer):
                 'room': self.room_assignments.get(i, None)
             })
 
+        # Extract end times from heap for visualization
+        # Heap contains (end_time, room_id) tuples, but frontend expects just end times
+        heap_end_times = sorted([end_time for end_time, _ in self.heap]) if self.heap else []
+
         return {
             'all_intervals': all_intervals,
-            'heap_state': sorted(self.heap) if self.heap else [],
+            'heap_state': heap_end_times,
             'room_assignments': dict(self.room_assignments),
             'rooms_used': self.rooms_used
         }
@@ -181,121 +186,110 @@ class MeetingRoomsTracer(AlgorithmTracer):
                 interval_start = data['interval_start']
                 interval_end = data['interval_end']
                 room_number = data['room_number']
-                reused = data['reused']
-                old_heap_top = data.get('old_heap_top', None)
-
-                narrative += f"**Meeting:** ID {interval_id} [{interval_start}, {interval_end}]\n"
-                narrative += f"**Assigned to:** Room {room_number}\n\n"
+                reused = data.get('reused', False)
 
                 if reused:
+                    old_heap_top = data['old_heap_top']
+                    freed_room = data['freed_room']  # NEW: Which room was freed
+                    
+                    narrative += f"**Meeting:** ID {interval_id} [{interval_start}, {interval_end}]\n"
+                    narrative += f"**Assigned to:** Room {room_number}\n\n"
+                    
                     narrative += "**Room Reuse:**\n"
-                    narrative += f"- Previous meeting in this room ended at {old_heap_top}\n"
+                    narrative += f"- Heap popped: end time {old_heap_top} (Room {freed_room})\n"
+                    narrative += f"- Previous meeting in Room {room_number} ended at {old_heap_top}\n"
                     narrative += f"- Current meeting starts at {interval_start}\n"
                     narrative += f"- Gap: {interval_start - old_heap_top} time units\n"
-                    narrative += "- Room was freed and is now reused\n\n"
+                    narrative += f"- **Room {room_number}** is now free and reused\n\n"
                 else:
-                    narrative += "**New Room Allocation:**\n"
-                    narrative += "- No existing rooms were available\n"
-                    narrative += f"- Allocated new Room {room_number}\n"
-                    narrative += f"- Total rooms used: **{viz['rooms_used']}**\n\n"
+                    narrative += f"**Meeting:** ID {interval_id} [{interval_start}, {interval_end}]\n"
+                    narrative += f"**Decision:** Allocate **new Room {room_number}**\n\n"
 
-                narrative += "**Heap Update:**\n"
-                narrative += f"- Add meeting end time ({interval_end}) to heap\n"
-                narrative += f"- Updated heap: {viz['heap_state']}\n"
-                narrative += f"- Heap size: {len(viz['heap_state'])} (= rooms currently in use)\n\n"
+                    heap_top_val = data.get('heap_top')
+                    heap_empty = data.get('heap_empty', False)
+                    
+                    if heap_empty:
+                        narrative += "**Reason:**\n"
+                        narrative += "- Heap is empty (first meeting being scheduled)\n"
+                        narrative += "- Must allocate first room\n\n"
+                    else:
+                        narrative += "**Reason:**\n"
+                        narrative += f"- Meeting starts at {interval_start}\n"
+                        narrative += f"- Earliest ending meeting finishes at {heap_top_val}\n"
+                        narrative += f"- Comparison: {interval_start} < {heap_top_val}\n"
+                        narrative += "- All rooms are occupied, need new room\n\n"
 
-                narrative += "**Room Assignments So Far:**\n\n"
-                narrative += "| Meeting ID | Start | End | Room |\n"
-                narrative += "|------------|-------|-----|------|\n"
-                scheduled = [iv for iv in viz['all_intervals'] if iv['state'] == 'scheduled']
-                for interval in sorted(scheduled, key=lambda x: x['start']):
-                    narrative += f"| {interval['id']} | {interval['start']} | {interval['end']} | {interval['room']} |\n"
-                narrative += "\n"
-
-            elif step_type == "NEW_ROOM":
-                interval_id = data['interval_id']
-                interval_start = data['interval_start']
-                interval_end = data['interval_end']
-                room_number = data['room_number']
-
-                narrative += f"**Meeting:** ID {interval_id} [{interval_start}, {interval_end}]\n"
-                narrative += f"**Decision:** Allocate **new Room {room_number}**\n\n"
-
-                narrative += "**Reason:**\n"
-                if data.get('heap_empty', False):
-                    narrative += "- Heap is empty (first meeting being scheduled)\n"
-                    narrative += "- Must allocate first room\n\n"
-                else:
-                    narrative += f"- Meeting starts at {interval_start}\n"
-                    narrative += f"- Earliest ending meeting finishes at {data.get('heap_top', 'N/A')}\n"
-                    narrative += f"- Comparison: {interval_start} < {data.get('heap_top', 'N/A')}\n"
-                    narrative += "- All rooms are occupied, need new room\n\n"
-
-                narrative += f"**Rooms Used:** {viz['rooms_used']}\n\n"
+                    narrative += f"**Rooms Used:** {viz['rooms_used']}\n\n"
 
             elif step_type == "UPDATE_HEAP":
-                interval_id = data['interval_id']
                 interval_end = data['interval_end']
+                heap_size = data['heap_size']
 
                 narrative += f"**Heap Operation:** Add end time {interval_end} to min-heap\n\n"
-
                 narrative += "**Purpose of Heap:**\n"
                 narrative += "- Heap tracks end times of all currently scheduled meetings\n"
                 narrative += "- Top of heap = earliest ending meeting\n"
                 narrative += "- Heap size = number of rooms currently in use\n\n"
 
                 narrative += f"**Updated Heap:** {viz['heap_state']}\n"
-                narrative += f"**Heap Size:** {len(viz['heap_state'])} rooms in use\n\n"
+                narrative += f"**Heap Size:** {heap_size} rooms in use\n\n"
+
+            elif step_type == "FINAL_RESULT":
+                min_rooms = result['min_rooms']
+                room_assignments = result['room_assignments']
+
+                narrative += f"**Minimum Rooms Required:** {min_rooms}\n\n"
+
+                narrative += "**Final Room Assignments:**\n\n"
+                
+                # Group meetings by room
+                rooms_dict = {}
+                for interval_id, room in room_assignments.items():
+                    if room not in rooms_dict:
+                        rooms_dict[room] = []
+                    # Get interval details
+                    interval = self.intervals[interval_id]
+                    rooms_dict[room].append({
+                        'id': interval_id,
+                        'start': interval[0],
+                        'end': interval[1]
+                    })
+
+                # Display each room's timeline
+                for room in sorted(rooms_dict.keys()):
+                    narrative += f"**Room {room}:**\n"
+                    meetings = sorted(rooms_dict[room], key=lambda x: x['start'])
+                    for meeting in meetings:
+                        narrative += f"- Meeting {meeting['id']}: [{meeting['start']}, {meeting['end']}]\n"
+                    narrative += "\n"
+
+                narrative += "**Algorithm Efficiency:**\n"
+                narrative += f"- Time Complexity: O(n log n) where n = {len(self.intervals)}\n"
+                narrative += "  - Sorting: O(n log n)\n"
+                narrative += "  - Heap operations: O(n log n) for n insertions/deletions\n"
+                narrative += "- Space Complexity: O(n) for heap storage\n"
+                narrative += "- Optimal Solution: Uses minimum possible rooms (greedy algorithm)\n\n"
+
+                narrative += "**Key Insight:**\n"
+                narrative += "The heap size at any point represents the number of rooms in use. The maximum heap size throughout execution equals the minimum rooms needed. By always reusing the earliest-ending room when possible, we ensure optimal room utilization.\n\n"
 
             narrative += "---\n\n"
 
-        # Summary
-        narrative += "## Execution Summary\n\n"
-        narrative += f"**Minimum Rooms Required:** {result['min_rooms']}\n\n"
-
-        narrative += "**Final Room Assignments:**\n\n"
-        # Group by room
-        room_groups = {}
-        for interval_id, room_num in result['room_assignments'].items():
-            if room_num not in room_groups:
-                room_groups[room_num] = []
-            interval = self.intervals[interval_id]
-            room_groups[room_num].append((interval_id, interval[0], interval[1]))
-
-        for room_num in sorted(room_groups.keys()):
-            narrative += f"**Room {room_num}:**\n"
-            meetings = sorted(room_groups[room_num], key=lambda x: x[1])
-            for meeting_id, start, end in meetings:
-                narrative += f"- Meeting {meeting_id}: [{start}, {end}]\n"
-            narrative += "\n"
-
-        narrative += "**Algorithm Efficiency:**\n"
-        narrative += f"- Time Complexity: O(n log n) where n = {len(self.intervals)}\n"
-        narrative += "  - Sorting: O(n log n)\n"
-        narrative += "  - Heap operations: O(n log n) for n insertions/deletions\n"
-        narrative += f"- Space Complexity: O(n) for heap storage\n"
-        narrative += f"- Optimal Solution: Uses minimum possible rooms (greedy algorithm)\n\n"
-
-        narrative += "**Key Insight:**\n"
-        narrative += "The heap size at any point represents the number of rooms in use. "
-        narrative += "The maximum heap size throughout execution equals the minimum rooms needed. "
-        narrative += "By always reusing the earliest-ending room when possible, we ensure optimal room utilization.\n\n"
-
-        # Add Frontend Visualization Hints section (Backend Checklist v2.2)
-        narrative += "---\n\n## 🎨 Frontend Visualization Hints\n\n"
+        # Frontend Visualization Hints
+        narrative += "## 🎨 Frontend Visualization Hints\n\n"
         
         narrative += "### Primary Metrics to Emphasize\n\n"
         narrative += "- **Rooms Used** (`rooms_used`) - The core result metric, shows minimum rooms needed\n"
         narrative += "- **Heap Size** (`heap_state.length`) - Real-time indicator of concurrent meetings\n"
         narrative += "- **Current Meeting** (`current_interval_id`) - Which meeting is being scheduled\n\n"
-        
+
         narrative += "### Visualization Priorities\n\n"
         narrative += "1. **Timeline grouping by room** - Show meetings stacked vertically by room assignment\n"
         narrative += "2. **Heap visualization** - Display min-heap as a priority queue showing earliest end times\n"
         narrative += "3. **Reuse vs. new room decisions** - Highlight when a room is reused (green) vs. new allocation (blue)\n"
         narrative += "4. **Temporal overlap** - Emphasize when meetings overlap (why new rooms are needed)\n"
         narrative += "5. **Animate heap operations** - Show pop (reuse) and push (schedule) operations clearly\n\n"
-        
+
         narrative += "### Key JSON Paths\n\n"
         narrative += "```\n"
         narrative += "step.data.visualization.all_intervals[*].id\n"
@@ -308,67 +302,61 @@ class MeetingRoomsTracer(AlgorithmTracer):
         narrative += "step.data.visualization.rooms_used              // total rooms allocated\n"
         narrative += "step.data.interval_id                           // current meeting being processed\n"
         narrative += "step.data.heap_top                              // earliest end time (for comparisons)\n"
+        narrative += "step.data.freed_room                            // room that was just freed (reuse steps)\n"
         narrative += "```\n\n"
-        
+
         narrative += "### Algorithm-Specific Guidance\n\n"
-        narrative += "Meeting Rooms II is fundamentally about **resource allocation over time**. "
-        narrative += "The most pedagogically powerful visualization is a **Gantt chart / timeline** showing meetings grouped by room. "
-        narrative += "Students should see:\n"
+        narrative += "Meeting Rooms II is fundamentally about **resource allocation over time**. The most pedagogically powerful visualization is a **Gantt chart / timeline** showing meetings grouped by room. Students should see:\n\n"
         narrative += "1. **Why overlaps force new rooms** - When meeting A hasn't ended but meeting B starts\n"
         narrative += "2. **How the heap enables reuse** - The earliest-ending meeting's room becomes available first\n"
         narrative += "3. **The greedy optimality** - Always reusing the earliest-free room minimizes total rooms\n\n"
-        narrative += "Consider using **color coding**: pending meetings (gray), examining (yellow), scheduled (green/blue). "
-        narrative += "Animate the **heap pop operation** when reusing a room - show the end time being removed and the room becoming available. "
-        narrative += "The heap visualization should be **synchronized with the timeline** - when heap size grows, show new room allocation; "
-        narrative += "when heap size shrinks, show room reuse. This dual visualization (timeline + heap) makes the algorithm's logic transparent.\n"
+        narrative += "Consider using **color coding**: pending meetings (gray), examining (yellow), scheduled (green/blue). Animate the **heap pop operation** when reusing a room - show the end time being removed and the room becoming available. The heap visualization should be **synchronized with the timeline** - when heap size grows, show new room allocation; when heap size shrinks, show room reuse. This dual visualization (timeline + heap) makes the algorithm's logic transparent.\n\n"
 
         return narrative
 
     def execute(self, input_data: Any) -> dict:
         """
-        Execute Meeting Rooms II algorithm with trace generation.
+        Execute Meeting Rooms II algorithm with complete trace generation.
 
         Args:
-            input_data: dict with key:
-                - 'intervals': List of [start, end] pairs (integers)
+            input_data: Dictionary with 'intervals' key containing list of [start, end] pairs
 
         Returns:
-            Standardized trace result with:
-                - result: {'min_rooms': int, 'room_assignments': dict}
-                - trace: Complete step-by-step execution
-                - metadata: Includes visualization_type='timeline'
-
+            Complete trace result with steps, metadata, and final result
+            
         Raises:
-            ValueError: If input is invalid
+            ValueError: If input validation fails
         """
-        # Validate input
+        # Validation 1: Input must be a dictionary
         if not isinstance(input_data, dict):
-            raise ValueError("Input must be a dictionary")
+            raise ValueError("Input must be a dictionary with 'intervals' key")
+        
+        # Validation 2: 'intervals' key must be present
         if 'intervals' not in input_data:
-            raise ValueError("Input must contain 'intervals' key")
-
-        self.intervals = input_data['intervals']
-
+            raise ValueError("Input dictionary must contain 'intervals' key")
+        
+        # Validation 3: Intervals list cannot be empty
+        self.intervals = input_data.get('intervals', [])
         if not self.intervals:
             raise ValueError("Intervals list cannot be empty")
-
-        # Validate intervals
+        
+        # Validation 4: Each interval must be a list/tuple with exactly 2 elements
         for i, interval in enumerate(self.intervals):
             if not isinstance(interval, (list, tuple)) or len(interval) != 2:
-                raise ValueError(f"Interval {i} must be [start, end] pair")
+                raise ValueError(f"Each interval must be a list or tuple of [start, end]. Invalid at index {i}")
+        
+        # Validation 5: Start and end must be integers
+        for i, interval in enumerate(self.intervals):
             start, end = interval
             if not isinstance(start, int) or not isinstance(end, int):
-                raise ValueError(f"Interval {i} must contain integers")
+                raise ValueError(f"Interval times must be integers. Invalid at index {i}: [{start}, {end}]")
+        
+        # Validation 6: Start must be less than end (no zero-duration or negative-duration meetings)
+        for i, interval in enumerate(self.intervals):
+            start, end = interval
             if start >= end:
-                raise ValueError(f"Interval {i} invalid: start ({start}) must be < end ({end})")
+                raise ValueError(f"invalid interval at index {i}: start ({start}) must be less than end ({end})")
 
-        # Initialize
-        self.heap = []
-        self.room_assignments = {}
-        self.rooms_used = 0
-        self.current_interval_id = None
-
-        # Set metadata for frontend
         self.metadata = {
             'algorithm': 'meeting-rooms',
             'display_name': 'Meeting Rooms II',
@@ -401,7 +389,8 @@ class MeetingRoomsTracer(AlgorithmTracer):
 
             # Check if we can reuse a room
             if self.heap:
-                earliest_end = self.heap[0]
+                # Heap now contains (end_time, room_id) tuples
+                earliest_end, earliest_room = self.heap[0]
                 
                 self._add_step(
                     "CHECK_EARLIEST_END",
@@ -416,15 +405,13 @@ class MeetingRoomsTracer(AlgorithmTracer):
 
                 if start >= earliest_end:
                     # Reuse room - pop the earliest ending meeting
-                    old_end = heapq.heappop(self.heap)
+                    old_end, freed_room = heapq.heappop(self.heap)
                     
-                    # Find which room had this end time (reuse that room number)
-                    # For simplicity, assign to the room that just freed up
-                    # In practice, we'd track room numbers more carefully
-                    room_number = self.rooms_used  # Reuse existing room
+                    # CRITICAL FIX: Assign to the SPECIFIC room that was freed
+                    room_number = freed_room
                     
                     self.room_assignments[interval_id] = room_number
-                    heapq.heappush(self.heap, end)
+                    heapq.heappush(self.heap, (end, room_number))
                     
                     self._add_step(
                         "ALLOCATE_ROOM",
@@ -434,7 +421,8 @@ class MeetingRoomsTracer(AlgorithmTracer):
                             'interval_end': end,
                             'room_number': room_number,
                             'reused': True,
-                            'old_heap_top': old_end
+                            'old_heap_top': old_end,
+                            'freed_room': freed_room  # NEW: Track which room was freed
                         },
                         f"♻️ Reuse room {room_number} for meeting {interval_id} (previous meeting ended at {old_end})"
                     )
@@ -443,7 +431,7 @@ class MeetingRoomsTracer(AlgorithmTracer):
                     self.rooms_used += 1
                     room_number = self.rooms_used
                     self.room_assignments[interval_id] = room_number
-                    heapq.heappush(self.heap, end)
+                    heapq.heappush(self.heap, (end, room_number))
                     
                     self._add_step(
                         "NEW_ROOM",
@@ -472,7 +460,7 @@ class MeetingRoomsTracer(AlgorithmTracer):
                 self.rooms_used += 1
                 room_number = self.rooms_used
                 self.room_assignments[interval_id] = room_number
-                heapq.heappush(self.heap, end)
+                heapq.heappush(self.heap, (end, room_number))
                 
                 self._add_step(
                     "NEW_ROOM",

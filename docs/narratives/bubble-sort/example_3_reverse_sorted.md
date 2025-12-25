@@ -42,10 +42,10 @@ Compare arr[0] (5) with arr[1] (4):
 
 **Current Comparison Visualization:**
 ```
-Index:   0   1   2   3
-Value:   5   4   3   2
-         ^  ^      
-         L  R        (L = Left, R = Right in comparison)
+Index:   0   1   2   3   4
+Value:   5   4   3   2   1
+         ^  ^         
+         L  R           (L = Left, R = Right in comparison)
 ```
 
 ---
@@ -168,10 +168,10 @@ Compare arr[3] (5) with arr[4] (1):
 
 **Current Comparison Visualization:**
 ```
-Index:   1   2   3   4
-Value:   3   2   5   1
-               ^  ^
-               L  R  (L = Left, R = Right in comparison)
+Index:   0   1   2   3   4
+Value:   4   3   2   5   1
+                  ^  ^
+                  L  R  (L = Left, R = Right in comparison)
 ```
 
 ---
@@ -227,10 +227,10 @@ Compare arr[0] (4) with arr[1] (3):
 
 **Current Comparison Visualization:**
 ```
-Index:   0   1   2   3
-Value:   4   3   2   1
-         ^  ^      
-         L  R        (L = Left, R = Right in comparison)
+Index:   0   1   2   3   4
+Value:   4   3   2   1   5
+         ^  ^         
+         L  R           (L = Left, R = Right in comparison)
 ```
 
 ---
@@ -370,10 +370,10 @@ Compare arr[0] (3) with arr[1] (2):
 
 **Current Comparison Visualization:**
 ```
-Index:   0   1   2   3
-Value:   3   2   1   4
-         ^  ^      
-         L  R        (L = Left, R = Right in comparison)
+Index:   0   1   2   3   4
+Value:   3   2   1   4   5
+         ^  ^         
+         L  R           (L = Left, R = Right in comparison)
 ```
 
 ---
@@ -471,10 +471,10 @@ Compare arr[0] (2) with arr[1] (1):
 
 **Current Comparison Visualization:**
 ```
-Index:   0   1   2   3
-Value:   2   1   3   4
-         ^  ^      
-         L  R        (L = Left, R = Right in comparison)
+Index:   0   1   2   3   4
+Value:   2   1   3   4   5
+         ^  ^         
+         L  R           (L = Left, R = Right in comparison)
 ```
 
 ---

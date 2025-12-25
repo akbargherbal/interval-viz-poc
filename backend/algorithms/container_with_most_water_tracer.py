@@ -1,4 +1,3 @@
-
 """
 Container With Most Water algorithm tracer for educational visualization.
 
@@ -251,14 +250,24 @@ class ContainerWithMostWaterTracer(AlgorithmTracer):
 
                 narrative += f"**Decision: Move Right Pointer**\n\n"
                 narrative += f"**Comparison:** Left height ({left_height}) vs Right height ({right_height})\n"
-                narrative += f"- Compare: {right_height} < {left_height} ✓\n"
-                narrative += f"- Conclusion: Right side is the limiting factor (shorter wall)\n\n"
-
-                narrative += f"**Reasoning:**\n"
-                narrative += f"- Current container height is limited by right side ({right_height})\n"
-                narrative += f"- Moving left pointer would only decrease width, keeping same height limit\n"
-                narrative += f"- Moving right pointer might find a taller wall, potentially increasing area\n\n"
-
+                
+                # Handle equal heights case properly
+                if left_height == right_height:
+                    narrative += f"- Compare: {left_height} = {right_height}\n"
+                    narrative += f"- Conclusion: Heights are equal - either pointer can be moved\n\n"
+                    
+                    narrative += f"**Reasoning:**\n"
+                    narrative += f"- Current container height is {left_height} (both walls are same height)\n"
+                    narrative += f"- Moving either pointer would only decrease width, keeping same height limit\n"
+                    narrative += f"- We choose to move right pointer (arbitrary choice when heights are equal)\n\n"
+                else:
+                    narrative += f"- Compare: {right_height} < {left_height} ✓\n"
+                    narrative += f"- Conclusion: Right side is the limiting factor (shorter wall)\n\n"
+                    
+                    narrative += f"**Reasoning:**\n"
+                    narrative += f"- Current container height is limited by right side ({right_height})\n"
+                    narrative += f"- Moving left pointer would only decrease width, keeping same height limit\n"
+                    narrative += f"- Moving right pointer might find a taller wall, potentially increasing area\n\n"
                 narrative += f"**Pointer Update:**\n"
                 narrative += f"- Left pointer: {viz['pointers']['left']} (unchanged)\n"
                 narrative += f"- Right pointer: {old_right} → {new_right}\n\n"
